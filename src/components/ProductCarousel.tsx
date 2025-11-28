@@ -1,5 +1,5 @@
 import React from 'react';
-import { Product } from '../types';
+import { Product } from '../../server/types';
 import ProductCard from './ProductCard';
 
 interface ProductCarouselProps {

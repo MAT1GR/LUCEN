@@ -76,6 +76,16 @@ export const ProductsTab: React.FC = () => {
     setEditingProduct(null);
   };
 
+  const getCorrectImageUrl = (path: string) => {
+    if (!path) return '';
+    const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || '';
+    let processedPath = path;
+    if (processedPath.startsWith('/uploads/')) {
+      processedPath = `/api${processedPath}`;
+    }
+    return `${apiBaseUrl}${processedPath}`;
+  };
+
   return (
     <div>
       <div className="flex justify-between items-center mb-6">
@@ -104,7 +114,7 @@ export const ProductsTab: React.FC = () => {
               return (
                 <tr key={product.id} className="hover:bg-gray-50">
                   <td className="p-4 flex items-center gap-3">
-                    <img src={`${import.meta.env.VITE_API_BASE_URL || ''}${product.images[0]}`} alt={product.name} className="w-12 h-12 object-cover rounded" />
+                    <img src={getCorrectImageUrl(product.images[0])} alt={product.name} className="w-12 h-12 object-cover rounded" />
                     <span className="font-medium text-gray-800">{product.name}</span>
                   </td>
                   <td className="p-4 text-gray-700">${product.price.toLocaleString('es-AR')}</td>

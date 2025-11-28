@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { Product } from '../types';
+import { Product } from '../../server/types';
 
 interface ProductCardProps {
   product: Product;
@@ -8,17 +8,32 @@ interface ProductCardProps {
 }
 
 const ProductCard: React.FC<ProductCardProps> = ({ product, theme = 'light' }) => {
-    const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || ''; 
-    const imageUrl = (product.images && Array.isArray(product.images) && product.images[0])
-      ? product.images[0]
-      : 'https://via.placeholder.com/400x500';
+  const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || '';
+
+  // Función auxiliar para corregir la ruta
+  const getCorrectimageUrl = (path: string | undefined) => {
+    if (!path) return '';
+    let processedPath = path;
+    if (processedPath.startsWith('/uploads/')) {
+      processedPath = `/api${processedPath}`;
+    }
+    return `${apiBaseUrl}${processedPath}`;
+  };
+
+  // Procesar imagen principal
+  const rawImage1 = (product.images && Array.isArray(product.images) && product.images[0]) ? product.images[0] : '';
+  const imageUrl = rawImage1 ? getCorrectimageUrl(rawImage1) : 'https://via.placeholder.com/400x500';
+
+  // Procesar segunda imagen (hover)
+  const rawImage2 = (product.images && product.images.length > 1) ? product.images[1] : '';
+  const secondImageUrl = getCorrectimageUrl(rawImage2);
+
+  const textColor = theme === 'dark' ? 'text-white' : 'text-black';
   
-    const textColor = theme === 'dark' ? 'text-white' : 'text-black';
-    
-    const totalStock = (product.sizes && typeof product.sizes === 'object')
-      ? Object.values(product.sizes).reduce((acc, size) => acc + (size.stock || 0), 0)
-      : 0;
-    const isSoldOut = totalStock === 0;
+  const totalStock = (product.sizes && typeof product.sizes === 'object')
+    ? Object.values(product.sizes).reduce((acc, size) => acc + (size.stock || 0), 0)
+    : 0;
+  const isSoldOut = totalStock === 0;
 
   return (
     <Link to={`/producto/${product.id}`} className={`group block relative ${textColor}`}>
@@ -32,16 +47,16 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, theme = 'light' }) =
         {/* Primera imagen (visible por defecto) */}
         <img
           src={imageUrl}
-          alt={`Jean de mujer modelo ${product.name} color ${product.color || 'único'} talla ${Object.keys(product.sizes)[0] || 'única'} en Denim Rosario`}
-          className={`w-full h-full object-cover aspect-[3/4] transition-opacity duration-500 ${isSoldOut ? 'grayscale' : ''} ${product.images && product.images.length > 1 ? 'group-hover:opacity-0' : ''}`}
+          alt={`Jean de mujer modelo ${product.name}`}
+          className={`w-full h-full object-cover aspect-[3/4] transition-opacity duration-500 ${isSoldOut ? 'grayscale' : ''} ${secondImageUrl ? 'group-hover:opacity-0' : ''}`}
           loading="lazy"
         />
 
         {/* Segunda imagen (visible en hover) */}
-        {product.images && product.images.length > 1 && (
+        {secondImageUrl && (
           <img
-            src={product.images[1]}
-            alt={`Jean de mujer modelo ${product.name} color ${product.color || 'único'} en Denim Rosario - Vista alternativa`}
+            src={secondImageUrl}
+            alt={`Jean de mujer modelo ${product.name} - Vista alternativa`}
             className={`absolute inset-0 w-full h-full object-cover aspect-[3/4] opacity-0 group-hover:opacity-100 transition-opacity duration-500 ${isSoldOut ? 'grayscale' : ''}`}
             loading="lazy"
           />

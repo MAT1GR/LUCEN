@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Category } from '../../types';
+import { Category } from '../../../server/types';
 import { Plus, Edit, Trash2 } from 'lucide-react';
 import { CategoryForm } from './CategoryForm';
 

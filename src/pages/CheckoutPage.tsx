@@ -441,32 +441,42 @@ const PaymentOption = ({
   </div>
 );
 
-const CartItem = ({ item }: { item: CartItemType }) => (
-  <div className="flex items-center justify-between text-sm">
-    <div className="flex items-center gap-3">
-      <div className="relative">
-        <img
-          src={`${(import.meta as any).env.VITE_API_BASE_URL || ""}${
-            item.product.images[0]
-          }`}
-          className="w-16 h-16 rounded object-cover"
-          alt={item.product.name}
-        />
-        <span className="absolute -top-2 -right-2 bg-gris-oscuro text-blanco-hueso text-xs rounded-full h-5 w-5 flex items-center justify-center">
-          {item.quantity}
-        </span>
+const CartItem = ({ item }: { item: CartItemType }) => {
+  const getCorrectImageUrl = (path: string) => {
+    if (!path) return '';
+    const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || '';
+    let processedPath = path;
+    if (processedPath.startsWith('/uploads/')) {
+      processedPath = `/api${processedPath}`;
+    }
+    return `${apiBaseUrl}${processedPath}`;
+  };
+
+  return (
+    <div className="flex items-center justify-between text-sm">
+      <div className="flex items-center gap-3">
+        <div className="relative">
+          <img
+            src={getCorrectImageUrl(item.product.images[0])}
+            className="w-16 h-16 rounded object-cover"
+            alt={item.product.name}
+          />
+          <span className="absolute -top-2 -right-2 bg-gris-oscuro text-blanco-hueso text-xs rounded-full h-5 w-5 flex items-center justify-center">
+            {item.quantity}
+          </span>
+        </div>
+        <div>
+          <span className="text-gris-oscuro font-medium">
+            {item.product.name}
+          </span>
+          <p className="text-gris-oscuro/70">Talle: {item.size}</p>
+        </div>
       </div>
-      <div>
-        <span className="text-gris-oscuro font-medium">
-          {item.product.name}
-        </span>
-        <p className="text-gris-oscuro/70">Talle: {item.size}</p>
-      </div>
+      <span className="font-semibold text-gris-oscuro">
+        ${(item.product.price * item.quantity).toLocaleString("es-AR").replace(/\./g, '')}
+      </span>
     </div>
-    <span className="font-semibold text-gris-oscuro">
-      ${(item.product.price * item.quantity).toLocaleString("es-AR").replace(/\./g, '')}
-    </span>
-  </div>
-);
+  );
+};
 
 export default CheckoutPage;

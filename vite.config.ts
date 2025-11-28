@@ -4,14 +4,19 @@ import react from '@vitejs/plugin-react';
 // https://vitejs.dev/config/
 export default defineConfig({
   plugins: [react()],
-  // Esta sección es clave para la comunicación Frontend <-> Backend
   server: {
     proxy: {
-      // Cualquier petición que empiece con '/api' será redirigida
+      // Redirige las llamadas a la API
       '/api': {
-        target: 'http://localhost:3001', // El servidor backend
-        changeOrigin: true, // Necesario para evitar errores de CORS
-        secure: false,      // No necesitamos HTTPS en desarrollo
+        target: 'http://localhost:3001',
+        changeOrigin: true,
+        secure: false,
+      },
+      // CORRECCIÓN: Agrega esto para que las imágenes/videos se pidan al backend
+      '/uploads': {
+        target: 'http://localhost:3001',
+        changeOrigin: true,
+        secure: false,
       },
     },
   },

@@ -19,7 +19,14 @@ const ProductMediaGallery: React.FC<ProductMediaGalleryProps> = ({ images, video
   const getMediaUrl = (mediaPath: string) => {
     if (!mediaPath) return '';
     const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || '';
-    return `${apiBaseUrl}${mediaPath}`;
+    
+    // CORRECCIÓN: Si la ruta empieza con /uploads/, le agregamos /api
+    let finalPath = mediaPath;
+    if (finalPath.startsWith('/uploads/')) {
+      finalPath = `/api${finalPath}`;
+    }
+
+    return `${apiBaseUrl}${finalPath}`;
   };
 
   const handleThumbnailClick = (media: string) => {

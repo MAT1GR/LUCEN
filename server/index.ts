@@ -89,7 +89,7 @@ app.use(cors({
 app.use(express.json());
 
 // --- Archivos estáticos ---
-app.use('/uploads', express.static(path.join(__dirname, 'public', 'uploads')));
+app.use('/api/uploads', express.static(path.join(__dirname, 'public', 'uploads')));
 
 // --- Prefijo /api para Vite ---
 app.use('/api/auth', authRoutes);

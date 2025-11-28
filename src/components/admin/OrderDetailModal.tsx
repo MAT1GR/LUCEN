@@ -36,6 +36,16 @@ export const OrderDetailModal: React.FC<OrderDetailModalProps> = ({ order, onClo
   const subtotal = order.items.reduce((acc, item) => acc + item.product.price * item.quantity, 0);
   const discount = subtotal + (order.shippingCost || 0) - order.total;
 
+  const getCorrectImageUrl = (path: string) => {
+    if (!path) return '';
+    const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || '';
+    let processedPath = path;
+    if (processedPath.startsWith('/uploads/')) {
+      processedPath = `/api${processedPath}`;
+    }
+    return `${apiBaseUrl}${processedPath}`;
+  };
+
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
       <div className="bg-white rounded-lg p-6 max-w-2xl w-full max-h-[90vh] overflow-y-auto relative">
@@ -72,7 +82,7 @@ export const OrderDetailModal: React.FC<OrderDetailModalProps> = ({ order, onClo
             <div className="space-y-4 max-h-60 overflow-y-auto pr-2 border rounded-lg p-4 bg-gray-50">
               {order.items.map((item, index) => (
                 <div key={index} className="flex gap-4 items-center">
-                  <img src={`${import.meta.env.VITE_API_BASE_URL || ''}${item.product.images[0]}`} alt={item.product.name} className="w-16 h-16 object-cover rounded-lg" />
+                  <img src={getCorrectImageUrl(item.product.images[0])} alt={item.product.name} className="w-16 h-16 object-cover rounded-lg" />
                   <div className="flex-1">
                     <p className="font-medium">{item.product.name}</p>
                     <p className="text-sm text-gray-600">Talle: {item.size} &middot; Cantidad: {item.quantity}</p>

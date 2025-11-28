@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Customer, CustomerOrder, Order } from '../../types';
+import { Customer, CustomerOrder, Order } from '../../../server/types';
 import { X, Mail, Phone, ShoppingBag, DollarSign, Calendar } from 'lucide-react';
 import { OrderDetailModal } from './OrderDetailModal';
 

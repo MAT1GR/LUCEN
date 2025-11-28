@@ -13,6 +13,16 @@ const CartSidebar: React.FC<CartSidebarProps> = ({ isOpen, onClose }) => {
     useCart();
   const total = getTotalPrice();
 
+  const getCorrectImageUrl = (path: string) => {
+    if (!path) return '';
+    const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || '';
+    let processedPath = path;
+    if (processedPath.startsWith('/uploads/')) {
+      processedPath = `/api${processedPath}`;
+    }
+    return `${apiBaseUrl}${processedPath}`;
+  };
+
   return (
     <>
       {/* Backdrop */}
@@ -59,9 +69,7 @@ const CartSidebar: React.FC<CartSidebarProps> = ({ isOpen, onClose }) => {
                   className="flex gap-4"
                 >
                   <img
-                    src={`${import.meta.env.VITE_API_BASE_URL || ""}${
-                      item.product.images[0]
-                    }`}
+                    src={getCorrectImageUrl(item.product.images[0])}
                     alt={item.product.name}
                     className="w-24 h-32 object-cover rounded-lg"
                   />

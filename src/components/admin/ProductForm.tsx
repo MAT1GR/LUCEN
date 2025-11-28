@@ -44,10 +44,20 @@ export const ProductForm: React.FC<ProductFormProps> = ({ product, onClose, onSa
 
   const [sizeRows, setSizeRows] = useState<SizeRow[]>(initialSizes);
   
+  const getCorrectImageUrl = (path: string) => {
+    if (!path) return '';
+    const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || '';
+    let processedPath = path;
+    if (processedPath.startsWith('/uploads/')) {
+      processedPath = `/api${processedPath}`;
+    }
+    return `${apiBaseUrl}${processedPath}`;
+  };
+
   useEffect(() => {
     const generatePreviews = () => {
       const urls = allImages.map(img => {
-        if (typeof img === 'string') return img;
+        if (typeof img === 'string') return getCorrectImageUrl(img);
         return URL.createObjectURL(img);
       });
       setPreviewUrls(urls);
