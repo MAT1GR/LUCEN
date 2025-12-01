@@ -114,6 +114,7 @@ export const createProduct = async (req: Request, res: Response) => {
         console.log('[DEBUG] Data before sending to DB:', newProductData);
 
         const createdProductId = await db.products.create(newProductData);
+        productsCache.del('newest-products');
         const createdProduct = await db.products.getById(createdProductId);
         res.status(201).json(createdProduct);
     } catch (error) {
@@ -170,6 +171,7 @@ export const updateProduct = async (req: Request, res: Response) => {
 
         const updated = await db.products.update(req.params.id, productData);
         if (updated) {
+            productsCache.del('newest-products');
             const updatedProduct = await db.products.getById(req.params.id);
             res.json(updatedProduct);
         } else {
@@ -185,6 +187,7 @@ export const deleteProduct = async (req: Request, res: Response) => {
     try {
         const deleted = await db.products.delete(req.params.id);
         if (deleted) {
+            productsCache.del('newest-products');
             res.status(204).send();
         } else {
             res.status(404).json({ message: 'Producto no encontrado para eliminar' });

@@ -91,10 +91,22 @@ export const SettingsTab: React.FC = () => {
             <div>
                 <h2 className="text-2xl font-bold mb-6">Configuración de la Tienda</h2>
                 <div className="bg-white rounded-lg shadow-sm p-6 space-y-4">
+                    <h3 className="text-lg font-semibold border-b pb-2">Información General</h3>
                     <InputField label="Nombre del Sitio" name="site_name" value={settings.site_name?.value || ''} onChange={handleChange} />
                     <InputField label="Email de Contacto" name="contact_email" value={settings.contact_email?.value || ''} onChange={handleChange} />
                     <InputField label="Teléfono de Contacto" name="contact_phone" value={settings.contact_phone?.value || ''} onChange={handleChange} />
-                    <button onClick={handleSaveSettings} disabled={isSaving} className="px-6 py-2 bg-[#D8A7B1] text-white rounded hover:bg-[#c69ba5]">
+                    <InputField label="Número de WhatsApp" name="contact_whatsapp" placeholder="543413981584" value={settings.contact_whatsapp?.value || ''} onChange={handleChange} />
+
+                    <h3 className="text-lg font-semibold border-b pb-2 pt-4">Datos de Transferencia Bancaria</h3>
+                    <InputField label="CVU/CBU" name="transfer_cvu" value={settings.transfer_cvu?.value || ''} onChange={handleChange} />
+                    <InputField label="Alias" name="transfer_alias" value={settings.transfer_alias?.value || ''} onChange={handleChange} />
+                    <InputField label="Titular de la cuenta" name="transfer_titular" value={settings.transfer_titular?.value || ''} onChange={handleChange} />
+
+                    <h3 className="text-lg font-semibold border-b pb-2 pt-4">Costos de Envío</h3>
+                    <InputField label="Costo de Envío (Cadete en Rosario)" type="number" name="shipping_cost_cadete" value={settings.shipping_cost_cadete?.value || ''} onChange={handleChange} />
+                    <InputField label="Costo de Envío (Correo Argentino)" type="number" name="shipping_cost_correo" value={settings.shipping_cost_correo?.value || ''} onChange={handleChange} />
+
+                    <button onClick={handleSaveSettings} disabled={isSaving} className="px-6 py-2 bg-[#D8A7B1] text-white rounded hover:bg-[#c69ba5] !mt-6">
                         {isSaving ? 'Guardando...' : 'Guardar Cambios'}
                     </button>
                 </div>

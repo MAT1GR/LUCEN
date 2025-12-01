@@ -1,14 +1,17 @@
 import React, { useEffect, useState } from "react";
 import { useLocation, useParams, useNavigate, Link } from "react-router-dom";
-import { Copy, Check, AlertTriangle } from "lucide-react";
+import { Copy, Check, AlertTriangle, Loader } from "lucide-react";
 import { Order } from "../types";
-import { useCart } from "../hooks/useCart"; // 1. IMPORTAR USCART
+import { useCart } from "../hooks/useCart";
+import { StockCountdownTimer } from "../components/StockCountdownTimer";
+import { useSettings } from "../hooks/useSettings"; // Import the new hook
 
 const TransferPendingPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const location = useLocation();
   const navigate = useNavigate();
-  const { clearCart } = useCart(); // 2. OBTENER CLEARCART
+  const { clearCart } = useCart();
+  const { settings, loading: settingsLoading } = useSettings(); // Use the settings hook
 
   const [order, setOrder] = useState<Order | null>(
     location.state?.order || null
@@ -17,10 +20,9 @@ const TransferPendingPage: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [copied, setCopied] = useState<string | null>(null);
 
-  // 3. USEEFFECT PARA LIMPIAR EL CARRITO AL MONTAR
   useEffect(() => {
     clearCart();
-  }, []); // El array vacío asegura que se ejecute solo una vez
+  }, [clearCart]);
 
   useEffect(() => {
     if (!order && id) {
@@ -54,9 +56,12 @@ const TransferPendingPage: React.FC = () => {
     setTimeout(() => setCopied(null), 2000);
   };
 
-  if (loading) {
+  if (loading || settingsLoading) {
     return (
-      <div className="flex justify-center items-center h-screen">Cargando...</div>
+      <div className="flex flex-col justify-center items-center h-screen">
+          <Loader className="animate-spin mb-4" />
+          Cargando...
+      </div>
     );
   }
 
@@ -78,13 +83,16 @@ const TransferPendingPage: React.FC = () => {
   }
 
   const bankDetails = {
-    cbu: "1234567890123456789012",
-    alias: "ROSARIO.DENIM.MP",
-    titular: "Rosario Denim S.A.",
+    cvu: settings.transfer_cvu || 'No disponible',
+    alias: settings.transfer_alias || 'No disponible',
+    titular: settings.transfer_titular || 'No disponible',
   };
+  
+  const mainWhatsAppNumber = settings.contact_whatsapp || '543413981584';
+  const secondaryWhatsAppNumber = '543541374915'; // Assuming this one remains static or you can add another setting for it
 
   const whatsappMessage = `¡Hola! Acabo de hacer el pedido #${order.id} y quiero enviar mi comprobante de pago.`;
-  const whatsappLink = `https://wa.me/5493411234567?text=${encodeURIComponent(whatsappMessage)}`;
+  const whatsappLink = `https://wa.me/${mainWhatsAppNumber}?text=${encodeURIComponent(whatsappMessage)}`;
 
   return (
     <div className="min-h-screen bg-blanco-hueso py-12">
@@ -92,6 +100,8 @@ const TransferPendingPage: React.FC = () => {
         <div className="bg-white p-8 rounded-lg shadow-md border border-arena">
           <h1 className="text-2xl font-bold mb-4 text-gris-oscuro">¡Falta poco! Tu pedido está casi listo.</h1>
           <p className="text-gris-oscuro/80 mb-6">Para confirmar tu compra, realiza una transferencia con los siguientes datos y envíanos el comprobante por WhatsApp.</p>
+          
+          <StockCountdownTimer createdAt={order.createdAt} orderId={order.id} className="mb-6" />
 
           <div className="bg-blanco-hueso border border-arena rounded-lg p-6 text-left space-y-4 mb-6">
             <h2 className="font-bold text-lg text-gris-oscuro text-center">Datos para la Transferencia</h2>
@@ -115,7 +125,14 @@ const TransferPendingPage: React.FC = () => {
           <a href={whatsappLink} target="_blank" rel="noopener noreferrer" className="w-full bg-green-500 text-white py-3 rounded-lg font-bold hover:bg-green-600 transition-colors flex items-center justify-center gap-2">
             Enviar Comprobante por WhatsApp
           </a>
-          <p className="text-xs text-gris-oscuro/60 mt-4">Tenés 60 minutos para enviar el comprobante o tu orden será cancelada.</p>
+          <div className="mt-4">
+            <p className="text-sm text-gray-600">Por si las dudas también podes contactarnos al:</p>
+            <div className="text-sm font-semibold mt-1">
+              <a href={`tel:+${mainWhatsAppNumber}`} className="text-blue-600 hover:underline">+{mainWhatsAppNumber}</a>
+              <span className="mx-2 text-gray-600">o</span>
+              <a href={`tel:+${secondaryWhatsAppNumber}`} className="text-blue-600 hover:underline">+{secondaryWhatsAppNumber}</a>
+            </div>
+          </div>
         </div>
       </div>
     </div>

@@ -24,11 +24,11 @@ export const ProductForm: React.FC<ProductFormProps> = ({ product, onClose, onSa
     description: product?.description || '',
     material: product?.material || '',
     rise: product?.rise || 'Medio',
-    rise_cm: (product as any)?.rise_cm || 0,
+    rise_cm: product?.rise_cm || 0,
     fit: product?.fit || '',
-    waist_flat: (product as any)?.waist_flat || 0,
-    length: (product as any)?.length || 0,
-    isWaistStretchy: (product as any)?.isWaistStretchy || false,
+    waist_flat: product?.waist_flat || 0,
+    length: product?.length || 0,
+    isWaistStretchy: product?.isWaistStretchy || false,
     isNew: product?.isNew || false,
     isActive: product?.isActive ?? true,
   });
@@ -58,17 +58,14 @@ export const ProductForm: React.FC<ProductFormProps> = ({ product, onClose, onSa
   };
 
   useEffect(() => {
-    const generatePreviews = () => {
-      const urls = allImages.map(img => {
-        if (typeof img === 'string') return getCorrectImageUrl(img);
-        return URL.createObjectURL(img);
-      });
-      setPreviewUrls(urls);
-    };
-    generatePreviews();
+    const urls = allImages.map(img => {
+      if (typeof img === 'string') return getCorrectImageUrl(img);
+      return URL.createObjectURL(img);
+    });
+    setPreviewUrls(urls);
 
     return () => {
-      previewUrls.forEach(url => {
+      urls.forEach(url => {
         if (url.startsWith('blob:')) URL.revokeObjectURL(url);
       });
     };
@@ -90,7 +87,21 @@ export const ProductForm: React.FC<ProductFormProps> = ({ product, onClose, onSa
   
   const handleSizeChange = (index: number, field: keyof SizeRow, value: string | number | boolean) => {
     const newSizes = [...sizeRows];
-    (newSizes[index] as any)[field] = value;
+    const sizeToUpdate = { ...newSizes[index] };
+    
+    switch (field) {
+      case 'size':
+        if (typeof value === 'string') sizeToUpdate.size = value;
+        break;
+      case 'stock':
+        if (typeof value === 'number') sizeToUpdate.stock = value;
+        break;
+      case 'available':
+        if (typeof value === 'boolean') sizeToUpdate.available = value;
+        break;
+    }
+
+    newSizes[index] = sizeToUpdate;
     setSizeRows(newSizes);
   };
 
@@ -161,7 +172,7 @@ export const ProductForm: React.FC<ProductFormProps> = ({ product, onClose, onSa
         };
       }
       return acc;
-    }, {} as Omit<Product['sizes'], 'measurements'>);
+    }, {} as Product['sizes']);
     data.append('sizes', JSON.stringify(sizesAsObject));
     data.append('faqs', JSON.stringify(faqs));
 

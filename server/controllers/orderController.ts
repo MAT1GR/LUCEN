@@ -70,8 +70,16 @@ export const createOrder = async (req: Request, res: Response) => {
 
 export const getAllOrders = async (req: Request, res: Response) => {
     try {
-        const orders = db.orders.getAll();
-        res.json(orders);
+        const { status, searchTerm, page } = req.query;
+
+        const filters = {
+            status: status as string | undefined,
+            searchTerm: searchTerm as string | undefined,
+            page: page ? parseInt(page as string, 10) : 1,
+        };
+
+        const result = db.orders.getAll(filters);
+        res.json(result);
     } catch (error) {
         console.error("Error fetching orders:", error);
         res.status(500).json({ message: 'Error al obtener los pedidos' });
@@ -115,5 +123,40 @@ export const getCustomerOrders = async (req: Request, res: Response) => {
     } catch (error) {
         console.error("Error fetching customer orders:", error);
         res.status(500).json({ message: 'Error al obtener los pedidos del cliente' });
+    }
+};
+
+export const cancelIfExpired = async (req: Request, res: Response) => {
+    try {
+        const orderId = req.params.id;
+        const order = db.orders.getById(orderId);
+
+        if (!order) {
+            return res.status(404).json({ message: 'Pedido no encontrado.' });
+        }
+
+        // Only act on pending transfers
+        if (order.paymentMethod !== 'transferencia' || order.status !== 'pending') {
+            return res.status(400).json({ message: 'El pedido no es una transferencia pendiente.' });
+        }
+
+        const fifteenMinutes = 15 * 60 * 1000;
+        const orderTime = new Date(order.createdAt).getTime();
+        const currentTime = new Date().getTime();
+
+        if ((currentTime - orderTime) > fifteenMinutes) {
+            // Order has expired, proceed with cancellation
+            db.products.restoreProductStock(order.items);
+            db.orders.updateStatus(orderId, 'cancelled');
+            const updatedOrder = db.orders.getById(orderId);
+            console.log(`[Order Expiration] Order ${orderId} has been cancelled and stock restored.`);
+            return res.json({ message: 'Pedido cancelado por expiración.', order: updatedOrder });
+        }
+
+        res.json({ message: 'El pedido aún no ha expirado.' });
+
+    } catch (error) {
+        console.error("Error checking order expiration:", error);
+        res.status(500).json({ message: 'Error al verificar la expiración del pedido.' });
     }
 };

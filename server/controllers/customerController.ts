@@ -4,8 +4,15 @@ import { db } from '../lib/database.js';
 
 export const getAllCustomers = async (req: Request, res: Response) => {
   try {
-    const customers = await db.customers.getAll();
-    res.json(customers);
+    const { searchTerm, page } = req.query;
+
+    const filters = {
+        searchTerm: searchTerm as string | undefined,
+        page: page ? parseInt(page as string, 10) : 1,
+    };
+
+    const result = await db.customers.getAll(filters);
+    res.json(result);
   } catch (error) {
     console.error("Error fetching customers:", error);
     res.status(500).json({ message: 'Error al obtener los clientes' });

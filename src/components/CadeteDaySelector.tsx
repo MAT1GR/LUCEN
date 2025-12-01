@@ -45,11 +45,7 @@ const generateDeliveryDays = (): DayOption[] => {
 };
 
 export const CadeteDaySelector: React.FC<CadeteDaySelectorProps> = ({ onDaySelect, selectedDay }) => {
-  const [days, setDays] = useState<DayOption[]>([]);
-
-  useEffect(() => {
-    setDays(generateDeliveryDays());
-  }, []);
+  const [days, setDays] = useState<DayOption[]>(generateDeliveryDays());
 
   return (
     <div className="space-y-2 pt-4">

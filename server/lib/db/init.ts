@@ -72,6 +72,7 @@ export function initializeSchema() {
       shipping_cost INTEGER,
       shipping_name TEXT,
       shipping_details TEXT,
+      payment_method TEXT,
       created_at DATETIME DEFAULT CURRENT_TIMESTAMP
     );
 
@@ -99,6 +100,7 @@ export function initializeSchema() {
   
   db.exec(createTablesSQL);
 
+<<<<<<< HEAD
   // --- Add faqs column to products table if it doesn't exist ---
   try {
     db.exec("ALTER TABLE products ADD COLUMN faqs TEXT DEFAULT '[]'");
@@ -107,12 +109,37 @@ export function initializeSchema() {
     // This will likely fail if the column already exists, which is fine.
     // console.log("[DB] 'faqs' column likely already exists.");
   }
+=======
+  // Run migrations to update existing schemas
+  runMigrations();
+>>>>>>> cafede2b106befa8c646dad7d360d62d909ba4a3
 
   // Seeding initial data
   seedInitialData();
   
   console.log("[DB] Schema initialized.");
   saveDatabase(); // Save after schema changes
+}
+
+function runMigrations() {
+  const db = getDB();
+  console.log("[DB] Running migrations...");
+  try {
+    // Migration 1: Add payment_method to orders table
+    console.log('[DB] Applying migration: Add payment_method to orders...');
+    db.run("ALTER TABLE orders ADD COLUMN payment_method TEXT");
+    console.log('[DB] Migration applied successfully: added payment_method column.');
+    saveDatabase(); // Save after a successful migration
+  } catch (e: any) {
+    if (e.message && e.message.includes('duplicate column name')) {
+      // This is expected if the migration has already run, so we can ignore it.
+      console.log('[DB] Migration skipped: payment_method column already exists.');
+    } else {
+      // If it's a different error, we should know about it.
+      console.error('[DB] Migration failed:', e);
+      throw e;
+    }
+  }
 }
 
 function seedInitialData() {

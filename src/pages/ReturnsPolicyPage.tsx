@@ -22,22 +22,7 @@ const ReturnsPolicyPage: React.FC = () => {
           </div>
 
           <div className="space-y-8 mt-12">
-            {/* Card Cambios */}
-            <div className="border border-gray-200 rounded-lg p-6 bg-white">
-              <div className="flex items-center mb-4">
-                <RefreshCw className="text-gray-800 mr-3 flex-shrink-0" size={24} />
-                <h2 className="text-xl md:text-2xl font-bold">Cambios por Talle</h2>
-              </div>
-              <p className="text-brand-secondary-text mb-4 text-sm md:text-base">
-                ¿El talle no fue el correcto? ¡No te preocupes, lo solucionamos!
-              </p>
-              <ul className="list-disc list-inside space-y-2 text-brand-primary-text text-sm md:text-base">
-                <li>Podés solicitar un cambio de talle hasta <strong>30 días</strong> después de recibir tu compra.</li>
-                <li>El producto debe estar sin uso, sin lavar y con sus etiquetas originales.</li>
-                <li>El costo de ambos envíos (ida y vuelta) corre por cuenta del cliente.</li>
-                <li>Para iniciar el proceso, contactate con nosotros por WhatsApp indicando tu número de orden y el nuevo talle que necesitás.</li>
-              </ul>
-            </div>
+
 
             {/* Card Devoluciones */}
             <div className="border border-gray-200 rounded-lg p-6 bg-white">

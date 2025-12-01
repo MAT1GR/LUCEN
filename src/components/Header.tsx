@@ -36,7 +36,7 @@ const Header: React.FC<HeaderProps> = ({ onCartClick }) => {
 
   const navLinks = [
     { href: "/tallas", label: "Guía de Talles" },
-    { href: "/cambios-y-devoluciones", label: "Cambios y Devoluciones" },
+    { href: "/cambios-y-devoluciones", label: "Devoluciones" },
   ];
 
   const headerClasses = `
@@ -90,12 +90,8 @@ const Header: React.FC<HeaderProps> = ({ onCartClick }) => {
 
             {/* Iconos (Derecha) */}
             <div className="flex-1 flex justify-end items-center space-x-2">
-              <button className="hidden md:block p-2">
-                <Search size={20} />
-              </button>
-              <button className="hidden md:block p-2">
-                <User size={20} />
-              </button>
+              
+              
               <button
                 onClick={onCartClick}
                 className="relative p-2"

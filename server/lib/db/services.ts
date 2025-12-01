@@ -5,7 +5,6 @@ import crypto from 'crypto';
 import {
   Product,
   AdminUser,
-  Category,
   Order,
   Customer,
   SiteSettings,
@@ -66,16 +65,6 @@ const parseProduct = (row: any): Product => {
 };
 
 
-const parseCategory = (row: any): Category => ({
-  id: row.id,
-  name: row.name,
-  slug: row.slug,
-  description: row.description,
-  image: row.image,
-  is_active: Boolean(row.is_active),
-  sort_order: row.sort_order,
-});
-
 const parseOrder = (row: any): Order => ({
   id: String(row.id),
   customerId: String(row.customer_id),
@@ -96,6 +85,7 @@ const parseOrder = (row: any): Order => ({
   shippingCost: row.shipping_cost,
   shippingName: row.shipping_name,
   shippingDetails: row.shipping_details,
+  paymentMethod: row.payment_method,
   createdAt: new Date(row.created_at),
 });
 
@@ -143,12 +133,19 @@ export const authService = {
 };
 
 export const productService = {
+<<<<<<< HEAD
   getAll(filters: { category?: string; size?: string; minPrice?: number; maxPrice?: number; sortBy?: string; page?: number; limit?: number }) {
     const db = getDB();
     const { category, size, minPrice, maxPrice, sortBy, page = 1, limit = 9 } = filters;
+=======
+  getAll(filters: { sortBy?: string; page?: number; limit?: number }) {
+    const db = getDB();
+    const { sortBy, page = 1, limit = 9 } = filters;
+>>>>>>> cafede2b106befa8c646dad7d360d62d909ba4a3
     
-    let whereClauses = ["is_active = 1"];
+    const whereClauses = ["is_active = 1"];
     const params: (string | number)[] = [];
+<<<<<<< HEAD
     if (category) {
       whereClauses.push("category = ?");
       params.push(category);
@@ -161,6 +158,8 @@ export const productService = {
       whereClauses.push("price <= ?");
       params.push(maxPrice);
     }
+=======
+>>>>>>> cafede2b106befa8c646dad7d360d62d909ba4a3
 
     const where = `WHERE ${whereClauses.join(" AND ")}`;
     let orderBy = "ORDER BY id DESC";
@@ -217,6 +216,30 @@ export const productService = {
     saveDatabase();
   },
 
+  restoreProductStock(items: CartItem[]): void {
+    const db = getDB();
+    for (const item of items) {
+      const stmt = db.prepare('SELECT * FROM products WHERE id = ?');
+      // Asegúrate de que el ID del producto se está pasando correctamente
+      const productRow = stmt.getAsObject([item.product.id]);
+      stmt.free();
+
+      if (productRow) {
+        const sizes = JSON.parse(productRow.sizes as string);
+        // Asegúrate de que el talle (size) existe en el producto
+        if (sizes[item.size]) {
+          sizes[item.size].stock += item.quantity;
+          db.run('UPDATE products SET sizes = ? WHERE id = ?', [JSON.stringify(sizes), productRow.id]);
+        } else {
+          console.warn(`[Stock Restore] Size ${item.size} not found for product ${item.product.id}.`);
+        }
+      } else {
+        console.warn(`[Stock Restore] Product not found for ID ${item.product.id}.`);
+      }
+    }
+    saveDatabase();
+  },
+
   getAllAdmin(): Product[] {
     const db = getDB();
     const rows = toObjects(db.exec('SELECT * FROM products ORDER BY id DESC'));
@@ -238,14 +261,17 @@ export const productService = {
   create(product: Omit<Product, 'id' | 'isActive'>): number {
     const db = getDB();
     const stmt = db.prepare(
+<<<<<<< HEAD
       'INSERT INTO products (name, price, images, video, category, description, material, rise, rise_cm, fit, waist_flat, is_waist_stretchy, length, sizes, is_new, is_best_seller, faqs) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)'
+=======
+      'INSERT INTO products (name, price, images, video, description, material, rise, rise_cm, fit, waist_flat, is_waist_stretchy, length, sizes, is_new, is_best_seller) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)'
+>>>>>>> cafede2b106befa8c646dad7d360d62d909ba4a3
     );
     stmt.run([
       product.name,
       product.price,
       JSON.stringify(product.images),
       product.video ?? null,
-      product.category,
       product.description,
       product.material,
       product.rise,
@@ -268,13 +294,16 @@ export const productService = {
   update(productId: string, product: Partial<Product>): boolean {
     const db = getDB();
     db.run(
+<<<<<<< HEAD
       'UPDATE products SET name = COALESCE(?, name), price = COALESCE(?, price), images = COALESCE(?, images), video = COALESCE(?, video), category = COALESCE(?, category), description = COALESCE(?, description), material = COALESCE(?, material), rise = COALESCE(?, rise), rise_cm = COALESCE(?, rise_cm), fit = COALESCE(?, fit), waist_flat = COALESCE(?, waist_flat), is_waist_stretchy = COALESCE(?, is_waist_stretchy), length = COALESCE(?, length), sizes = COALESCE(?, sizes), is_new = COALESCE(?, is_new), is_best_seller = COALESCE(?, is_best_seller), is_active = COALESCE(?, is_active), faqs = COALESCE(?, faqs) WHERE id = ?',
+=======
+      'UPDATE products SET name = COALESCE(?, name), price = COALESCE(?, price), images = COALESCE(?, images), video = COALESCE(?, video), description = COALESCE(?, description), material = COALESCE(?, material), rise = COALESCE(?, rise), rise_cm = COALESCE(?, rise_cm), fit = COALESCE(?, fit), waist_flat = COALESCE(?, waist_flat), is_waist_stretchy = COALESCE(?, is_waist_stretchy), length = COALESCE(?, length), sizes = COALESCE(?, sizes), is_new = COALESCE(?, is_new), is_best_seller = COALESCE(?, is_best_seller), is_active = COALESCE(?, is_active) WHERE id = ?',
+>>>>>>> cafede2b106befa8c646dad7d360d62d909ba4a3
       [
         product.name ?? null,
         product.price ?? null,
         product.images ? JSON.stringify(product.images) : null,
         product.video ?? null,
-        product.category ?? null,
         product.description ?? null,
         product.material ?? null,
         product.rise ?? null,
@@ -305,67 +334,6 @@ export const productService = {
   },
 };
 
-export const categoryService = {
-  getAll(): Category[] {
-    const db = getDB();
-    const rows = toObjects(db.exec("SELECT * FROM categories WHERE is_active = 1 ORDER BY sort_order ASC, name ASC"));
-    return rows.map(parseCategory);
-  },
-
-  create(category: Omit<Category, 'id'>): number {
-    const db = getDB();
-    db.run(
-      'INSERT INTO categories (name, slug, description, image, is_active, sort_order) VALUES (?, ?, ?, ?, ?, ?)',
-      [
-        category.name,
-        category.slug,
-        category.description ?? null,
-        category.image ?? null,
-        Number(category.is_active),
-        category.sort_order
-      ]
-    );
-    const id = toObjects(db.exec("SELECT last_insert_rowid() as id"))[0].id;
-    saveDatabase();
-    return id;
-  },
-
-  getById(categoryId: number): Category | null {
-    const db = getDB();
-    const stmt = db.prepare('SELECT * FROM categories WHERE id = ?');
-    const row = stmt.getAsObject([categoryId]);
-    stmt.free();
-    return row ? parseCategory(row) : null;
-  },
-
-  update(categoryId: number, category: Partial<Category>): boolean {
-    const db = getDB();
-    db.run(
-      'UPDATE categories SET name = ?, slug = ?, description = ?, image = ?, is_active = ?, sort_order = ? WHERE id = ?',
-      [
-        category.name ?? null,
-        category.slug ?? null,
-        category.description ?? null,
-        category.image ?? null,
-        category.is_active !== undefined ? Number(category.is_active) : null,
-        category.sort_order ?? null,
-        categoryId
-      ]
-    );
-    const changes = db.getRowsModified();
-    saveDatabase();
-    return changes > 0;
-  },
-
-  delete(categoryId: number): boolean {
-    const db = getDB();
-    db.run('DELETE FROM categories WHERE id = ?', [categoryId]);
-    const changes = db.getRowsModified();
-    saveDatabase();
-    return changes > 0;
-  },
-};
-
 export const orderService = {
   create(orderData: any): string {
     const db = getDB();
@@ -383,6 +351,7 @@ export const orderService = {
         items,
         total,
         status,
+        paymentMethod,
         shippingDetails, // Corrected from shipping_details to match JS conventions
         createdAt = new Date()
     } = orderData;
@@ -401,8 +370,8 @@ export const orderService = {
 
     db.run(
       `INSERT INTO orders (id, customer_id, customer_name, customer_email, customer_phone, customer_doc_number, items, total, status, created_at, 
-        shipping_street_name, shipping_street_number, shipping_apartment, shipping_description, shipping_city, shipping_postal_code, shipping_province, shipping_cost, shipping_name, shipping_details)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+        shipping_street_name, shipping_street_number, shipping_apartment, shipping_description, shipping_city, shipping_postal_code, shipping_province, shipping_cost, shipping_name, shipping_details, payment_method)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       [
         orderId,
         customerId,
@@ -423,17 +392,48 @@ export const orderService = {
         shippingProvince,
         shippingCost,
         shippingName,
-        shippingDetails || null
+        shippingDetails || null,
+        paymentMethod || null
       ]
     );
     saveDatabase();
     return orderId;
   },
 
-  getAll(): Order[] {
+  getAll(filters: { status?: string; searchTerm?: string; page?: number; limit?: number }): { orders: Order[], totalPages: number, currentPage: number, totalOrders: number } {
     const db = getDB();
-    const rows = toObjects(db.exec("SELECT * FROM orders ORDER BY created_at DESC"));
-    return rows.map(parseOrder);
+    const { status, searchTerm, page = 1, limit = 15 } = filters;
+
+    const whereClauses: string[] = [];
+    const params: (string | number)[] = [];
+
+    if (status) {
+      whereClauses.push("status = ?");
+      params.push(status);
+    }
+
+    if (searchTerm) {
+      whereClauses.push("(id LIKE ? OR customer_name LIKE ? OR customer_email LIKE ?)");
+      const searchTermLike = `%${searchTerm}%`;
+      params.push(searchTermLike, searchTermLike, searchTermLike);
+    }
+
+    const where = whereClauses.length > 0 ? `WHERE ${whereClauses.join(" AND ")}` : "";
+    
+    const offset = (page - 1) * limit;
+
+    const ordersQuery = `SELECT * FROM orders ${where} ORDER BY created_at DESC LIMIT ? OFFSET ?`;
+    const orders = toObjects(db.exec(ordersQuery, [...params, limit, offset])).map(parseOrder);
+
+    const countQuery = `SELECT COUNT(*) as total FROM orders ${where}`;
+    const totalResult = toObjects(db.exec(countQuery, params))[0] as { total: number };
+
+    return {
+      orders,
+      totalPages: Math.ceil(totalResult.total / limit),
+      currentPage: page,
+      totalOrders: totalResult.total
+    };
   },
 
   updateStatus(orderId: string, status: string): boolean {
@@ -458,12 +458,37 @@ export const orderService = {
     return rows.map(parseOrder);
   },
 };
-
+  
 export const customerService = {
-  getAll(): Customer[] {
+  getAll(filters: { searchTerm?: string; page?: number; limit?: number }): { customers: Customer[], totalPages: number, currentPage: number, totalCustomers: number } {
     const db = getDB();
-    const rows = toObjects(db.exec("SELECT * FROM customers ORDER BY created_at DESC"));
-    return rows.map(parseCustomer);
+    const { searchTerm, page = 1, limit = 15 } = filters;
+
+    const whereClauses: string[] = [];
+    const params: (string | number)[] = [];
+
+    if (searchTerm) {
+      whereClauses.push("(name LIKE ? OR email LIKE ?)");
+      const searchTermLike = `%${searchTerm}%`;
+      params.push(searchTermLike, searchTermLike);
+    }
+
+    const where = whereClauses.length > 0 ? `WHERE ${whereClauses.join(" AND ")}` : "";
+    
+    const offset = (page - 1) * limit;
+
+    const customersQuery = `SELECT * FROM customers ${where} ORDER BY created_at DESC LIMIT ? OFFSET ?`;
+    const customers = toObjects(db.exec(customersQuery, [...params, limit, offset])).map(parseCustomer);
+
+    const countQuery = `SELECT COUNT(*) as total FROM customers ${where}`;
+    const totalResult = toObjects(db.exec(countQuery, params))[0] as { total: number };
+    
+    return {
+      customers,
+      totalPages: Math.ceil(totalResult.total / limit),
+      currentPage: page,
+      totalCustomers: totalResult.total,
+    };
   },
 
   findOrCreate(customerData: { email: string; name: string; phone: string; }): number {
@@ -513,15 +538,32 @@ export const customerService = {
 };
 
 export const dashboardService = {
-  getStats(): { totalRevenue: number; totalOrders: number; totalCustomers: number } {
+  getStats(): {
+    totalRevenue: number;
+    totalOrders: number;
+    totalCustomers: number;
+    orderStatusCounts: { [key: string]: number };
+    productCount: number;
+  } {
     const db = getDB();
     const revenue = toObjects(db.exec("SELECT SUM(total) as total FROM orders WHERE status = 'paid'"))[0];
     const orders = toObjects(db.exec("SELECT COUNT(*) as total FROM orders"))[0];
     const customers = toObjects(db.exec("SELECT COUNT(*) as total FROM customers"))[0];
+    const products = toObjects(db.exec("SELECT COUNT(*) as total FROM products WHERE is_active = 1"))[0];
+
+    const statusCountsResult = toObjects(db.exec("SELECT status, COUNT(*) as count FROM orders GROUP BY status"));
+
+    const orderStatusCounts = statusCountsResult.reduce((acc: { [key: string]: number }, row: any) => {
+        acc[row.status] = row.count;
+        return acc;
+    }, {});
+
     return {
       totalRevenue: revenue?.total || 0,
       totalOrders: orders?.total || 0,
       totalCustomers: customers?.total || 0,
+      productCount: products?.total || 0,
+      orderStatusCounts,
     };
   },
 

@@ -5,6 +5,8 @@ import { useCart } from "../hooks/useCart";
 import { CartItem as CartItemType } from "../../server/types";
 import { CadeteDaySelector } from "../components/CadeteDaySelector";
 
+import { useSettings } from "../hooks/useSettings";
+
 interface ShippingOption {
   id: string;
   name: string;
@@ -19,6 +21,7 @@ interface DayOption {
 const CheckoutPage: React.FC = () => {
   const navigate = useNavigate();
   const { cartItems, getTotalPrice } = useCart();
+  const { settings, loading: settingsLoading } = useSettings();
   const subtotal = getTotalPrice();
 
   const [formData, setFormData] = useState({
@@ -69,7 +72,7 @@ const CheckoutPage: React.FC = () => {
   };
 
   const handleCalculateShipping = useCallback(async () => {
-    if (formData.postalCode.length < 4) return;
+    if (formData.postalCode.length < 4 || settingsLoading) return;
 
     setIsCalculatingShipping(true);
     setShippingOptions([]);
@@ -78,9 +81,11 @@ const CheckoutPage: React.FC = () => {
     setError(null);
 
     if (formData.postalCode === '2000') {
+      const costCadete = Number(settings.shipping_cost_cadete) || 3500;
+      const costCorreo = Number(settings.shipping_cost_correo) || 4900;
       const rosarioOptions: ShippingOption[] = [
-        { id: 'cadete', name: 'Cadete', cost: 3500 },
-        { id: 'correo', name: 'Correo Argentino', cost: 4900 },
+        { id: 'cadete', name: 'Cadete', cost: costCadete },
+        { id: 'correo', name: 'Correo Argentino', cost: costCorreo },
         { id: 'retiro', name: 'Punto de retiro', cost: 0 },
       ];
       setShippingOptions(rosarioOptions);

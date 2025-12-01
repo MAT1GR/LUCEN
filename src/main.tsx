@@ -2,11 +2,14 @@ import { createRoot } from 'react-dom/client';
 import App from './App.tsx';
 import './index.css';
 import { HelmetProvider } from 'react-helmet-async';
+import { SettingsProvider } from './hooks/useSettings.tsx';
 
 // SIMPLEMENTE HEMOS QUITADO LAS ETIQUETAS <React.StrictMode> QUE ENVOLVÍAN A <App />
 createRoot(document.getElementById('root')!).render(
   <HelmetProvider>
-    <App />
+    <SettingsProvider>
+      <App />
+    </SettingsProvider>
   </HelmetProvider>
 );
 

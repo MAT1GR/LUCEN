@@ -101,8 +101,8 @@ const createMercadoPagoPreference = async (req: Request, res: Response) => {
       shippingPostalCode: shippingInfo.postalCode || null,
       shippingProvince: shippingInfo.province || null,
       shippingCost: safeShippingCost,
-      shippingName: shipping?.name || 'No especificado',
       shippingDetails: shippingDetails || null,
+      paymentMethod: 'mercado-pago',
       createdAt: new Date(),
     });
 
@@ -244,6 +244,7 @@ const createTransferOrder = async (req: Request, res: Response) => {
       shippingCost: shippingCost,
       shippingName: shipping.name || 'No especificado',
       shippingDetails: shippingDetails || null,
+      paymentMethod: 'transferencia',
       createdAt: new Date(),
     });
 

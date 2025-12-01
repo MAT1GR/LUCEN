@@ -69,7 +69,6 @@ const __dirname = path.resolve();
 // --- Import rutas (.js obligatorio para dist) ---
 import authRoutes from './routes/auth.js';
 import productRoutes from './routes/products.js';
-import categoryRoutes from './routes/categories.js';
 import orderRoutes from './routes/orders.js';
 import customerRoutes from './routes/customers.js';
 import settingsRoutes from './routes/settings.js';
@@ -94,7 +93,6 @@ app.use('/api/uploads', express.static(path.join(__dirname, 'public', 'uploads')
 // --- Prefijo /api para Vite ---
 app.use('/api/auth', authRoutes);
 app.use('/api/products', productRoutes);
-app.use('/api/categories', categoryRoutes);
 app.use('/api/orders', orderRoutes);
 app.use('/api/customers', customerRoutes);
 app.use('/api/settings', settingsRoutes);
