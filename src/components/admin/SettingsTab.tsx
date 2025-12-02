@@ -106,7 +106,7 @@ export const SettingsTab: React.FC = () => {
                     <InputField label="Costo de Envío (Cadete en Rosario)" type="number" name="shipping_cost_cadete" value={settings.shipping_cost_cadete?.value || ''} onChange={handleChange} />
                     <InputField label="Costo de Envío (Correo Argentino)" type="number" name="shipping_cost_correo" value={settings.shipping_cost_correo?.value || ''} onChange={handleChange} />
 
-                    <button onClick={handleSaveSettings} disabled={isSaving} className="px-6 py-2 bg-[#D8A7B1] text-white rounded hover:bg-[#c69ba5] !mt-6">
+                    <button onClick={handleSaveSettings} disabled={isSaving} className="px-6 py-2 bg-black text-white rounded hover:bg-gray-800 !mt-6">
                         {isSaving ? 'Guardando...' : 'Guardar Cambios'}
                     </button>
                 </div>
@@ -126,7 +126,7 @@ export const SettingsTab: React.FC = () => {
                                 {passwordMessage.text}
                             </div>
                         )}
-                        <button type="submit" disabled={isSaving} className="px-6 py-2 bg-[#D8A7B1] text-white rounded hover:bg-[#c69ba5]">
+                        <button type="submit" disabled={isSaving} className="px-6 py-2 bg-black text-white rounded hover:bg-gray-800">
                             {isSaving ? 'Actualizando...' : 'Actualizar Contraseña'}
                         </button>
                     </form>

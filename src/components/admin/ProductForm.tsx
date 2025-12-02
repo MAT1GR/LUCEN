@@ -215,11 +215,11 @@ export const ProductForm: React.FC<ProductFormProps> = ({ product, onClose, onSa
                 <div className="space-y-4">
                   <div>
                     <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-1">Nombre del Producto <span className="text-red-500">*</span></label>
-                    <input id="name" name="name" value={formData.name} onChange={handleChange} placeholder="Ej: Jean Mom Fit Vintage" className="w-full p-2 border border-gray-300 rounded-md focus:ring-[#D8A7B1] focus:border-[#D8A7B1]" required />
+                    <input id="name" name="name" value={formData.name} onChange={handleChange} placeholder="Ej: Jean Mom Fit Vintage" className="w-full p-2 border border-gray-300 rounded-md focus:ring-black focus:border-black" required />
                   </div>
                   <div>
                     <label htmlFor="description" className="block text-sm font-medium text-gray-700 mb-1">Descripción <span className="text-red-500">*</span></label>
-                    <textarea id="description" name="description" value={formData.description} onChange={handleChange} placeholder="Descripción detallada del producto." className="w-full p-2 border border-gray-300 rounded-md focus:ring-[#D8A7B1] focus:border-[#D8A7B1]" rows={4} required />
+                    <textarea id="description" name="description" value={formData.description} onChange={handleChange} placeholder="Descripción detallada del producto." className="w-full p-2 border border-gray-300 rounded-md focus:ring-black focus:border-black" rows={4} required />
                   </div>
                 </div>
               </div>
@@ -229,33 +229,33 @@ export const ProductForm: React.FC<ProductFormProps> = ({ product, onClose, onSa
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
                   <div>
                     <label htmlFor="category" className="block text-sm font-medium text-gray-700 mb-1">Categoría <span className="text-red-500">*</span></label>
-                    <input id="category" name="category" value={formData.category} onChange={handleChange} placeholder="Ej: Jeans" className="w-full p-2 border border-gray-300 rounded-md focus:ring-[#D8A7B1] focus:border-[#D8A7B1]" required />
+                    <input id="category" name="category" value={formData.category} onChange={handleChange} placeholder="Ej: Jeans" className="w-full p-2 border border-gray-300 rounded-md focus:ring-black focus:border-black" required />
                   </div>
                   <div>
                     <label htmlFor="material" className="block text-sm font-medium text-gray-700 mb-1">Material</label>
-                    <input id="material" name="material" value={formData.material} onChange={handleChange} placeholder="Ej: Denim Rígido" className="w-full p-2 border border-gray-300 rounded-md focus:ring-[#D8A7B1] focus:border-[#D8A7B1]" />
+                    <input id="material" name="material" value={formData.material} onChange={handleChange} placeholder="Ej: Denim Rígido" className="w-full p-2 border border-gray-300 rounded-md focus:ring-black focus:border-black" />
                   </div>
                   <div>
                     <label htmlFor="fit" className="block text-sm font-medium text-gray-700 mb-1">Calce</label>
-                    <input id="fit" name="fit" value={formData.fit} onChange={handleChange} placeholder="Ej: Mom Fit" className="w-full p-2 border border-gray-300 rounded-md focus:ring-[#D8A7B1] focus:border-[#D8A7B1]" />
+                    <input id="fit" name="fit" value={formData.fit} onChange={handleChange} placeholder="Ej: Mom Fit" className="w-full p-2 border border-gray-300 rounded-md focus:ring-black focus:border-black" />
                   </div>
                 </div>
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
                   <div>
                     <label htmlFor="length" className="block text-sm font-medium text-gray-700 mb-1">Alto (cm)</label>
-                    <input id="length" name="length" type="number" value={formData.length} onChange={handleChange} placeholder="105" className="w-full p-2 border border-gray-300 rounded-md focus:ring-[#D8A7B1] focus:border-[#D8A7B1]" />
+                    <input id="length" name="length" type="number" value={formData.length} onChange={handleChange} placeholder="105" className="w-full p-2 border border-gray-300 rounded-md focus:ring-black focus:border-black" />
                   </div>
                   <div className="flex flex-col">
                     <label htmlFor="waist_flat" className="block text-sm font-medium text-gray-700 mb-1">Cintura (cm)</label>
-                    <input id="waist_flat" name="waist_flat" type="number" value={formData.waist_flat} onChange={handleChange} placeholder="38" className="w-full p-2 border border-gray-300 rounded-md focus:ring-[#D8A7B1] focus:border-[#D8A7B1]" />
+                    <input id="waist_flat" name="waist_flat" type="number" value={formData.waist_flat} onChange={handleChange} placeholder="38" className="w-full p-2 border border-gray-300 rounded-md focus:ring-black focus:border-black" />
                     <label className="flex items-center text-sm text-gray-600 mt-2">
-                      <input type="checkbox" name="isWaistStretchy" checked={formData.isWaistStretchy} onChange={handleChange} className="h-4 w-4 text-[#D8A7B1] focus:ring-[#D8A7B1] border-gray-300 rounded"/>
+                      <input type="checkbox" name="isWaistStretchy" checked={formData.isWaistStretchy} onChange={handleChange} className="h-4 w-4 text-black focus:ring-black border-gray-300 rounded"/>
                       <span className="ml-2">Elastizado</span>
                     </label>
                   </div>
                   <div>
                     <label htmlFor="rise" className="block text-sm font-medium text-gray-700 mb-1">Tiro</label>
-                    <select id="rise" name="rise" value={formData.rise} onChange={handleChange} className="w-full p-2 border border-gray-300 rounded-md focus:ring-[#D8A7B1] focus:border-[#D8A7B1]">
+                    <select id="rise" name="rise" value={formData.rise} onChange={handleChange} className="w-full p-2 border border-gray-300 rounded-md focus:ring-black focus:border-black">
                       <option value="Bajo">Bajo</option>
                       <option value="Medio">Medio</option>
                       <option value="Alto">Alto</option>
@@ -263,7 +263,7 @@ export const ProductForm: React.FC<ProductFormProps> = ({ product, onClose, onSa
                   </div>
                   <div>
                     <label htmlFor="rise_cm" className="block text-sm font-medium text-gray-700 mb-1">Tiro (cm)</label>
-                    <input id="rise_cm" name="rise_cm" type="number" value={formData.rise_cm} onChange={handleChange} placeholder="30" className="w-full p-2 border border-gray-300 rounded-md focus:ring-[#D8A7B1] focus:border-[#D8A7B1]" />
+                    <input id="rise_cm" name="rise_cm" type="number" value={formData.rise_cm} onChange={handleChange} placeholder="30" className="w-full p-2 border border-gray-300 rounded-md focus:ring-black focus:border-black" />
                   </div>
                 </div>
               </div>
@@ -273,7 +273,7 @@ export const ProductForm: React.FC<ProductFormProps> = ({ product, onClose, onSa
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div>
                       <label htmlFor="price" className="block text-sm font-medium text-gray-700 mb-1">Precio <span className="text-red-500">*</span></label>
-                      <input id="price" name="price" type="number" value={formData.price} onChange={handleChange} placeholder="Ej: 8500" className="w-full p-2 border border-gray-300 rounded-md focus:ring-[#D8A7B1] focus:border-[#D8A7B1]" required />
+                      <input id="price" name="price" type="number" value={formData.price} onChange={handleChange} placeholder="Ej: 8500" className="w-full p-2 border border-gray-300 rounded-md focus:ring-black focus:border-black" required />
                     </div>
                     <div className="space-y-2">
                         <h4 className="text-sm font-medium text-gray-700">Tallas Disponibles</h4>
@@ -288,12 +288,12 @@ export const ProductForm: React.FC<ProductFormProps> = ({ product, onClose, onSa
                                 <input value={row.stock} type="number" onChange={(e) => handleSizeChange(index, 'stock', Number(e.target.value))} placeholder="Stock" className="w-full p-2 border border-gray-300 rounded-md text-sm"/>
                               </div>
                               <label className="col-span-2 flex items-center justify-center text-xs gap-1">
-                                  <input type="checkbox" checked={row.available} onChange={(e) => handleSizeChange(index, 'available', e.target.checked)} className="h-4 w-4 text-[#D8A7B1] focus:ring-[#D8A7B1] border-gray-300 rounded"/>
+                                  <input type="checkbox" checked={row.available} onChange={(e) => handleSizeChange(index, 'available', e.target.checked)} className="h-4 w-4 text-black focus:ring-black border-gray-300 rounded"/>
                               </label>
                               <button type="button" onClick={() => removeSizeRow(index)} className="col-span-1 text-red-500 hover:text-red-700 justify-self-end"><Trash2 size={16}/></button>
                           </div>
                         ))}
-                        <button type="button" onClick={addSizeRow} className="mt-2 flex items-center gap-2 text-sm font-semibold text-[#D8A7B1] hover:text-[#b98d97] px-3 py-1.5 rounded-md border border-dashed border-[#D8A7B1]/50">
+                        <button type="button" onClick={addSizeRow} className="mt-2 flex items-center gap-2 text-sm font-semibold text-black hover:text-gray-800 px-3 py-1.5 rounded-md border border-dashed border-black/50">
                             <Plus size={16}/> Añadir Talle
                         </button>
                     </div>
@@ -330,7 +330,7 @@ export const ProductForm: React.FC<ProductFormProps> = ({ product, onClose, onSa
                       <button type="button" onClick={() => removeFaq(index)} className="absolute -top-2 -right-2 bg-red-600 text-white rounded-full p-1"><Trash2 size={12}/></button>
                     </div>
                   ))}
-                  <button type="button" onClick={addFaq} className="mt-2 flex items-center gap-2 text-sm font-semibold text-[#D8A7B1] hover:text-[#b98d97] px-3 py-1.5 rounded-md border border-dashed border-[#D8A7B1]/50">
+                  <button type="button" onClick={addFaq} className="mt-2 flex items-center gap-2 text-sm font-semibold text-black hover:text-gray-800 px-3 py-1.5 rounded-md border border-dashed border-black/50">
                       <Plus size={16}/> Añadir Pregunta
                   </button>
                 </div>
@@ -370,8 +370,7 @@ export const ProductForm: React.FC<ProductFormProps> = ({ product, onClose, onSa
 
                     <div className="border-2 border-dashed rounded-lg p-6 text-center mt-2">
                       <UploadCloud className="mx-auto h-10 w-10 text-gray-400" />
-                      <label htmlFor="file-upload" className="mt-2 block text-sm font-semibold text-[#D8A7B1] hover:text-[#b98d97] cursor-pointer">
-                        Añadir imágenes
+                                             <label htmlFor="file-upload" className="mt-2 block text-sm font-semibold text-black hover:text-gray-800 cursor-pointer">                        Añadir imágenes
                         <input id="file-upload" name="newImages" type="file" multiple className="sr-only" onChange={handleNewImagesChange} accept="image/png, image/jpeg, image/webp" />
                       </label>
                       <p className="text-xs leading-5 text-gray-500 mt-1">PNG, JPG, WEBP</p>
@@ -391,7 +390,7 @@ export const ProductForm: React.FC<ProductFormProps> = ({ product, onClose, onSa
                     )}
                     <div className="border-2 border-dashed rounded-lg p-6 text-center">
                       <UploadCloud className="mx-auto h-10 w-10 text-gray-400" />
-                       <label htmlFor="video-upload" className="mt-2 block text-sm font-semibold text-[#D8A7B1] hover:text-[#b98d97] cursor-pointer">
+                       <label htmlFor="video-upload" className="mt-2 block text-sm font-semibold text-black hover:text-gray-800 cursor-pointer">
                         Añadir un video
                         <input id="video-upload" name="video" type="file" className="sr-only" onChange={handleVideoChange} accept="video/mp4,video/quicktime,video/webm" />
                       </label>
@@ -405,11 +404,11 @@ export const ProductForm: React.FC<ProductFormProps> = ({ product, onClose, onSa
                 <h3 className="text-xl font-semibold text-gray-800 mb-6">Visibilidad</h3>
                 <div className="space-y-4">
                   <label className="flex items-center text-gray-700 cursor-pointer">
-                    <input type="checkbox" name="isActive" checked={formData.isActive} onChange={handleChange} className="h-4 w-4 text-[#D8A7B1] focus:ring-[#D8A7B1] border-gray-300 rounded"/> 
+                    <input type="checkbox" name="isActive" checked={formData.isActive} onChange={handleChange} className="h-4 w-4 text-black focus:ring-black border-gray-300 rounded"/> 
                     <span className="ml-3 text-sm">Producto Activo (visible en la tienda)</span>
                   </label>
                   <label className="flex items-center text-gray-700 cursor-pointer">
-                    <input type="checkbox" name="isNew" checked={formData.isNew} onChange={handleChange} className="h-4 w-4 text-[#D8A7B1] focus:ring-[#D8A7B1] border-gray-300 rounded"/> 
+                    <input type="checkbox" name="isNew" checked={formData.isNew} onChange={handleChange} className="h-4 w-4 text-black focus:ring-black border-gray-300 rounded"/> 
                     <span className="ml-3 text-sm">Marcar como "Last Drop" (aparece en Homepage)</span>
                   </label>
                 </div>
@@ -424,7 +423,7 @@ export const ProductForm: React.FC<ProductFormProps> = ({ product, onClose, onSa
         <button type="button" onClick={onClose} className="px-6 py-2 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-100 transition-colors">
           Cancelar
         </button>
-        <button type="button" onClick={handleSubmit} disabled={isSaving} className="px-6 py-2 bg-[#D8A7B1] text-white rounded-md hover:bg-[#c69ba5] disabled:opacity-50 transition-colors flex items-center gap-2">
+        <button type="button" onClick={handleSubmit} disabled={isSaving} className="px-6 py-2 bg-black text-white rounded-md hover:bg-gray-800 disabled:opacity-50 transition-colors flex items-center gap-2">
           {isSaving ? 'Guardando...' : 'Guardar Producto'}
         </button>
       </footer>

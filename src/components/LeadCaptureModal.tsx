@@ -69,7 +69,6 @@ const LeadCaptureModal: React.FC<LeadCaptureModalProps> = ({ isOpen, onClose, on
                 type="tel"
                 value={phone}
                 onChange={(e) => setPhone(e.target.value)}
-                // CAMBIO REALIZADO: Placeholder limpio y directo
                 placeholder="Tu WhatsApp"
                 className="w-full pl-10 pr-4 py-3 border-2 border-gray-200 rounded-md focus:outline-none focus:border-black transition-colors font-medium"
                 required

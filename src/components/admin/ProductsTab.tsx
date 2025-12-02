@@ -161,7 +161,7 @@ export const ProductsTab: React.FC = () => {
     <div>
       <div className="flex justify-between items-center mb-6">
         <h2 className="text-2xl font-bold">Productos</h2>
-        <button onClick={() => handleOpenForm()} className="bg-[#D8A7B1] hover:bg-[#c69ba5] text-white px-4 py-2 rounded-lg flex items-center gap-2">
+        <button onClick={() => handleOpenForm()} className="bg-black hover:bg-gray-800 text-white px-4 py-2 rounded-lg flex items-center gap-2">
           <Plus size={20} /> Nuevo Producto
         </button>
       </div>

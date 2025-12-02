@@ -33,7 +33,7 @@ const AdminLogin: React.FC<AdminLoginProps> = ({ onLogin }) => {
     <div className="min-h-screen bg-gray-50 flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-md w-full space-y-8">
         <div className="text-center">
-          <div className="bg-[#D8A7B1] p-4 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-6">
+          <div className="bg-black p-4 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-6">
             <Lock className="text-white" size={32} />
           </div>
           <h2 className="text-3xl font-bold text-gray-900 mb-2">
@@ -61,7 +61,7 @@ const AdminLogin: React.FC<AdminLoginProps> = ({ onLogin }) => {
                   required
                   value={username}
                   onChange={(e) => setUsername(e.target.value)}
-                  className="appearance-none relative block w-full pl-10 pr-3 py-3 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#D8A7B1] focus:border-[#D8A7B1] focus:z-10"
+                  className="appearance-none relative block w-full pl-10 pr-3 py-3 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-lg focus:outline-none focus:ring-2 focus:ring-black focus:border-black focus:z-10"
                   placeholder="Ingresa tu usuario"
                 />
               </div>
@@ -82,7 +82,7 @@ const AdminLogin: React.FC<AdminLoginProps> = ({ onLogin }) => {
                   required
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="appearance-none relative block w-full pl-10 pr-10 py-3 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#D8A7B1] focus:border-[#D8A7B1] focus:z-10"
+                  className="appearance-none relative block w-full pl-10 pr-10 py-3 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-lg focus:outline-none focus:ring-2 focus:ring-black focus:border-black focus:z-10"
                   placeholder="Ingresa tu contraseña"
                 />
                 <button
@@ -110,7 +110,7 @@ const AdminLogin: React.FC<AdminLoginProps> = ({ onLogin }) => {
             <button
               type="submit"
               disabled={isLoading}
-              className="group relative w-full flex justify-center py-3 px-4 border border-transparent text-sm font-medium rounded-lg text-white bg-[#D8A7B1] hover:bg-[#c69ba5] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#D8A7B1] disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              className="group relative w-full flex justify-center py-3 px-4 border border-transparent text-sm font-medium rounded-lg text-white bg-black hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-black disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
             >
               {isLoading ? 'Iniciando sesión...' : 'Iniciar Sesión'}
             </button>

@@ -263,7 +263,7 @@ const ProductPage: React.FC = () => {
                 <div className="py-8 lg:py-0">
                   <Breadcrumbs product={product} />
   
-                  <h1 className="text-4xl font-bold tracking-tight">
+                  <h1 className="text-4xl font-black tracking-tight uppercase">
                     {product.name}
                   </h1>
   
