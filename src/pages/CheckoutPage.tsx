@@ -5,6 +5,7 @@ import { useCart } from "../hooks/useCart";
 import { CartItem as CartItemType } from "../../server/types";
 import { useSettings } from "../hooks/useSettings";
 import { CadeteDaySelector } from "../components/CadeteDaySelector";
+import { track } from '../lib/meta';
 
 interface ShippingOption {
   id: string;
@@ -45,6 +46,21 @@ const CheckoutPage: React.FC = () => {
   // Precio Total (Siempre es igual al subtotal porque envío es 0)
   const total = subtotal + (selectedShipping?.cost || 0);
   const totalWithDiscount = total * 0.9;
+
+  useEffect(() => {
+    track('InitiateCheckout', {
+        value: subtotal,
+        currency: 'ARS',
+        num_items: cartItems.reduce((sum, item) => sum + item.quantity, 0),
+        content_ids: cartItems.map(item => item.product.id),
+        contents: cartItems.map(item => ({
+            id: item.product.id,
+            quantity: item.quantity,
+            item_price: item.product.price
+        })),
+        content_type: 'product',
+    });
+  }, []); // Run only once to track the initiation
 
   useEffect(() => {
     if (cartItems.length === 0) { 

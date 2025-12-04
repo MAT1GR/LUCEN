@@ -97,6 +97,13 @@ export function initializeSchema() {
       email TEXT UNIQUE NOT NULL,
       created_at DATETIME DEFAULT CURRENT_TIMESTAMP
     );
+
+    CREATE TABLE IF NOT EXISTS analytics_events (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      event_name TEXT NOT NULL,
+      event_data TEXT,
+      created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+    );
   `;
   
   db.exec(createTablesSQL);
@@ -155,6 +162,19 @@ function runMigrations() {
       console.log('[DB] Migration skipped: phone column already exists.');
     } else {
       console.error('[DB] Migration for phone column failed:', e);
+    }
+  }
+
+  try {
+    // Migration 4: Add faqs to products table
+    console.log('[DB] Applying migration: Add faqs to products...');
+    db.run("ALTER TABLE products ADD COLUMN faqs TEXT DEFAULT '[]'");
+    console.log('[DB] Migration applied successfully: added faqs column.');
+  } catch (e: any) {
+    if (e.message && e.message.includes('duplicate column name')) {
+      console.log('[DB] Migration skipped: faqs column already exists.');
+    } else {
+      console.error('[DB] Migration for faqs column failed:', e);
     }
   }
   

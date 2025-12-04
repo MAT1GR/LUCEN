@@ -609,3 +609,38 @@ export const notificationService = {
     return toObjects(results);
   },
 };
+
+export const analyticsService = {
+  log(eventName: string, eventData: any): void {
+    const db = getDB();
+    db.run(
+      'INSERT INTO analytics_events (event_name, event_data) VALUES (?, ?)',
+      [eventName, JSON.stringify(eventData)]
+    );
+    // No need to save the database on every event, as it's not critical
+    // and would cause a performance bottleneck. It will be saved on graceful shutdown.
+  },
+
+  getFunnel(startDate: string, endDate: string): any {
+    const db = getDB();
+    const query = `
+      SELECT 
+        event_name, 
+        COUNT(id) as count
+      FROM analytics_events
+      WHERE created_at BETWEEN ? AND ?
+      GROUP BY event_name
+    `;
+    // Adjust endDate to be inclusive of the whole day
+    const inclusiveEndDate = `${endDate} 23:59:59`;
+    const results = toObjects(db.exec(query, [startDate, inclusiveEndDate]));
+    
+    // Format the results into a simple key-value object
+    const funnel = results.reduce((acc, row) => {
+      acc[row.event_name] = row.count;
+      return acc;
+    }, {});
+
+    return funnel;
+  },
+};

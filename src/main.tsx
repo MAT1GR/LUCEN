@@ -3,6 +3,12 @@ import App from './App.tsx';
 import './index.css';
 import { HelmetProvider } from 'react-helmet-async';
 import { SettingsProvider } from './hooks/useSettings.tsx';
+import { init, track } from './lib/meta.ts'; // Import meta helpers
+
+// Initialize Meta Pixel
+init();
+// Track the initial page view
+track('PageView');
 
 // SIMPLEMENTE HEMOS QUITADO LAS ETIQUETAS <React.StrictMode> QUE ENVOLVÍAN A <App />
 createRoot(document.getElementById('root')!).render(

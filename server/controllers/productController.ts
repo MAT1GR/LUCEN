@@ -152,6 +152,10 @@ export const updateProduct = async (req: Request, res: Response) => {
             productData.sizes = JSON.parse(productData.sizes);
         }
 
+        if (productData.faqs && typeof productData.faqs === 'string') {
+            productData.faqs = JSON.parse(productData.faqs);
+        }
+
         let finalImagePaths: string[] = [];
         if (existingImages && typeof existingImages === 'string') {
             try {

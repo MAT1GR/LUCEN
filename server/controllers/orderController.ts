@@ -254,16 +254,19 @@ export const getCustomerOrders = async (req: Request, res: Response) => {
 };
 
 export const cancelIfExpired = async (req: Request, res: Response) => {
+    console.log(`[cancelIfExpired] Received request for order ${req.params.id}`);
     try {
         const orderId = req.params.id;
         const order = db.orders.getById(orderId);
 
         if (!order) {
+            console.log(`[cancelIfExpired] Order ${orderId} not found.`);
             return res.status(404).json({ message: 'Pedido no encontrado.' });
         }
+        console.log(`[cancelIfExpired] Found order ${orderId} with status ${order.status} and payment method ${order.paymentMethod}.`);
 
-        // Only act on pending transfers
         if (order.paymentMethod !== 'transferencia' || order.status !== 'pending') {
+            console.log(`[cancelIfExpired] Order ${orderId} is not a pending transfer. Aborting cancellation.`);
             return res.status(400).json({ message: 'El pedido no es una transferencia pendiente.' });
         }
 
@@ -272,18 +275,19 @@ export const cancelIfExpired = async (req: Request, res: Response) => {
         const currentTime = new Date().getTime();
 
         if ((currentTime - orderTime) > fifteenMinutes) {
-            // Order has expired, proceed with cancellation
+            console.log(`[cancelIfExpired] Order ${orderId} has expired. Proceeding with cancellation and stock restoration.`);
             db.products.restoreProductStock(order.items);
             db.orders.updateStatus(orderId, 'cancelled');
             const updatedOrder = db.orders.getById(orderId);
-            console.log(`[Order Expiration] Order ${orderId} has been cancelled and stock restored.`);
+            console.log(`[cancelIfExpired] Order ${orderId} has been cancelled and stock restored.`);
             return res.json({ message: 'Pedido cancelado por expiración.', order: updatedOrder });
         }
-
+        
+        console.log(`[cancelIfExpired] Order ${orderId} has not expired yet.`);
         res.json({ message: 'El pedido aún no ha expirado.' });
 
     } catch (error) {
-        console.error("Error checking order expiration:", error);
+        console.error(`[cancelIfExpired] Error checking order expiration for ${req.params.id}:`, error);
         res.status(500).json({ message: 'Error al verificar la expiración del pedido.' });
     }
 };

@@ -75,6 +75,7 @@ import settingsRoutes from './routes/settings.js';
 import dashboardRoutes from './routes/dashboard.js';
 import shippingRoutes from './routes/shipping.js';
 import notificationRoutes from './routes/notifications.js';
+import analyticsRoutes from './routes/analytics.js';
 import paymentRoutes from './controllers/paymentController.js';
 
 const app = express();
@@ -99,6 +100,7 @@ app.use('/api/settings', settingsRoutes);
 app.use('/api/dashboard', dashboardRoutes);
 app.use('/api/shipping', shippingRoutes);
 app.use('/api/notifications', notificationRoutes);
+app.use('/api/analytics', analyticsRoutes);
 app.use('/api/payments', paymentRoutes);
 
 // --- Debug Endpoint ---

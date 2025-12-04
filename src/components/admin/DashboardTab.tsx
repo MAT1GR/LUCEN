@@ -4,8 +4,8 @@ import { Order, Customer } from '../../types';
 
 interface Stats {
   productCount: number;
-  orderCount: number;
-  customerCount: number;
+  totalOrders: number;
+  totalCustomers: number;
   totalRevenue: number;
   recentOrders: Order[];
   recentCustomers: Customer[];
@@ -19,17 +19,27 @@ interface StatCardProps {
   color: string;
 }
 
-const StatCard = ({ icon: Icon, title, value, color }: StatCardProps) => (
-    <div className="bg-white p-6 rounded-lg shadow-sm border flex items-center gap-4">
-        <div className={`bg-${color}-100 p-3 rounded-full`}>
-            <Icon className={`text-${color}-600`} size={24} />
+const colorStyles: { [key: string]: { bg: string; text: string } } = {
+  green: { bg: 'bg-green-100', text: 'text-green-600' },
+  blue: { bg: 'bg-blue-100', text: 'text-blue-600' },
+  purple: { bg: 'bg-purple-100', text: 'text-purple-600' },
+  orange: { bg: 'bg-orange-100', text: 'text-orange-600' },
+};
+
+const StatCard = ({ icon: Icon, title, value, color }: StatCardProps) => {
+    const styles = colorStyles[color] || colorStyles.green;
+    return (
+        <div className="bg-white p-6 rounded-lg shadow-sm border flex items-center gap-4">
+            <div className={`${styles.bg} p-3 rounded-full`}>
+                <Icon className={styles.text} size={24} />
+            </div>
+            <div>
+                <p className="text-sm text-gray-600">{title}</p>
+                <p className="text-2xl font-bold text-gray-900">{value}</p>
+            </div>
         </div>
-        <div>
-            <p className="text-sm text-gray-600">{title}</p>
-            <p className="text-2xl font-bold text-gray-900">{value}</p>
-        </div>
-    </div>
-);
+    );
+};
 
 const statusDetails: { [key: string]: { icon: React.ElementType, label: string, color: string } } = {
     pending: { icon: Clock, label: 'Pendientes', color: 'yellow' },
@@ -37,14 +47,15 @@ const statusDetails: { [key: string]: { icon: React.ElementType, label: string, 
     shipped: { icon: Truck, label: 'Enviadas', color: 'blue' },
     delivered: { icon: CheckCircle, label: 'Entregadas', color: 'purple' },
     cancelled: { icon: XCircle, label: 'Canceladas', color: 'red' },
+    awaiting_confirmation: { icon: Clock, label: 'Por Confirmar', color: 'indigo' },
 };
 
 const OrderStatusSummary: React.FC<{ counts: { [key: string]: number } }> = ({ counts }) => (
     <div className="mt-8">
         <h3 className="font-bold text-lg mb-4">Estado de los Pedidos</h3>
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
             {Object.entries(statusDetails).map(([status, { icon: Icon, label, color }]) => (
-                <div key={status} className="bg-white p-4 rounded-lg shadow-sm border flex flex-col items-center justify-center">
+                <div key={status} className={`bg-white p-4 rounded-lg shadow-sm border flex flex-col items-center justify-center`}>
                     <Icon className={`text-${color}-500 mb-2`} size={28} />
                     <p className="text-2xl font-bold text-gray-900">{counts[status] || 0}</p>
                     <p className="text-sm text-gray-600">{label}</p>
@@ -73,6 +84,7 @@ const RecentActivity: React.FC<{ orders: Order[], customers: Customer[] }> = ({ 
                                 order.status === 'shipped' ? 'bg-blue-100 text-blue-800' :
                                 order.status === 'paid' ? 'bg-green-100 text-green-800' :
                                 order.status === 'cancelled' ? 'bg-red-100 text-red-800' :
+                                order.status === 'awaiting_confirmation' ? 'bg-indigo-100 text-indigo-800' :
                                 'bg-yellow-100 text-yellow-800'
                             }`}>{order.status}</span>
                         </div>
@@ -133,8 +145,8 @@ export const DashboardTab: React.FC = () => {
             <h2 className="text-2xl font-bold mb-6">Dashboard</h2>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                 <StatCard icon={DollarSign} title="Ingresos Totales" value={`$${stats.totalRevenue.toLocaleString('es-AR')}`} color="green" />
-                <StatCard icon={ShoppingCart} title="Pedidos Totales" value={stats.orderCount} color="blue" />
-                <StatCard icon={Users} title="Clientes Totales" value={stats.customerCount} color="purple" />
+                <StatCard icon={ShoppingCart} title="Pedidos Totales" value={stats.totalOrders} color="blue" />
+                <StatCard icon={Users} title="Clientes Totales" value={stats.totalCustomers} color="purple" />
                 <StatCard icon={Package} title="Productos Activos" value={stats.productCount} color="orange" />
             </div>
 

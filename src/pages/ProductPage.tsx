@@ -36,6 +36,11 @@ const ProductMeasurements: React.FC<{ product: Product }> = ({ product }) => {
           <span className="font-medium">{measurements.alto} cm</span>
         </div>
       </div>
+
+      <div className="text-center mt-6">
+                  <Link to="/tallas" className="text-sm text-gray-500 hover:text-black hover:underline transition-colors">
+                    Ver guía de talles
+                  </Link>      </div>
     </div>
   );
 };
@@ -64,6 +69,7 @@ import { useScrollAnimation } from "../hooks/useScrollAnimation";
 import ProductCard from "../components/ProductCard";
 import { Helmet } from 'react-helmet-async';
 import Accordion from '../components/Accordion'; // Import the Accordion component
+import { track } from '../lib/meta'; // Import meta tracker
 
 interface ShippingOption {
   id: string;
@@ -201,6 +207,18 @@ const ProductPage: React.FC = () => {
       setShowSuccess(true);
       setTimeout(() => setShowSuccess(false), 2000);
     };
+
+    useEffect(() => {
+        if (product) {
+            track('ViewContent', {
+                content_name: product.name,
+                content_ids: [product.id],
+                content_type: 'product',
+                value: product.price,
+                currency: 'ARS',
+            });
+        }
+    }, [product]);
 
     const handleCalculateShipping = async () => {
       if (!postalCode) return;

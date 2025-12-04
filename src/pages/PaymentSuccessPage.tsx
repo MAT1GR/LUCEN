@@ -3,6 +3,7 @@ import { Link, useLocation } from 'react-router-dom';
 import { CheckCircle, Truck, Mail, Package, ShoppingCart } from 'lucide-react';
 import { useCart } from '../hooks/useCart.tsx';
 import { Order, CartItem } from '../../server/types/index.js';
+import { track } from '../lib/meta';
 
 const SkeletonLoader: React.FC = () => (
     <div className="animate-pulse">
@@ -70,6 +71,24 @@ const PaymentSuccessPage: React.FC = () => {
         };
 
     }, [clearCart, location.search, order]); // Añadido 'order' a dependencias para manejar el flujo
+
+    useEffect(() => {
+        if (order) {
+            track('Purchase', {
+                value: order.total,
+                currency: 'ARS',
+                num_items: order.items.reduce((sum, item) => sum + item.quantity, 0),
+                content_ids: order.items.map(item => item.product.id),
+                contents: order.items.map(item => ({
+                    id: item.product.id,
+                    quantity: item.quantity,
+                    item_price: item.product.price
+                })),
+                content_type: 'product',
+                order_id: order.id,
+            });
+        }
+    }, [order]);
 
     const getImageUrl = (imagePath: string) => {
         if (!imagePath) return '';

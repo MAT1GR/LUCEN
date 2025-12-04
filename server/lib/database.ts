@@ -5,7 +5,8 @@ import {
     customerService,
     settingsService,
     dashboardService,
-    notificationService
+    notificationService,
+    analyticsService
 } from './db/services.js';
 
 export const db = {
@@ -16,5 +17,6 @@ export const db = {
   settings: settingsService,
   dashboard: dashboardService,
   notifications: notificationService,
+  analytics: analyticsService,
 };
 

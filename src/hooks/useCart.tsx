@@ -1,5 +1,6 @@
 import React, { useState, useEffect, createContext, useContext, ReactNode } from 'react';
 import { CartItem, Product } from '../../server/types';
+import { track } from '../lib/meta'; // Import meta tracker
 
 interface CartContextType {
   cartItems: CartItem[];
@@ -35,6 +36,13 @@ export const CartProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   }, [cartItems]);
 
   const addToCart = (product: Product, size: string, quantity: number = 1) => {
+    track('AddToCart', {
+        content_name: product.name,
+        content_ids: [product.id],
+        content_type: 'product',
+        value: product.price,
+        currency: 'ARS',
+    });
     setIsAdding(true);
     setCartItems(prev => {
       const existingItem = prev.find(item => item.product.id === product.id && item.size === size);
