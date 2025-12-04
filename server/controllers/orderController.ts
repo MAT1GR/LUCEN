@@ -219,7 +219,20 @@ export const getOrderById = async (req: Request, res: Response) => {
     try {
         const orderId = req.params.id;
         const order = db.orders.getById(orderId);
+
         if (order) {
+            // If the order is for a bank transfer, inject bank details from environment variables
+            if (order.paymentMethod === 'transferencia') {
+                const bankDetails = {
+                    bank: process.env.TRANSFER_BANK_NAME,
+                    cvu: process.env.TRANSFER_CVU,
+                    alias: process.env.TRANSFER_ALIAS,
+                    titular: process.env.TRANSFER_HOLDER_NAME,
+                    cuit: process.env.TRANSFER_HOLDER_CUIT,
+                };
+                // Attach bank details to the order object being sent to the client
+                (order as any).bankDetails = bankDetails;
+            }
             res.json(order);
         } else {
             res.status(404).json({ message: 'Pedido no encontrado.' });
@@ -272,5 +285,20 @@ export const cancelIfExpired = async (req: Request, res: Response) => {
     } catch (error) {
         console.error("Error checking order expiration:", error);
         res.status(500).json({ message: 'Error al verificar la expiración del pedido.' });
+    }
+};
+
+export const confirmPayment = async (req: Request, res: Response) => {
+    try {
+        const orderId = req.params.id;
+        const updated = db.orders.updateStatus(orderId, 'awaiting_confirmation');
+        if (updated) {
+            res.json({ message: 'El estado del pedido se ha actualizado a "en espera de confirmación".' });
+        } else {
+            res.status(404).json({ message: 'Pedido no encontrado' });
+        }
+    } catch (error) {
+        console.error("Error confirming payment:", error);
+        res.status(500).json({ message: 'Error al confirmar el pago del pedido.' });
     }
 };

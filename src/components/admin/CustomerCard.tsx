@@ -1,6 +1,6 @@
 import React from 'react';
 import { Customer } from '../../types';
-import { Mail, Phone, ShoppingBag, DollarSign, User } from 'lucide-react';
+import { Mail, Phone, ShoppingCart, DollarSign, User } from 'lucide-react';
 
 interface CustomerCardProps {
     customer: Customer;
@@ -39,7 +39,7 @@ export const CustomerCard: React.FC<CustomerCardProps> = ({ customer, onSelectCu
                      <div className="flex flex-col">
                         <span className="text-xs text-gray-500 mb-1">Pedidos</span>
                         <div className="flex items-center gap-2 font-medium text-gray-700">
-                           <ShoppingBag size={14} />
+                           <ShoppingCart size={14} />
                            <span>{customer.order_count || 0}</span>
                         </div>
                     </div>

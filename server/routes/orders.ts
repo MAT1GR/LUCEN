@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { getAllOrders, updateOrderStatus, getCustomerOrders, createOrder, getOrderById, cancelIfExpired } from '../controllers/orderController.js';
+import { getAllOrders, updateOrderStatus, getCustomerOrders, createOrder, getOrderById, cancelIfExpired, confirmPayment } from '../controllers/orderController.js';
 
 const router = Router();
 
@@ -8,6 +8,7 @@ router.get('/', getAllOrders);
 router.get('/:id', getOrderById);
 router.get('/customer/:id', getCustomerOrders);
 router.put('/:id/status', updateOrderStatus);
+router.post('/:id/confirm-payment', confirmPayment);
 router.post('/:id/cancel-if-expired', cancelIfExpired);
 
 export default router;

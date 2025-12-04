@@ -66,7 +66,7 @@ const CheckoutPage: React.FC = () => {
       if (formData.postalCode === '2000' || formData.postalCode.startsWith('2000')) {
          setIsRosario(true);
          setShippingOptions([]);
-         setSelectedShipping({ id: 'cadete', name: 'Cadete (Solo Rosario) - GRATIS', cost: 0 }); // Pre-seleccionar Cadete
+         setSelectedShipping({ id: 'cadete', name: 'Cadete (Solo Rosario)', cost: 0 }); // Pre-seleccionar Cadete
       } else {
         setIsRosario(false);
         const response = await fetch("/api/shipping/calculate", {

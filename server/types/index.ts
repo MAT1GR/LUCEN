@@ -58,7 +58,7 @@ export interface Order {
   customerDocNumber?: string;
   items: CartItem[];
   total: number;
-  status: "pending" | "paid" | "shipped" | "delivered" | "cancelled";
+  status: "pending" | "paid" | "shipped" | "delivered" | "cancelled" | "awaiting_confirmation";
   shippingStreetName?: string;
   shippingStreetNumber?: string;
   shippingApartment?: string;

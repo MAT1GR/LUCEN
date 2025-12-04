@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
 
 interface Subscriber {
-  name: string; // Added name
-  email: string;
+  name: string;
+  phone?: string;
+  email?: string;
 }
 
 const SubscribersTab: React.FC = () => {
@@ -18,7 +19,6 @@ const SubscribersTab: React.FC = () => {
         if (!response.ok) {
           throw new Error('No se pudo obtener la lista de suscriptores.');
         }
-        // The backend now returns { name, email } objects
         const data: Subscriber[] = await response.json();
         setSubscribers(data);
       } catch (err: any) {
@@ -47,7 +47,7 @@ const SubscribersTab: React.FC = () => {
                   Nombre
                 </th>
                 <th scope="col" className="px-6 py-3">
-                  Email
+                  Contacto (Teléfono/Email)
                 </th>
               </tr>
             </thead>
@@ -59,7 +59,7 @@ const SubscribersTab: React.FC = () => {
                       {subscriber.name}
                     </td>
                     <td className="px-6 py-4 font-medium text-gray-900">
-                      {subscriber.email}
+                      {subscriber.phone || subscriber.email}
                     </td>
                   </tr>
                 ))

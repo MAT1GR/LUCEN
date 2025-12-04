@@ -143,16 +143,27 @@ export const updateProduct = async (req: Request, res: Response) => {
             const parsed = parseInt(productData.rise_cm, 10);
             productData.rise_cm = isNaN(parsed) ? null : parsed;
         }
-        if (productData.isNew) productData.isNew = productData.isNew === 'true';
-        if (productData.isBestSeller) productData.isBestSeller = productData.isBestSeller === 'true';
-        if (productData.isActive) productData.isActive = productData.isActive === 'true';
-        if (productData.isWaistStretchy) productData.isWaistStretchy = productData.isWaistStretchy === 'true';
+        if (productData.hasOwnProperty('isNew')) productData.isNew = productData.isNew === 'true';
+        if (productData.hasOwnProperty('isBestSeller')) productData.isBestSeller = productData.isBestSeller === 'true';
+        if (productData.hasOwnProperty('isActive')) productData.isActive = productData.isActive === 'true';
+        if (productData.hasOwnProperty('isWaistStretchy')) productData.isWaistStretchy = productData.isWaistStretchy === 'true';
 
         if (productData.sizes && typeof productData.sizes === 'string') {
             productData.sizes = JSON.parse(productData.sizes);
         }
 
-        let finalImagePaths = existingImages ? JSON.parse(existingImages) : [];
+        let finalImagePaths: string[] = [];
+        if (existingImages && typeof existingImages === 'string') {
+            try {
+                const parsed = JSON.parse(existingImages);
+                if (Array.isArray(parsed)) {
+                    finalImagePaths = parsed;
+                }
+            } catch (e) {
+                console.error('Failed to parse existingImages:', e);
+                return res.status(400).json({ message: 'El formato de las imágenes existentes no es válido.' });
+            }
+        }
         
         if (files.newImages && files.newImages.length > 0) {
             const newImagePaths = files.newImages.map(file => `/uploads/${file.filename}`);

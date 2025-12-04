@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { CheckCircle, Truck, Mail, Package, ShoppingBag } from 'lucide-react';
+import { CheckCircle, Truck, Mail, Package, ShoppingCart } from 'lucide-react';
 import { useCart } from '../hooks/useCart.tsx';
 import { Order, CartItem } from '../../server/types/index.js';
 
@@ -71,6 +71,16 @@ const PaymentSuccessPage: React.FC = () => {
 
     }, [clearCart, location.search, order]); // Añadido 'order' a dependencias para manejar el flujo
 
+    const getImageUrl = (imagePath: string) => {
+        if (!imagePath) return '';
+        const apiBaseUrl = (import.meta as any).env?.VITE_API_BASE_URL || '';
+        let finalPath = imagePath;
+        if (finalPath.startsWith('/uploads/')) {
+            finalPath = `/api${finalPath}`;
+        }
+        return `${apiBaseUrl}${finalPath}`;
+    }
+
     const getEstimatedDeliveryDate = () => {
         const date = new Date();
         date.setDate(date.getDate() + 7);
@@ -125,7 +135,7 @@ const PaymentSuccessPage: React.FC = () => {
                     <div className="space-y-4 mb-4">
                         {items?.map((item: CartItem) => (
                             <div key={`${item.product.id}-${item.size}`} className="flex items-center gap-4">
-                                <img src={`${((import.meta as any).env?.VITE_API_BASE_URL || "")}${item.product.images[0]}`} alt={item.product.name} className="w-16 h-16 object-cover rounded-md" />
+                                <img src={getImageUrl(item.product.images[0])} alt={item.product.name} className="w-16 h-16 object-cover rounded-md" />
                                 <div className="flex-1">
                                     <p className="font-medium text-gray-800">{item.product.name}</p>
                                     <p className="text-sm text-gray-500">Talle: {item.size}, Cantidad: {item.quantity}</p>
@@ -156,7 +166,7 @@ const PaymentSuccessPage: React.FC = () => {
                         to="/tienda"
                         className="inline-flex items-center gap-2 bg-black hover:bg-gray-800 text-white px-8 py-3 rounded-lg font-bold transition-colors"
                     >
-                        <ShoppingBag size={20} />
+                        <ShoppingCart size={20} />
                         Seguir Comprando
                     </Link>
                 </div>

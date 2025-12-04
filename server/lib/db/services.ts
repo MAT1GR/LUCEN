@@ -587,21 +587,25 @@ export const settingsService = {
 };
 
 export const notificationService = {
-  subscribe(name: string, email: string): boolean {
+  subscribe(name: string, phone: string): boolean {
     const db = getDB();
-    const stmt = db.prepare('SELECT id FROM drop_notifications WHERE email = ?');
-    const existing = stmt.getAsObject([email]);
+    const trimmedPhone = phone.trim().replace(/\s/g, ''); // Also remove spaces within the number
+    const stmt = db.prepare('SELECT id FROM drop_notifications WHERE phone = ?');
+    const existing = stmt.getAsObject([trimmedPhone]);
     stmt.free();
     if (existing) {
       return false;
     }
-    db.run('INSERT INTO drop_notifications (name, email) VALUES (?, ?)', [name, email]);
+    db.run('INSERT INTO drop_notifications (name, phone) VALUES (?, ?)', [name, trimmedPhone]);
     saveDatabase();
     return true;
   },
 
-  getAll(): { name: string, email: string }[] {
+  getAll(): { name: string, phone: string }[] {
     const db = getDB();
-    return toObjects(db.exec('SELECT name, email FROM drop_notifications ORDER BY created_at DESC'));
+    const results = db.exec('SELECT name, phone, email FROM drop_notifications ORDER BY created_at DESC');
+    console.log('[DEBUG] Raw subscribers from DB:', JSON.stringify(results, null, 2));
+    // Select phone, but also email for backward compatibility in display if phone is null
+    return toObjects(results);
   },
 };

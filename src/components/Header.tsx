@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
-import { ShoppingBag, Menu, X, User, Search } from "lucide-react";
+import { ShoppingCart, Menu, X, User, Search } from "lucide-react";
 import { useCart } from "../hooks/useCart.tsx";
 
 interface HeaderProps {
@@ -97,7 +97,7 @@ const Header: React.FC<HeaderProps> = ({ onCartClick }) => {
                 onClick={onCartClick}
                 className="relative p-2"
               >
-                <ShoppingBag size={20} />
+                <ShoppingCart size={20} />
                 {totalItems > 0 && (
                   <span className={`absolute top-0 right-0 text-[10px] rounded-full h-4 w-4 flex items-center justify-center font-bold ${isScrolled || !isHomePage ? 'bg-black text-white' : 'bg-white text-black'}`}>
                     {totalItems}

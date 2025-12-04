@@ -119,17 +119,46 @@ function runMigrations() {
     console.log('[DB] Applying migration: Add payment_method to orders...');
     db.run("ALTER TABLE orders ADD COLUMN payment_method TEXT");
     console.log('[DB] Migration applied successfully: added payment_method column.');
-    saveDatabase(); // Save after a successful migration
   } catch (e: any) {
     if (e.message && e.message.includes('duplicate column name')) {
-      // This is expected if the migration has already run, so we can ignore it.
       console.log('[DB] Migration skipped: payment_method column already exists.');
     } else {
-      // If it's a different error, we should know about it.
-      console.error('[DB] Migration failed:', e);
-      throw e;
+      console.error('[DB] Migration for payment_method failed:', e);
+      // Don't re-throw, allow other migrations to run
     }
   }
+
+  try {
+    // Migration 2: Create drop_notifications table if it doesn't exist
+    console.log('[DB] Applying migration: Create drop_notifications table...');
+    db.run(`
+      CREATE TABLE IF NOT EXISTS drop_notifications (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        name TEXT NOT NULL,
+        email TEXT UNIQUE NOT NULL,
+        created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+      )
+    `);
+    console.log('[DB] Migration for drop_notifications table applied successfully.');
+  } catch (e: any) {
+    console.error('[DB] Migration for drop_notifications failed:', e);
+    // Don't re-throw
+  }
+
+  try {
+    // Migration 3: Add phone to drop_notifications table
+    console.log('[DB] Applying migration: Add phone to drop_notifications...');
+    db.run("ALTER TABLE drop_notifications ADD COLUMN phone TEXT");
+    console.log('[DB] Migration applied successfully: added phone column.');
+  } catch (e: any) {
+    if (e.message && e.message.includes('duplicate column name')) {
+      console.log('[DB] Migration skipped: phone column already exists.');
+    } else {
+      console.error('[DB] Migration for phone column failed:', e);
+    }
+  }
+  
+  saveDatabase();
 }
 
 function seedInitialData() {

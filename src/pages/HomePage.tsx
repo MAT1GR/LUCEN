@@ -148,12 +148,12 @@ const HomePage: React.FC = () => {
     lastDropSectionRef.current?.scrollIntoView({ behavior: 'smooth' });
   };
 
-  const handleSubscribe = async (name: string, email: string) => {
+  const handleSubscribe = async (name: string, phone: string) => {
     try {
       const response = await fetch('/api/notifications/drop', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name, email }),
+        body: JSON.stringify({ name, phone }),
       });
       const data = await response.json();
       alert(data.message); // Simple feedback for the user
@@ -245,6 +245,22 @@ const HomePage: React.FC = () => {
           </div>
         </section>
 
+        {/* Testimonials Section */}
+        <section className="py-16 lg:py-24 bg-neutral-100 text-black">
+          <div className="container mx-auto px-4">
+            <div className="text-center mb-12">
+              <h2 className="text-3xl lg:text-4xl font-bold tracking-tight uppercase">
+                Lo que dicen nuestras clientas
+              </h2>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+              {hardcodedTestimonials.map((testimonial) => (
+                <TestimonialCard key={testimonial.id} testimonial={testimonial} />
+              ))}
+            </div>
+          </div>
+        </section>
+
         {/* Features Section */}
         <section className="py-16 lg:py-24 bg-white text-black">
           <div className="container mx-auto px-4">
@@ -279,21 +295,19 @@ const HomePage: React.FC = () => {
           </div>
         </section>
 
-        {/* Testimonials Section */}
+        {/* Size Guide Section */}
         <section className="py-16 lg:py-24 bg-neutral-100 text-black">
-          <div className="container mx-auto px-4">
-            <div className="text-center mb-12">
-              <h2 className="text-3xl lg:text-4xl font-bold tracking-tight uppercase">
-                Lo que dicen nuestras clientas
-              </h2>
-            </div>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-              {hardcodedTestimonials.map((testimonial) => (
-                <TestimonialCard key={testimonial.id} testimonial={testimonial} />
-              ))}
-            </div>
+          <div className="container mx-auto px-4 text-center">
+            <h2 className="text-3xl lg:text-4xl font-bold tracking-tight uppercase">
+              Encontrá tu talle en 10 segundos
+            </h2>
+            <Link to="/tallas" className="mt-6 inline-block bg-black text-white px-10 py-3 rounded-sm text-sm font-bold uppercase tracking-wider hover:bg-gray-800 transition-colors">
+              Ver guía
+            </Link>
           </div>
         </section>
+
+        <InstagramFeed />
 
         {/* Nuestra Mision Section */}
         <section className="py-16 lg:py-24 bg-white text-black">
@@ -324,21 +338,6 @@ const HomePage: React.FC = () => {
             </div>
           </div>
         </section>
-
-        <InstagramFeed />
-
-        {/* Size Guide Section */}
-        <section className="py-16 lg:py-24 bg-neutral-100 text-black">
-          <div className="container mx-auto px-4 text-center">
-            <h2 className="text-3xl lg:text-4xl font-bold tracking-tight uppercase">
-              Encontrá tu talle en 10 segundos
-            </h2>
-            <Link to="/tallas" className="mt-6 inline-block bg-black text-white px-10 py-3 rounded-sm text-sm font-bold uppercase tracking-wider hover:bg-gray-800 transition-colors">
-              Ver guía
-            </Link>
-          </div>
-        </section>
-
                 
               </div>    </>
   );

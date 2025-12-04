@@ -17,12 +17,12 @@ const InstagramFeed: React.FC = () => {
           Seguinos en Instagram
         </h2>
         <a 
-          href="https://www.instagram.com/denim.rosario" 
+          href="https://www.instagram.com/denimrosario" 
           target="_blank" 
           rel="noopener noreferrer"
-          className="text-xl text-gray-500 mt-2 block hover:text-black"
+          className="text-2xl text-gray-700 mt-2 block hover:text-black font-semibold"
         >
-          @denim.rosario
+          @denimrosario
         </a>
 
         <div className="grid grid-cols-2 md:grid-cols-4 gap-2 md:gap-4 mt-12">

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Customer, CustomerOrder, Order } from '../../../server/types';
-import { X, Mail, Phone, ShoppingBag, DollarSign, Calendar } from 'lucide-react';
+import { X, Mail, Phone, ShoppingCart, DollarSign, Calendar } from 'lucide-react';
 import { OrderDetailModal } from './OrderDetailModal';
 
 interface CustomerDetailsModalProps {
@@ -54,7 +54,7 @@ export const CustomerDetailsModal: React.FC<CustomerDetailsModalProps> = ({ cust
                 <p className="font-medium text-gray-800">{customer.email}</p>
             </div>
              <div className="p-4 bg-gray-50 rounded-lg">
-                <div className="flex items-center gap-2 text-gray-600 mb-2"><ShoppingBag size={18} /> Total Pedidos</div>
+                <div className="flex items-center gap-2 text-gray-600 mb-2"><ShoppingCart size={18} /> Total Pedidos</div>
                 <p className="font-medium text-gray-800">{customer.order_count || 0}</p>
             </div>
             <div className="p-4 bg-gray-50 rounded-lg">
