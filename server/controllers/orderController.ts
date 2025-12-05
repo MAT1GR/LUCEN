@@ -1,12 +1,7 @@
 import { Request, Response } from 'express';
 import { db } from '../lib/database.js';
 import { sendMetaConversionEvent } from '../lib/metaConversionService.js';
-import crypto from 'crypto'; // Import crypto for hashing
-import { sendEmail } from '../emailService.js'; // Importa tu servicio de email
-
-const hashSha256 = (value: string): string => {
-    return crypto.createHash('sha256').update(value.trim().toLowerCase()).digest('hex');
-};
+import { hashSha256 } from '../lib/utils.js';
 
 export const createOrder = async (req: Request, res: Response) => {
     try {

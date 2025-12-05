@@ -1,4 +1,6 @@
 // server/controllers/paymentController.ts
+import { sendMetaConversionEvent } from '../lib/metaConversionService.js';
+import { hashSha256 } from '../lib/utils.js';
 import { Request, Response, Router } from "express";
 import { MercadoPagoConfig, Preference, Payment } from "mercadopago";
 import { db } from '../lib/database.js';
@@ -107,6 +109,33 @@ const createMercadoPagoPreference = async (req: Request, res: Response) => {
       createdAt: new Date(),
     });
 
+    // --- Send Meta Conversion API InitiateCheckout Event ---
+    try {
+        const hashedEmail = shippingInfo.email ? hashSha256(shippingInfo.email) : undefined;
+        const clientIpAddress = req.ip;
+        const clientUserAgent = req.headers['user-agent'];
+
+        const initiateCheckoutEvent = {
+            event_name: 'InitiateCheckout',
+            event_time: Math.floor(Date.now() / 1000),
+            action_source: 'website',
+            user_data: {
+                em: hashedEmail ? [hashedEmail] : undefined,
+                client_ip_address: clientIpAddress,
+                client_user_agent: clientUserAgent,
+            },
+            custom_data: {
+                currency: 'ARS', // Assuming ARS, adjust as needed
+                value: total,
+                content_ids: validatedItems.map((item: any) => item.product.id),
+                num_items: validatedItems.reduce((sum: number, item: any) => sum + item.quantity, 0),
+            },
+        };
+        await sendMetaConversionEvent(initiateCheckoutEvent);
+    } catch (metaError) {
+        console.error('Error sending Meta Conversion API InitiateCheckout event:', metaError);
+    }
+
     // Preparamos items para MP usando los datos VALIDADOS
     const preferenceItems = validatedItems.map((item: any) => ({
       id: String(item.product.id),
@@ -186,6 +215,34 @@ const processPayment = async (req: Request, res: Response) => {
         db.products.updateProductStock(order.items); 
         db.customers.updateTotalSpent(order.customerId, paymentResult.transaction_amount || order.total);
         console.log(`✅ Orden ${orderId} PAGADA.`);
+
+        // --- Send Meta Conversion API Purchase Event ---
+        try {
+            const hashedEmail = order.customerEmail ? hashSha256(order.customerEmail) : undefined;
+            // client_ip_address and client_user_agent are not directly available here as it's a webhook
+            // For webhooks, Meta recommends sending only the PII data, and optionally fbc/fbp if available from the original checkout flow.
+            // If the original request IP/User-Agent were stored with the order, they could be used here.
+            // For simplicity, we omit them for now as they are not readily available in the webhook context.
+            const purchaseEvent = {
+                event_name: 'Purchase',
+                event_time: Math.floor(Date.now() / 1000), // Unix timestamp
+                action_source: 'website', // Assuming the purchase originated from the website
+                user_data: {
+                    em: hashedEmail ? [hashedEmail] : undefined,
+                },
+                custom_data: {
+                    currency: 'ARS', // Assuming ARS, adjust as needed
+                    value: paymentResult.transaction_amount || order.total,
+                    content_ids: order.items.map((item: any) => item.product.id),
+                    num_items: order.items.reduce((sum: number, item: any) => sum + item.quantity, 0),
+                    order_id: orderId,
+                },
+            };
+            await sendMetaConversionEvent(purchaseEvent);
+        } catch (metaError) {
+            console.error('Error sending Meta Conversion API Purchase event from webhook:', metaError);
+        }
+
       } else if (paymentResult.status && paymentResult.status !== 'approved') {
           db.orders.updateStatus(orderId, paymentResult.status);
       }
@@ -248,6 +305,33 @@ const createTransferOrder = async (req: Request, res: Response) => {
       paymentMethod: 'transferencia',
       createdAt: new Date(),
     });
+
+    // --- Send Meta Conversion API InitiateCheckout Event ---
+    try {
+        const hashedEmail = shippingInfo.email ? hashSha256(shippingInfo.email) : undefined;
+        const clientIpAddress = req.ip;
+        const clientUserAgent = req.headers['user-agent'];
+
+        const initiateCheckoutEvent = {
+            event_name: 'InitiateCheckout',
+            event_time: Math.floor(Date.now() / 1000),
+            action_source: 'website',
+            user_data: {
+                em: hashedEmail ? [hashedEmail] : undefined,
+                client_ip_address: clientIpAddress,
+                client_user_agent: clientUserAgent,
+            },
+            custom_data: {
+                currency: 'ARS', // Assuming ARS, adjust as needed
+                value: finalTotal,
+                content_ids: validatedItems.map((item: any) => item.product.id),
+                num_items: validatedItems.reduce((sum: number, item: any) => sum + item.quantity, 0),
+            },
+        };
+        await sendMetaConversionEvent(initiateCheckoutEvent);
+    } catch (metaError) {
+        console.error('Error sending Meta Conversion API InitiateCheckout event (Transfer):', metaError);
+    }
 
     const settings = db.settings.getAll();
     const bankDetails = {
