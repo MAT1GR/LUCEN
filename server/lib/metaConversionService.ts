@@ -63,7 +63,7 @@ export async function sendMetaConversionEvent(event: Event): Promise<any> {
   try {
     const response = await axios.post(url, {
       data: [event],
-      test_event_code: process.env.NODE_ENV === 'development' ? 'TESTXXXX' : undefined, // Replace 'TESTXXXX' with your actual test event code
+      test_event_code: process.env.NODE_ENV === 'development' ? 'TEST73357' : undefined, 
     }, {
       headers: {
         'Content-Type': 'application/json',
