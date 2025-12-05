@@ -5,8 +5,11 @@ import { DashboardTab } from '../components/admin/DashboardTab';
 import { ProductsTab } from '../components/admin/ProductsTab';
 import { OrdersTab } from '../components/admin/OrdersTab';
 import { CustomersTab } from '../components/admin/CustomersTab';
+import { Calculator } from 'lucide-react'; 
+import { CalculatorTab } from '../components/admin/CalculatorTab';
 import { SettingsTab } from '../components/admin/SettingsTab';
 import SubscribersTab from '../components/admin/SubscribersTab'; // Import new tab
+
 import { 
   BarChart3, Package, ShoppingCart, Users, Settings, LogOut, Mail // Import Mail icon
 } from 'lucide-react';
@@ -19,11 +22,12 @@ const AdminPage: React.FC = () => {
     return <AdminLogin onLogin={login} />;
   }
 
-  const tabs = [
+const tabs = [
     { id: 'dashboard', label: 'Dashboard', icon: BarChart3, component: <DashboardTab /> },
     { id: 'products', label: 'Productos', icon: Package, component: <ProductsTab /> },
     { id: 'orders', label: 'Pedidos', icon: ShoppingCart, component: <OrdersTab /> },
     { id: 'customers', label: 'Clientes', icon: Users, component: <CustomersTab /> },
+    { id: 'calculator', label: 'Calculadora', icon: Calculator, component: <CalculatorTab /> }, // <-- NUEVA LÍNEA
     { id: 'subscribers', label: 'Suscriptores', icon: Mail, component: <SubscribersTab /> },
     { id: 'settings', label: 'Configuración', icon: Settings, component: <SettingsTab /> }
   ];

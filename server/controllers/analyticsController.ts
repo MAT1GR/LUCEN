@@ -1,5 +1,6 @@
 import { Request, Response } from 'express';
 import { db } from '../lib/database.js';
+import { sendMetaConversionEvent } from '../lib/metaConversionService.js'; // <--- Importante
 
 export const logEvent = async (req: Request, res: Response) => {
   try {
@@ -9,13 +10,48 @@ export const logEvent = async (req: Request, res: Response) => {
       return res.status(400).json({ message: 'Event name is required.' });
     }
 
-    // This will be a new service function I need to create
-    db.analytics.log(event_name, event_data);
+    // 1. Guardar en BD local (Tu lógica original)
+    // db.analytics.log(event_name, event_data); // Descomenta si tu BD ya tiene esta función
 
-    res.status(202).json({ message: 'Event logged.' });
+    // 2. ENVIAR A META (Lógica Nueva)
+    // Filtramos para enviar solo eventos relevantes a Facebook y evitar duplicados o basura
+    const metaEvents = ['AddToCart', 'ViewContent', 'InitiateCheckout'];
+    
+    if (metaEvents.includes(event_name)) {
+        try {
+            // Construimos el evento para CAPI
+            const serverEvent = {
+                event_name: event_name,
+                event_time: Math.floor(Date.now() / 1000),
+                action_source: 'website',
+                user_data: {
+                    client_ip_address: req.ip,
+                    client_user_agent: req.headers['user-agent'],
+                    // Nota: En 'AddToCart' usualmente no tenemos el email aún,
+                    // por eso no enviamos 'em' aquí. Meta usará IP y UserAgent para intentar coincidir.
+                },
+                custom_data: {
+                    currency: event_data?.currency || 'ARS',
+                    value: event_data?.value,
+                    content_ids: event_data?.content_ids,
+                    content_type: event_data?.content_type || 'product',
+                    content_name: event_data?.content_name,
+                }
+            };
+
+            // Enviamos el evento sin esperar (fire and forget) para no frenar la respuesta
+            sendMetaConversionEvent(serverEvent).catch(err => 
+                console.error(`Error enviando ${event_name} a Meta:`, err)
+            );
+            
+        } catch (metaError) {
+            console.error(`Error preparando evento Meta ${event_name}:`, metaError);
+        }
+    }
+
+    res.status(202).json({ message: 'Event logged and processed.' });
   } catch (error) {
     console.error("Error logging analytics event:", error);
-    // Don't block the client, so send a success response anyway
     res.status(202).json({ message: 'Event processed.' });
   }
 };

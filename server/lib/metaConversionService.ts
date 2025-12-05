@@ -3,7 +3,7 @@ import dotenv from 'dotenv';
 
 dotenv.config();
 
-const META_API_VERSION = 'v19.0'; // Or the latest version
+const META_API_VERSION = 'v19.0'; 
 const META_PIXEL_ID = process.env.META_PIXEL_ID;
 const META_ACCESS_TOKEN = process.env.META_ACCESS_TOKEN;
 
@@ -63,14 +63,18 @@ export async function sendMetaConversionEvent(event: Event): Promise<any> {
   try {
     const response = await axios.post(url, {
       data: [event],
-      test_event_code: process.env.NODE_ENV === 'development' ? 'TEST73357' : undefined, 
+      // -----------------------------------------------------------------------
+      // MODO PRUEBA ACTIVADO EN PRODUCCIÓN
+      // Esto enviará todos los eventos a la consola de "Probar eventos" de FB.
+      // -----------------------------------------------------------------------
+      test_event_code: 'TEST73357', 
     }, {
       headers: {
         'Content-Type': 'application/json',
       },
     });
 
-    console.log('Meta Conversion Event Sent:', response.data);
+    console.log(`Meta Conversion Event Sent (${event.event_name}):`, response.data);
     return response.data;
   } catch (error: unknown) {
     if (axios.isAxiosError(error)) {
@@ -78,14 +82,6 @@ export async function sendMetaConversionEvent(event: Event): Promise<any> {
     } else {
       console.error('An unexpected error occurred:', error);
     }
-    throw error;
+    // No lanzamos el error para no interrumpir el flujo de compra si falla Meta
   }
 }
-
-// Helper function to hash data
-// Meta requires PII to be SHA256 hashed and lowercase
-// Example: crypto.createHash('sha256').update(value).digest('hex')
-// For simplicity, we're not including the hashing logic directly here,
-// as it often depends on how PII is stored and accessed in your application.
-// You should implement hashing in your controllers before calling sendMetaConversionEvent
-// if you are sending PII.
