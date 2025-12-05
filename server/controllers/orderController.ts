@@ -2,6 +2,7 @@ import { Request, Response } from 'express';
 import { db } from '../lib/database.js';
 import { sendMetaConversionEvent } from '../lib/metaConversionService.js';
 import { hashSha256 } from '../lib/utils.js';
+import { sendEmail } from '../emailService.js'; // Importa tu servicio de email
 
 export const createOrder = async (req: Request, res: Response) => {
     try {
