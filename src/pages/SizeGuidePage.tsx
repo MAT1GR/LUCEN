@@ -3,6 +3,7 @@ import { Ruler, ArrowLeft, Heart, Scale } from "lucide-react";
 import WhatsAppLogo from '../assets/whatsapp-logo.png';
 import { Link } from "react-router-dom";
 import { useScrollAnimation } from "../hooks/useScrollAnimation";
+import JeanMeasureImage from "../assets/4.webp";
 
 const SizeGuidePage: React.FC = () => {
   const contentRef = useScrollAnimation<HTMLDivElement>();
@@ -22,7 +23,7 @@ const SizeGuidePage: React.FC = () => {
             {/* Removed the introductory paragraph as requested */}
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-12 mb-12">
+          <div className="grid grid-cols-1 gap-12 mb-12"> {/* Changed to grid-cols-1 */}
             <div>
               <h2 className="text-2xl font-bold mb-6">
                 Medí tu Jean Favorito
@@ -69,8 +70,10 @@ const SizeGuidePage: React.FC = () => {
                 </div>
               </div>
             </div>
+          </div> {/* End of grid container */}
 
-
+          <div className="mt-8"> {/* Added margin-top for spacing */}
+            <img src={JeanMeasureImage} alt="Guía de medidas del jean" className="rounded-lg shadow-md w-full" />
           </div>
 
           <div className="text-center bg-gray-100 p-8 rounded-lg mt-12">
