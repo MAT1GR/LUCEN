@@ -1,8 +1,26 @@
 import React, { useState, FormEvent, useEffect } from 'react';
 import { Product } from '../../types';
 import { Plus, Trash2, UploadCloud, Image, Video, GripVertical } from 'lucide-react';
-import { DragDropContext, Droppable, Draggable, DropResult } from 'react-beautiful-dnd';
+import {
+  DndContext,
+  closestCenter,
+  KeyboardSensor,
+  PointerSensor,
+  useSensor,
+  useSensors,
+  DragEndEvent
+} from '@dnd-kit/core';
+import {
+  arrayMove,
+  SortableContext,
+  sortableKeyboardCoordinates,
+  useSortable,
+  rectSortingStrategy,
+} from '@dnd-kit/sortable';
+import { CSS } from '@dnd-kit/utilities';
+import crypto from 'crypto';
 
+// --- INTERFACES ---
 interface ProductFormProps {
   product?: Product | null;
   onClose: () => void;
@@ -16,6 +34,41 @@ interface SizeRow {
   stock: number;
 }
 
+interface SortableImage {
+  id: string;
+  file: File | string; // File object for new images, string (URL) for existing
+  url: string; // Blob URL for new, original URL for existing
+}
+
+// --- SORTABLE IMAGE COMPONENT ---
+const SortableImageItem: React.FC<{ image: SortableImage; onRemove: (id: string) => void }> = ({ image, onRemove }) => {
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({ id: image.id });
+
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    zIndex: isDragging ? 50 : 'auto',
+    opacity: isDragging ? 0.9 : 1,
+  };
+
+  return (
+    <div ref={setNodeRef} style={style} className="relative group w-24 h-24">
+      <img src={image.url} alt={`Previsualización`} className="w-full h-full object-cover rounded shadow-sm"/>
+      <button type="button" onClick={() => onRemove(image.id)} className="absolute -top-2 -right-2 bg-red-600 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity"><Trash2 size={12}/></button>
+      <div {...attributes} {...listeners} className="absolute bottom-1 left-1 bg-black/50 text-white rounded-full p-1 cursor-grab active:cursor-grabbing"><GripVertical size={14}/></div>
+    </div>
+  );
+};
+
+
+// --- MAIN FORM COMPONENT ---
 export const ProductForm: React.FC<ProductFormProps> = ({ product, onClose, onSave, isSaving }) => {
   const [formData, setFormData] = useState({
     name: product?.name || '',
@@ -31,10 +84,10 @@ export const ProductForm: React.FC<ProductFormProps> = ({ product, onClose, onSa
     isWaistStretchy: product?.isWaistStretchy || false,
     isNew: product?.isNew || false,
     isActive: product?.isActive ?? true,
+    brand: product?.brand || '',
   });
 
-  const [allImages, setAllImages] = useState<(File | string)[]>(product?.images || []);
-  const [previewUrls, setPreviewUrls] = useState<string[]>([]);
+  const [sortableImages, setSortableImages] = useState<SortableImage[]>([]);
   const [videoFile, setVideoFile] = useState<File | null>(null);
   const [videoPreview, setVideoPreview] = useState<string | null>(product?.video || null);
 
@@ -46,51 +99,11 @@ export const ProductForm: React.FC<ProductFormProps> = ({ product, onClose, onSa
   
   const defaultFaq = { question: '¿Cómo debo lavarlo?', answer: 'Recomendamos lavar del revés, con agua fría y evitar el uso de secadoras para mantener la forma y el color.' };
   const [faqs, setFaqs] = useState(product?.faqs && product.faqs.length > 0 ? product.faqs : (product ? [] : [defaultFaq]));
-
-  const handleJsonUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (!file) return;
-
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      try {
-        const jsonContent = JSON.parse(e.target?.result as string);
-        
-        const newFormData = {
-          name: jsonContent.nombre_producto || formData.name,
-          price: jsonContent.price || formData.price, // Price is not in producto_inputs.json, keep current or default
-          category: jsonContent.categoria || formData.category,
-          description: jsonContent.descripcion || formData.description,
-          material: jsonContent.material || formData.material,
-          rise: jsonContent.tiro || formData.rise,
-          rise_cm: parseFloat(jsonContent.tiro_cm) || formData.rise_cm,
-          fit: jsonContent.calce || formData.fit,
-          waist_flat: parseFloat(jsonContent.cintura_cm) || formData.waist_flat,
-          length: parseFloat(jsonContent.alto_cm) || formData.length,
-          isWaistStretchy: jsonContent.elastizado === 'Sí',
-          isNew: formData.isNew, // Keep current
-          isActive: formData.isActive, // Keep current
-        };
-        setFormData(newFormData);
-
-        if (jsonContent.preguntas_frecuentes) {
-          const newFaqs = jsonContent.preguntas_frecuentes.map((faq: any) => ({
-            question: faq.pregunta,
-            answer: faq.respuesta,
-          }));
-          setFaqs(newFaqs);
-        }
-
-        // Reset the file input value so the same file can be uploaded again if needed
-        event.target.value = '';
-
-      } catch (error) {
-        console.error("Error parsing JSON file:", error);
-        alert("Error al procesar el archivo JSON. Asegúrate de que el formato sea correcto.");
-      }
-    };
-    reader.readAsText(file);
-  };
+  
+  const sensors = useSensors(
+    useSensor(PointerSensor),
+    useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates })
+  );
 
   const getCorrectImageUrl = (path: string) => {
     if (!path) return '';
@@ -103,25 +116,24 @@ export const ProductForm: React.FC<ProductFormProps> = ({ product, onClose, onSa
   };
 
   useEffect(() => {
-    const urls = allImages.map(img => {
-      if (typeof img === 'string') return getCorrectImageUrl(img);
-      return URL.createObjectURL(img);
-    });
-    setPreviewUrls(urls);
+    const initialImages = (product?.images || []).map((imgUrl): SortableImage => ({
+      id: `existing-${imgUrl}-${Math.random()}`, // Create a somewhat unique ID for existing images
+      file: imgUrl,
+      url: getCorrectImageUrl(imgUrl as string),
+    }));
+    setSortableImages(initialImages);
+  }, [product]);
 
-    return () => {
-      urls.forEach(url => {
-        if (url.startsWith('blob:')) URL.revokeObjectURL(url);
-      });
-    };
-  }, [allImages]);
   
-  const handleOnDragEnd = (result: DropResult) => {
-    if (!result.destination) return;
-    const items = Array.from(allImages);
-    const [reorderedItem] = items.splice(result.source.index, 1);
-    items.splice(result.destination.index, 0, reorderedItem);
-    setAllImages(items);
+  const handleDragEnd = (event: DragEndEvent) => {
+    const { active, over } = event;
+    if (over && active.id !== over.id) {
+      setSortableImages((items) => {
+        const oldIndex = items.findIndex((item) => item.id === active.id);
+        const newIndex = items.findIndex((item) => item.id === over.id);
+        return arrayMove(items, oldIndex, newIndex);
+      });
+    }
   };
   
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
@@ -129,8 +141,73 @@ export const ProductForm: React.FC<ProductFormProps> = ({ product, onClose, onSa
     const isCheckbox = type === 'checkbox';
     setFormData(prev => ({ ...prev, [name]: isCheckbox ? (e.target as HTMLInputElement).checked : value }));
   };
+
+  const handleNewImagesChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files) {
+      const newFiles = Array.from(e.target.files);
+      const newSortableImages: SortableImage[] = newFiles.map(file => ({
+        id: `new-${file.name}-${Date.now()}-${Math.random()}`, // Reasonably unique ID
+        file: file,
+        url: URL.createObjectURL(file),
+      }));
+      setSortableImages(prev => [...prev, ...newSortableImages]);
+    }
+  };
+
+  const handleRemoveImage = (idToRemove: string) => {
+    setSortableImages(prev => {
+      const imageToRemove = prev.find(img => img.id === idToRemove);
+      if (imageToRemove && imageToRemove.url.startsWith('blob:')) {
+        URL.revokeObjectURL(imageToRemove.url);
+      }
+      return prev.filter(img => img.id !== idToRemove);
+    });
+  };
+
+  const handleSubmit = (e: FormEvent) => {
+    e.preventDefault();
+    const data = new FormData();
+
+    Object.entries(formData).forEach(([key, value]) => {
+      data.append(key, String(value));
+    });
+
+    const sizesAsObject = sizeRows.reduce((acc, row) => {
+      if (row.size.trim() !== '') {
+        acc[row.size] = {
+          available: row.available,
+          stock: Number(row.stock),
+        };
+      }
+      return acc;
+    }, {} as Product['sizes']);
+    data.append('sizes', JSON.stringify(sizesAsObject));
+    data.append('faqs', JSON.stringify(faqs));
+
+    const existingImagesPaths = sortableImages
+      .map(img => img.file)
+      .filter(file => typeof file === 'string') as string[];
+      
+    const newImageFiles = sortableImages
+      .map(img => img.file)
+      .filter(file => typeof file !== 'string') as File[];
+    
+    data.append('existingImages', JSON.stringify(existingImagesPaths));
+    newImageFiles.forEach(file => {
+      data.append('newImages', file);
+    });
+
+    if (videoFile) {
+      data.append('video', videoFile);
+    } else if (videoPreview) {
+      data.append('existingVideoUrl', videoPreview);
+    }
+    
+    onSave(data);
+  };
   
-  const handleSizeChange = (index: number, field: keyof SizeRow, value: string | number | boolean) => {
+  // Other handlers (size, faq, video, json upload) remain mostly the same
+    const handleSizeChange = (index: number, field: keyof SizeRow, value: string | number | boolean) => {
     const newSizes = [...sizeRows];
     const sizeToUpdate = { ...newSizes[index] };
     
@@ -172,16 +249,6 @@ export const ProductForm: React.FC<ProductFormProps> = ({ product, onClose, onSa
     setFaqs(faqs.filter((_, i) => i !== index));
   };
 
-  const handleNewImagesChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files) {
-      setAllImages(prev => [...prev, ...Array.from(e.target.files!)]);
-    }
-  };
-
-  const handleRemoveImage = (indexToRemove: number) => {
-    setAllImages(prev => prev.filter((_, index) => index !== indexToRemove));
-  };
-
   const handleVideoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
       const file = e.target.files[0];
@@ -201,43 +268,49 @@ export const ProductForm: React.FC<ProductFormProps> = ({ product, onClose, onSa
     setVideoPreview(null);
   };
 
-  const handleSubmit = (e: FormEvent) => {
-    e.preventDefault();
-    const data = new FormData();
+    const handleJsonUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
 
-    Object.entries(formData).forEach(([key, value]) => {
-      data.append(key, String(value));
-    });
-
-    const sizesAsObject = sizeRows.reduce((acc, row) => {
-      if (row.size.trim() !== '') {
-        acc[row.size] = {
-          available: row.available,
-          stock: Number(row.stock),
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      try {
+        const jsonContent = JSON.parse(e.target?.result as string);
+        
+        const newFormData = {
+          name: jsonContent.nombre_producto || formData.name,
+          price: jsonContent.price || formData.price,
+          category: jsonContent.categoria || formData.category,
+          description: jsonContent.descripcion || formData.description,
+          material: jsonContent.material || formData.material,
+          rise: jsonContent.tiro || formData.rise,
+          rise_cm: parseFloat(jsonContent.tiro_cm) || formData.rise_cm,
+          fit: jsonContent.calce || formData.fit,
+          waist_flat: parseFloat(jsonContent.cintura_cm) || formData.waist_flat,
+          length: parseFloat(jsonContent.alto_cm) || formData.length,
+          isWaistStretchy: jsonContent.elastizado === 'Sí',
+          isNew: formData.isNew,
+          isActive: formData.isActive,
+          brand: jsonContent.marca || formData.brand,
         };
+        setFormData(newFormData);
+
+        if (jsonContent.preguntas_frecuentes) {
+          const newFaqs = jsonContent.preguntas_frecuentes.map((faq: any) => ({
+            question: faq.pregunta,
+            answer: faq.respuesta,
+          }));
+          setFaqs(newFaqs);
+        }
+        event.target.value = '';
+      } catch (error) {
+        console.error("Error parsing JSON file:", error);
+        alert("Error al procesar el archivo JSON. Asegúrate de que el formato sea correcto.");
       }
-      return acc;
-    }, {} as Product['sizes']);
-    data.append('sizes', JSON.stringify(sizesAsObject));
-    data.append('faqs', JSON.stringify(faqs));
-
-    const existingImagesPaths = allImages.filter(img => typeof img === 'string') as string[];
-    const newImageFiles = allImages.filter(img => typeof img !== 'string') as File[];
-    
-    data.append('existingImages', JSON.stringify(existingImagesPaths));
-    newImageFiles.forEach(file => {
-      data.append('newImages', file);
-    });
-
-    if (videoFile) {
-      data.append('video', videoFile);
-    } else if (videoPreview) {
-      data.append('existingVideoUrl', videoPreview);
-    }
-    
-    onSave(data);
+    };
+    reader.readAsText(file);
   };
-  
+
   return (
     <div className="fixed inset-0 bg-gray-100 z-50 flex flex-col">
       {/* Header */}
@@ -298,6 +371,10 @@ export const ProductForm: React.FC<ProductFormProps> = ({ product, onClose, onSa
                   <div>
                     <label htmlFor="category" className="block text-sm font-medium text-gray-700 mb-1">Categoría <span className="text-red-500">*</span></label>
                     <input id="category" name="category" value={formData.category} onChange={handleChange} placeholder="Ej: Jeans" className="w-full p-2 border border-gray-300 rounded-md focus:ring-black focus:border-black" required />
+                  </div>
+                  <div>
+                    <label htmlFor="brand" className="block text-sm font-medium text-gray-700 mb-1">Marca</label>
+                    <input id="brand" name="brand" value={formData.brand} onChange={handleChange} placeholder="Ej: Levi's" className="w-full p-2 border border-gray-300 rounded-md focus:ring-black focus:border-black" />
                   </div>
                   <div>
                     <label htmlFor="material" className="block text-sm font-medium text-gray-700 mb-1">Material</label>
@@ -415,30 +492,23 @@ export const ProductForm: React.FC<ProductFormProps> = ({ product, onClose, onSa
                   </label>
                   <div className="mt-1 border p-4 rounded-lg">
                     <p className="text-xs text-gray-500 mb-3">Arrastra para reordenar. La primera imagen es la principal.</p>
-                    <DragDropContext onDragEnd={handleOnDragEnd}>
-                      <Droppable droppableId="images" direction="horizontal">
-                        {(provided) => (
-                          <div {...provided.droppableProps} ref={provided.innerRef} className="flex flex-wrap gap-3 mb-4 p-2 border rounded-md bg-gray-50 min-h-[6rem]">
-                            {previewUrls.map((url, index) => (
-                              <Draggable key={url} draggableId={url} index={index}>
-                                {(provided) => (
-                                  <div ref={provided.innerRef} {...provided.draggableProps} {...provided.dragHandleProps} className="relative group w-24 h-24">
-                                    <img src={url} alt={`Previsualización ${index + 1}`} className="w-full h-full object-cover rounded shadow-sm"/>
-                                    <button type="button" onClick={() => handleRemoveImage(index)} className="absolute -top-2 -right-2 bg-red-600 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity"><Trash2 size={12}/></button>
-                                    <div className="absolute bottom-1 left-1 bg-black/50 text-white rounded-full p-1 cursor-grab active:cursor-grabbing"><GripVertical size={14}/></div>
-                                  </div>
-                                )}
-                              </Draggable>
-                            ))}
-                            {provided.placeholder}
-                          </div>
-                        )}
-                      </Droppable>
-                    </DragDropContext>
+                    <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
+                      <SortableContext items={sortableImages.map(img => img.id)} strategy={rectSortingStrategy}>
+                        <div className="flex flex-wrap gap-3 mb-4 p-2 border rounded-md bg-gray-50 min-h-[6rem]">
+                          {sortableImages.map((image) => (
+                            <SortableImageItem 
+                              key={image.id}
+                              image={image}
+                              onRemove={handleRemoveImage}
+                            />
+                          ))}
+                        </div>
+                      </SortableContext>
+                    </DndContext>
 
                     <div className="border-2 border-dashed rounded-lg p-6 text-center mt-2">
                       <UploadCloud className="mx-auto h-10 w-10 text-gray-400" />
-                                             <label htmlFor="file-upload" className="mt-2 block text-sm font-semibold text-black hover:text-gray-800 cursor-pointer">                        Añadir imágenes
+                        <label htmlFor="file-upload" className="mt-2 block text-sm font-semibold text-black hover:text-gray-800 cursor-pointer">Añadir imágenes
                         <input id="file-upload" name="newImages" type="file" multiple className="sr-only" onChange={handleNewImagesChange} accept="image/png, image/jpeg, image/webp" />
                       </label>
                       <p className="text-xs leading-5 text-gray-500 mt-1">PNG, JPG, WEBP</p>
@@ -452,8 +522,9 @@ export const ProductForm: React.FC<ProductFormProps> = ({ product, onClose, onSa
                   </label>
                   <div className="mt-1 border p-4 rounded-lg">
                     {videoPreview && (
-                                        <div className="relative group max-w-xs mx-auto mb-4">
-                                          <video src={videoPreview} controls className="w-full rounded shadow-sm" />                        <button type="button" onClick={handleRemoveVideo} className="absolute -top-2 -right-2 bg-red-600 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity"><Trash2 size={12}/></button>
+                        <div className="relative group max-w-xs mx-auto mb-4">
+                          <video src={videoPreview} controls className="w-full rounded shadow-sm" />
+                          <button type="button" onClick={handleRemoveVideo} className="absolute -top-2 -right-2 bg-red-600 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity"><Trash2 size={12}/></button>
                       </div>
                     )}
                     <div className="border-2 border-dashed rounded-lg p-6 text-center">

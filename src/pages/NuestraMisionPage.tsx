@@ -41,6 +41,12 @@ const NuestraMisionPage: React.FC = () => {
                 <p className="text-2xl font-bold">
                   Somos Rosario Denim.
                 </p>
+                
+                {/* Párrafo Nuevo: Explicando la Curaduría de Marcas Nuevas */}
+                <p className="text-base">
+                  Funcionamos como una <span className="font-bold">Boutique de Denim</span>. Recorremos las mejores fábricas y marcas del país buscando esos modelos nuevos y únicos que ya no se consiguen en los shoppings tradicionales.
+                </p>
+
                 <p className="text-base">
                   Nacimos de una frustración simple: comprar jeans online era una lotería. Talles que no coincidían, calces que no favorecían y una falta total de confianza.
                 </p>

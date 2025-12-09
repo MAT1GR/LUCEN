@@ -11,7 +11,8 @@ import {
   deleteProduct,
   getNewProducts,
   getBestsellerProducts,
-  getAllAdminProducts
+  getAllAdminProducts,
+  reorderProducts
 } from '../controllers/productController.js';
 
 const router = Router();
@@ -53,6 +54,7 @@ router.get('/', getAllProducts);
 router.get('/all', getAllAdminProducts);
 router.get('/newest', getNewProducts);
 router.get('/bestsellers', getBestsellerProducts);
+router.post('/reorder', reorderProducts);
 router.get('/:id', getProductById);
 
 // Aplicamos el middleware 'upload' para crear y actualizar productos

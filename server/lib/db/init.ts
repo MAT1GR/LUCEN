@@ -177,6 +177,18 @@ function runMigrations() {
       console.error('[DB] Migration for faqs column failed:', e);
     }
   }
+
+  try {
+    console.log('[DB] Migration: Adding sort_order to products...');
+    db.run("ALTER TABLE products ADD COLUMN sort_order INTEGER DEFAULT 9999");
+    console.log('[DB] Migration applied successfully: added sort_order column.');
+  } catch (e: any) {
+    if (e.message && e.message.includes('duplicate column name')) {
+      console.log('[DB] Migration skipped: sort_order column already exists.');
+    } else {
+      console.error('[DB] Migration for sort_order column failed:', e);
+    }
+  }
   
   saveDatabase();
 }

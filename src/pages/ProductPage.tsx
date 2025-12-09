@@ -180,25 +180,12 @@ const ProductPage: React.FC = () => {
     }, [id]);
   
       useEffect(() => {
-        const checkDescriptionOverflow = () => {
-          if (descriptionRef.current) {
-            const isOverflowing =
-              descriptionRef.current.scrollHeight >
-              descriptionRef.current.clientHeight;
-            setShowReadMore(isOverflowing);
-          }
-        };
-    
-        // Check after a short delay to allow for rendering
-        const timer = setTimeout(checkDescriptionOverflow, 100);
-    
-        // Also check on window resize
-        window.addEventListener('resize', checkDescriptionOverflow);
-    
-        return () => {
-          clearTimeout(timer);
-          window.removeEventListener('resize', checkDescriptionOverflow);
-        };
+        const charLimit = 200; // Character limit to trigger "Read More"
+        if (product?.description && product.description.length > charLimit) {
+            setShowReadMore(true);
+        } else {
+            setShowReadMore(false);
+        }
       }, [product?.description]);    
   
       const handleAddToCart = () => {

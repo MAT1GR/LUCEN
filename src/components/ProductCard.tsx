@@ -54,7 +54,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
           {isSoldOut && (
              <div className="absolute inset-0 flex items-center justify-center bg-white/60 backdrop-blur-[1px]">
                 <span className="bg-black text-white text-[10px] font-bold px-3 py-1 uppercase tracking-widest">
-                    Sin Stock
+                    VENDIDO
                 </span>
              </div>
           )}

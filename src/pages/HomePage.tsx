@@ -270,28 +270,36 @@ const HomePage: React.FC = () => {
               </h2>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-12 text-center">
-              <div className="flex flex-col items-center">
-                <Sparkle className="w-10 h-10 mb-4 text-gray-800" />
-                <h3 className="text-lg font-semibold uppercase tracking-wider">Un solo jean por modelo</h3>
-                <p className="mt-2 text-sm text-gray-600">
-                  Cada prenda es única y no repetimos stock.<br /> <span className="font-bold">Nunca vas a ver otra igual.</span>
-                </p>
-              </div>
-              <div className="flex flex-col items-center">
-                <Box className="w-10 h-10 mb-4 text-gray-800" />
-                <h3 className="text-lg font-semibold uppercase tracking-wider">Drops limitados</h3>
-                <p className="mt-2 text-sm text-gray-600">
-                  Colecciones pequeñas, seleccionadas a mano.<br /> <span className="font-bold">Si te gusta, no lo dejes pasar.</span>
-                </p>
-              </div>
-              <div className="flex flex-col items-center">
-                <Eye className="w-10 h-10 mb-4 text-gray-800" />
-                <h3 className="text-lg font-semibold uppercase tracking-wider">CALIDAD ANTES QUE TENDENCIA</h3>
-                <p className="mt-2 text-sm text-gray-600">
-                  Priorizamos calidad, textura y calce.<br /> <span className="font-bold">Sin seguir modas rápidas.</span>
-                </p>
-              </div>
-            </div>
+  
+  {/* Ítem 1: Mantenemos la exclusividad */}
+  <div className="flex flex-col items-center">
+    <Sparkle className="w-10 h-10 mb-4 text-gray-800" />
+    <h3 className="text-lg font-semibold uppercase tracking-wider">Un solo jean por modelo</h3>
+    <p className="mt-2 text-sm text-gray-600">
+      Stock único y exclusivo.<br /> <span className="font-bold">Si te gusta, llevalo porque no se repite.</span>
+    </p>
+  </div>
+
+  {/* Ítem 2: Enfocado en modelos únicos */}
+  <div className="flex flex-col items-center">
+    <Box className="w-10 h-10 mb-4 text-gray-800" />
+    <h3 className="text-lg font-semibold uppercase tracking-wider">MODELOS ÚNICOS</h3>
+    <p className="mt-2 text-sm text-gray-600">
+      Encontrá diseños que te hacen diferente.<br />
+      <span className="font-bold">Destacate con un estilo que solo vos tenés.</span>
+    </p>
+  </div>
+
+  {/* Ítem 3: Calidad */}
+  <div className="flex flex-col items-center">
+    <Eye className="w-10 h-10 mb-4 text-gray-800" />
+    <h3 className="text-lg font-semibold uppercase tracking-wider">CALIDAD RÍGIDA</h3>
+    <p className="mt-2 text-sm text-gray-600">
+      Priorizamos el denim 100% algodón.<br /> <span className="font-bold">Telas nobles que duran años.</span>
+    </p>
+  </div>
+
+</div>
           </div>
         </section>
 
@@ -307,28 +315,26 @@ const HomePage: React.FC = () => {
           </div>
         </section>
 
-        <InstagramFeed />
-
-        {/* Nuestra Mision Section */}
-        <section className="py-16 lg:py-24 bg-white text-black">
-          <div className="container mx-auto px-4 text-center">
-            <Target className="mx-auto text-gray-800 mb-4" size={40} />
-            <h2 className="text-3xl lg:text-4xl font-bold tracking-tight uppercase">
-              Nuestra Misión
-            </h2>
-            <p className="mt-4 max-w-2xl mx-auto text-gray-600 text-sm">
-              Comprar jeans online no tendría que ser una lotería. Medimos cada prenda a mano para que recibas en tu casa exactamente el talle que esperas.<br/> <span className="font-bold">Tu calce perfecto, garantizado.</span>
-            </p>
-          </div>
-        </section>
-
         {/* FAQ Section */}
-        <section className="py-16 lg:py-24 bg-neutral-100 text-black">
+        <section className="py-16 lg:py-24 bg-white text-black">
           <div className="container mx-auto px-4">
             <h2 className="text-3xl lg:text-4xl font-bold tracking-tight uppercase text-center mb-12">
               Preguntas Frecuentes
             </h2>
             <div className="max-w-3xl mx-auto">
+              <Accordion 
+                title="¿Cuál es nuestra misión?"
+                content={
+                  <>
+                    <p>
+                      Funcionamos como una Boutique de Denim: recorremos las mejores fábricas seleccionando modelos nuevos y únicos de distintas marcas. 
+                    </p>
+                    <p className="mt-2">
+                      Olvidate de la lotería de los talles; medimos cada prenda a mano para garantizarte el calce perfecto. <span className="font-bold">Tu calce ideal, garantizado.</span>
+                    </p>
+                  </>
+                }
+              />
               <Accordion title="¿Cuáles son los métodos de pago?" content="Aceptamos tarjetas de crédito, débito y efectivo a través de Mercado Pago." />
               <Accordion title="¿Hacen envíos a todo el país?" content="Sí, hacemos envíos a todo el país a través de Correo Argentino a domicilio o a sucursal." />
               <Accordion title="¿Cuánto tiempo tarda en llegar mi pedido?" content="Una vez despachado, el tiempo de entrega estimado es de 3 a 7 días hábiles, dependiendo de tu ubicación." />
@@ -338,6 +344,8 @@ const HomePage: React.FC = () => {
             </div>
           </div>
         </section>
+
+        <InstagramFeed />
                 
               </div>    </>
   );

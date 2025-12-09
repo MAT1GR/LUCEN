@@ -61,6 +61,8 @@ const parseProduct = (row: any): Product => {
     isBestSeller: Boolean(row.is_best_seller),
     isActive: Boolean(row.is_active),
     faqs: faqs,
+    brand: row.brand,
+    sort_order: row.sort_order,
   };
 };
 
@@ -153,7 +155,7 @@ export const productService = {
     }
 
     const where = `WHERE ${whereClauses.join(" AND ")}`;
-    let orderBy = "ORDER BY id DESC";
+    let orderBy = "ORDER BY sort_order ASC, id DESC";
     if (sortBy === "price-asc") orderBy = "ORDER BY price ASC";
     if (sortBy === "price-desc") orderBy = "ORDER BY price DESC";
     if (sortBy === "popular") orderBy = "ORDER BY is_best_seller DESC, id DESC";
@@ -239,8 +241,30 @@ export const productService = {
 
   getNewest(limit: number): Product[] {
     const db = getDB();
-    const rows = toObjects(db.exec('SELECT * FROM products WHERE is_new = 1 AND is_active = 1 ORDER BY id DESC LIMIT ?', [limit]));
-    return rows.map(parseProduct);
+    // 1. Fetch all 'new' products, regardless of active status
+    const allNewProducts = toObjects(db.exec('SELECT * FROM products WHERE is_new = 1')).map(parseProduct);
+
+    // 2. Separate into in-stock and sold-out
+    const inStock: Product[] = [];
+    const soldOut: Product[] = [];
+
+    for (const p of allNewProducts) {
+      const totalStock = Object.values(p.sizes || {}).reduce((acc: any, s: any) => acc + (s.stock || 0), 0);
+      if (totalStock > 0 && p.isActive) {
+        inStock.push(p);
+      } else {
+        soldOut.push(p);
+      }
+    }
+
+    // 3. Sort the in-stock products by their manual order
+    inStock.sort((a, b) => (a.sort_order ?? 9999) - (b.sort_order ?? 9999));
+    
+    // 4. Combine, with in-stock items first
+    const sortedProducts = [...inStock, ...soldOut];
+
+    // 5. Return the limited number of products
+    return sortedProducts.slice(0, limit);
   },
 
   getBestsellers(): Product[] {
@@ -252,7 +276,7 @@ export const productService = {
   create(product: Omit<Product, 'id' | 'isActive'>): number {
     const db = getDB();
     const stmt = db.prepare(
-      'INSERT INTO products (name, price, images, video, category, description, material, rise, rise_cm, fit, waist_flat, is_waist_stretchy, length, sizes, is_new, is_best_seller, faqs) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)'
+      'INSERT INTO products (name, price, images, video, category, description, material, rise, rise_cm, fit, waist_flat, is_waist_stretchy, length, sizes, is_new, is_best_seller, faqs, brand) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)'
     );
     stmt.run([
       product.name,
@@ -271,7 +295,8 @@ export const productService = {
       JSON.stringify(product.sizes),
       Number(product.isNew),
       Number(product.isBestSeller),
-      product.faqs ? JSON.stringify(product.faqs) : '[]' // Store FAQs as JSON string
+      product.faqs ? JSON.stringify(product.faqs) : '[]', // Store FAQs as JSON string
+      product.brand ?? null
     ]);
     stmt.free();
     const id = toObjects(db.exec("SELECT last_insert_rowid() as id"))[0].id;
@@ -282,7 +307,7 @@ export const productService = {
   update(productId: string, product: Partial<Product>): boolean {
     const db = getDB();
     db.run(
-      'UPDATE products SET name = COALESCE(?, name), price = COALESCE(?, price), images = COALESCE(?, images), video = COALESCE(?, video), category = COALESCE(?, category), description = COALESCE(?, description), material = COALESCE(?, material), rise = COALESCE(?, rise), rise_cm = COALESCE(?, rise_cm), fit = COALESCE(?, fit), waist_flat = COALESCE(?, waist_flat), is_waist_stretchy = COALESCE(?, is_waist_stretchy), length = COALESCE(?, length), sizes = COALESCE(?, sizes), is_new = COALESCE(?, is_new), is_best_seller = COALESCE(?, is_best_seller), is_active = COALESCE(?, is_active), faqs = COALESCE(?, faqs) WHERE id = ?',
+      'UPDATE products SET name = COALESCE(?, name), price = COALESCE(?, price), images = COALESCE(?, images), video = COALESCE(?, video), category = COALESCE(?, category), description = COALESCE(?, description), material = COALESCE(?, material), rise = COALESCE(?, rise), rise_cm = COALESCE(?, rise_cm), fit = COALESCE(?, fit), waist_flat = COALESCE(?, waist_flat), is_waist_stretchy = COALESCE(?, is_waist_stretchy), length = COALESCE(?, length), sizes = COALESCE(?, sizes), is_new = COALESCE(?, is_new), is_best_seller = COALESCE(?, is_best_seller), is_active = COALESCE(?, is_active), faqs = COALESCE(?, faqs), brand = COALESCE(?, brand), sort_order = COALESCE(?, sort_order) WHERE id = ?',
       [
         product.name ?? null,
         product.price ?? null,
@@ -301,7 +326,9 @@ export const productService = {
         product.isNew !== undefined ? Number(product.isNew) : null,
         product.isBestSeller !== undefined ? Number(product.isBestSeller) : null,
         product.isActive !== undefined ? Number(product.isActive) : null,
-        product.faqs ? JSON.stringify(product.faqs) : null, // Store FAQs as JSON string
+        product.faqs ? JSON.stringify(product.faqs) : null,
+        product.brand ?? null,
+        product.sort_order ?? null,
         productId
       ]
     );

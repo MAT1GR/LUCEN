@@ -23,6 +23,8 @@ export interface Product {
   isBestSeller: boolean;
   isActive: boolean;
   faqs?: { question: string; answer: string }[];
+  brand?: string;
+  sort_order?: number;
 }
 
 export interface CartItem {

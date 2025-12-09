@@ -212,3 +212,24 @@ export const deleteProduct = async (req: Request, res: Response) => {
         res.status(500).json({ message: 'Error al eliminar el producto' });
     }
 };
+
+export const reorderProducts = async (req: Request, res: Response) => {
+  try {
+    const { items } = req.body; // Esperamos un array [{id: 1, sort_order: 0}, {id: 2, sort_order: 1}...]
+    
+    const updates = items.map((item: any) => {
+      // Ojo: En SQLite es mejor hacer updates individuales o una transacción
+      return db.products.update(item.id, { sort_order: item.sort_order });
+    });
+
+    await Promise.all(updates);
+    
+    // Limpiamos caché para que la web se actualice
+    productsCache.del('newest-products'); 
+    
+    res.json({ success: true });
+  } catch (error) {
+    console.error("Error reordering:", error);
+    res.status(500).json({ message: 'Error al reordenar' });
+  }
+};
