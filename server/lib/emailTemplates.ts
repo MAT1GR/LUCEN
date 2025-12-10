@@ -306,3 +306,50 @@ export const getOrderDeliveredAdminEmail = (orderId: string, customerName: strin
     </div>
   `;
 };
+
+// --- TEMPLATE 9: NUEVA ORDEN (ADMIN) ---
+export const getNewOrderAdminNotificationEmail = (
+    orderId: string, 
+    orderStatus: string, 
+    customerName: string, 
+    customerEmail: string,
+    paymentMethod: string, 
+    total: number, 
+    itemsListHtml: string
+) => {
+  return `
+    <div style="background-color: ${BG_COLOR}; padding: 40px 10px;">
+      <div style="${containerStyle}">
+        <div style="${headerStyle}">
+          <span style="${logoText}">NUEVO PEDIDO</span>
+        </div>
+        <div style="${contentStyle}">
+          <h2 style="margin-top: 0; color: #000; font-size: 18px; font-weight: 400; text-transform: uppercase; letter-spacing: 1px;">¡Tenés un nuevo pedido en la tienda!</h2>
+          
+          <p>La orden <strong>#${orderId}</strong> acaba de ser creada por <strong>${customerName}</strong> (${customerEmail}).</p>
+
+          <div style="margin: 30px 0; border-top: 1px solid #eee; border-bottom: 1px solid #eee; padding: 20px 0;">
+            <p style="font-size: 10px; text-transform: uppercase; color: #999; margin-bottom: 15px; letter-spacing: 2px;">Resumen del Pedido</p>
+            <ul style="list-style: none; padding: 0;">
+                <li style="margin-bottom: 5px;"><strong>Estado Actual:</strong> <span style="background: #eee; padding: 2px 6px; border-radius: 4px; font-weight: 600;">${orderStatus.toUpperCase()}</span></li>
+                <li style="margin-bottom: 5px;"><strong>Método de Pago:</strong> ${paymentMethod}</li>
+                <li style="margin-bottom: 5px;"><strong>Monto Total:</strong> $${total.toLocaleString('es-AR')}</li>
+            </ul>
+          </div>
+          
+          <div style="margin: 30px 0;">
+            <p style="font-size: 10px; text-transform: uppercase; color: #999; margin-bottom: 15px; letter-spacing: 2px;">Productos</p>
+            ${itemsListHtml}
+          </div>
+
+          <center>
+            <a href="https://denimrosario.com.ar/admin" style="${buttonStyle}">Ir al Panel de Admin</a>
+          </center>
+        </div>
+        <div style="${footerStyle}">
+          <p>Denim Rosario | Notificaciones</p>
+        </div>
+      </div>
+    </div>
+  `;
+};

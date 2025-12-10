@@ -7,6 +7,7 @@ import ProductCard from "../components/ProductCard";
 import SkeletonCard from "../components/SkeletonCard";
 import WhatsAppButton from "../components/WhatsAppButton";
 import homeImage from '../assets/home.webp'; // Import the image
+import homeImageDesktop from '../assets/1.webp';
 import CountdownTimer from "../components/CountdownTimer"; // Importado
 import { Helmet } from 'react-helmet-async';
 import Accordion from "../components/Accordion";
@@ -184,13 +185,16 @@ const HomePage: React.FC = () => {
                     <section
                       className="min-h-[70vh] lg:min-h-screen relative flex flex-col items-center justify-center text-center px-4 py-20 lg:py-32"
                     >
-                      <img
-                        src={homeImage}
-                        alt="Modelo vistiendo jeans de Denim Rosario"
-                        fetchPriority="high"
-                        className="absolute top-0 left-0 w-full h-full object-cover"
-                      />
-                      <div className="absolute top-0 left-0 w-full h-full bg-[rgba(0,0,0,0.45)]" />
+                      <picture className="absolute top-0 left-0 w-full h-full">
+                        <source media="(min-width: 1024px)" srcSet={homeImageDesktop} />
+                        <img
+                          src={homeImage}
+                          alt="Modelo vistiendo jeans de Denim Rosario"
+                          fetchPriority="high"
+                          className="w-full h-full object-cover"
+                        />
+                      </picture>
+                      <div className="absolute top-0 left-0 w-full h-full bg-[rgba(0,0,0,0.7)]" />
                       <div className="z-10 w-full px-4">
             <div className="countdown-section">
               {/* Ajuste de margen para acercar */}

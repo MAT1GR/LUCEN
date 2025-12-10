@@ -61,6 +61,7 @@ import {
   Star,
   FileText,
   MessageCircle,
+  Eye
 } from "lucide-react";
 import { Product } from "../../server/types";
 import { useCart } from "../hooks/useCart";
@@ -101,6 +102,7 @@ const ProductPage: React.FC = () => {
   const [selectedSize, setSelectedSize] = useState<string>("");
   const [quantity, setQuantity] = useState(1);
   const [showSuccess, setShowSuccess] = useState(false);
+  const [viewerCount, setViewerCount] = useState(0); // State for simulated viewers
 
   const [postalCode, setPostalCode] = useState("");
   const [shippingOptions, setShippingOptions] = useState<ShippingOption[]>([]);
@@ -178,6 +180,53 @@ const ProductPage: React.FC = () => {
       };
       fetchProductData();
     }, [id]);
+  
+    useEffect(() => {
+        const getArgentinaHour = () => {
+            const now = new Date();
+            const timeZone = 'America/Argentina/Buenos_Aires';
+            const formatter = new Intl.DateTimeFormat('en-US', {
+                hour: '2-digit',
+                hour12: false,
+                timeZone,
+            });
+            return parseInt(formatter.format(now), 10);
+        };
+
+        const isPeakTime = () => {
+            const hour = getArgentinaHour();
+            // Peak times: 12 PM - 2 PM and 8 PM - 11 PM
+            const isLunchPeak = hour >= 12 && hour < 14;
+            const isEveningPeak = hour >= 20 && hour <= 23;
+            return isLunchPeak || isEveningPeak;
+        };
+
+        const getRandomViewerCount = () => {
+            if (isPeakTime()) {
+                return Math.floor(Math.random() * (12 - 7 + 1)) + 7; // Peak: 7-12
+            } else {
+                return Math.floor(Math.random() * (6 - 2 + 1)) + 2; // Off-peak: 2-6
+            }
+        };
+
+        const initialDelay = Math.random() * 2000;
+        const timeoutId = setTimeout(() => {
+            setViewerCount(getRandomViewerCount());
+
+            const intervalId = setInterval(() => {
+                setViewerCount(prevCount => {
+                    const change = Math.random() > 0.5 ? 1 : -1;
+                    const newCount = prevCount + change;
+                    const [min, max] = isPeakTime() ? [7, 12] : [2, 6];
+                    return Math.max(min, Math.min(max, newCount));
+                });
+            }, 8000 + Math.random() * 4000); // Update every 8-12 seconds
+
+            return () => clearInterval(intervalId);
+        }, initialDelay);
+
+        return () => clearTimeout(timeoutId);
+    }, [id]); // Re-trigger when product changes
   
       useEffect(() => {
         const charLimit = 200; // Character limit to trigger "Read More"
@@ -292,6 +341,15 @@ const ProductPage: React.FC = () => {
                   </h1>
   
                                                                                                             <p className="text-3xl mt-2">${product.price.toLocaleString('es-AR')}</p>
+
+                  {viewerCount > 0 && (
+                    <div className="mt-4 flex items-center text-sm text-red-500 animate-pulse">
+                      <Eye size={16} className="mr-2" />
+                      <span>
+                        <strong>{viewerCount}</strong> personas están viendo este producto
+                      </span>
+                    </div>
+                  )}
   
                                                         
   

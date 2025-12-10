@@ -63,17 +63,11 @@ export async function sendMetaConversionEvent(event: Event): Promise<any> {
   try {
     const response = await axios.post(url, {
       data: [event],
-      // -----------------------------------------------------------------------
-      // MODO PRUEBA ACTIVADO EN PRODUCCIÓN
-      // Esto enviará todos los eventos a la consola de "Probar eventos" de FB.
-      // -----------------------------------------------------------------------
-      test_event_code: 'TEST73357', 
-    }, {
-      headers: {
-        'Content-Type': 'application/json',
-      },
-    });
-
+          }, {
+            headers: {
+              'Content-Type': 'application/json',
+            },
+          });
     console.log(`Meta Conversion Event Sent (${event.event_name}):`, response.data);
     return response.data;
   } catch (error: unknown) {

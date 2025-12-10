@@ -2,7 +2,7 @@ import { Request, Response } from 'express';
 import { db } from '../lib/database.js';
 import { sendMetaConversionEvent } from '../lib/metaConversionService.js';
 import { hashSha256 } from '../lib/utils.js';
-import { sendEmail } from '../emailService.js'; // Importa tu servicio de email
+import { sendEmail, sendNewOrderAdminNotification } from '../emailService.js'; // Importa tu servicio de email
 import { getShippedCadeteEmail, getShippedCorreoEmail, getOrderCancelledEmail, getOrderDeliveredAdminEmail } from '../lib/emailTemplates.js';
 
 export const createOrder = async (req: Request, res: Response) => {
@@ -31,37 +31,15 @@ export const createOrder = async (req: Request, res: Response) => {
             createdAt: new Date(),
         };
 
-        const orderId = db.orders.create(newOrder); 
-        res.status(201).json({ message: 'Pedido creado exitosamente', orderId });
+                        const orderId = db.orders.create(newOrder); 
 
+                        // --- NEW: Admin Email Notification ---
+                        if (orderId) {
+                            sendNewOrderAdminNotification(newOrder, orderId).catch(console.error);
+                        }
+                        // --- END ---
 
-
-        // --- Send Meta Conversion API Purchase Event ---
-        try {
-            const hashedEmail = customerEmail ? hashSha256(customerEmail) : undefined;
-            const clientIpAddress = req.ip;
-            const clientUserAgent = req.headers['user-agent'];
-
-            const purchaseEvent = {
-                event_name: 'Purchase',
-                event_time: Math.floor(Date.now() / 1000), // Unix timestamp
-                action_source: 'website',
-                user_data: {
-                    em: hashedEmail ? [hashedEmail] : undefined,
-                    client_ip_address: clientIpAddress,
-                    client_user_agent: clientUserAgent,
-                },
-                custom_data: {
-                    currency: 'USD', // Assuming USD, adjust as needed
-                    value: total,
-                    content_ids: items.map((item: any) => item.productId), // Assuming items have a productId
-                },
-            };
-            await sendMetaConversionEvent(purchaseEvent);
-        } catch (metaError) {
-            console.error('Error sending Meta Conversion API event:', metaError);
-            // Do not block the order creation response if Meta event fails
-        }
+                        res.status(201).json({ message: 'Pedido creado exitosamente', orderId });
 
     } catch (error) {
         console.error("Error creating order:", error);

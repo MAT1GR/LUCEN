@@ -6,7 +6,7 @@ import { MercadoPagoConfig, Preference, Payment } from "mercadopago";
 import { db } from '../lib/database.js';
 import "dotenv/config";
 import { CartItem } from "../../server/types/index.js";
-import { sendEmail } from '../emailService.js';
+import { sendEmail, sendNewOrderAdminNotification } from '../emailService.js';
 import { getTransferInstructionEmail, getOrderConfirmationEmail } from '../lib/emailTemplates.js';
 
 const router = Router();
@@ -109,6 +109,17 @@ const createMercadoPagoPreference = async (req: Request, res: Response) => {
       paymentMethod: 'mercado-pago',
       createdAt: new Date(),
     });
+
+    // --- NEW: Admin Email Notification ---
+    if (newOrderId) {
+        const fullOrderData = {
+            ...db.orders.getById(newOrderId),
+            customerName: `${shippingInfo.firstName} ${shippingInfo.lastName}`,
+            customerEmail: shippingInfo.email,
+        };
+        sendNewOrderAdminNotification(fullOrderData, newOrderId).catch(console.error);
+    }
+    // --- END ---
 
     // --- Send Meta Conversion API InitiateCheckout Event ---
     try {
@@ -325,6 +336,13 @@ const createTransferOrder = async (req: Request, res: Response) => {
       paymentMethod: 'transferencia',
       createdAt: new Date(),
     });
+
+    // --- NEW: Admin Email Notification ---
+    if (newOrderId) {
+        const fullOrderData = db.orders.getById(newOrderId.toString());
+        sendNewOrderAdminNotification(fullOrderData, newOrderId.toString()).catch(console.error);
+    }
+    // --- END ---
 
     // --- Send Meta Conversion API InitiateCheckout Event ---
     try {
