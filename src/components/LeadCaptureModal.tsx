@@ -13,7 +13,7 @@ const LeadCaptureModal: React.FC<LeadCaptureModalProps> = ({ isOpen, onClose, on
   const [name, setName] = useState('');
   const [phone, setPhone] = useState('');
 
-  if (!isOpen) return null;
+  if (!i0sOpen) return null;
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();

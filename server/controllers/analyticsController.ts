@@ -15,7 +15,7 @@ export const logEvent = async (req: Request, res: Response) => {
 
     // 2. ENVIAR A META (Lógica Nueva)
     // Filtramos para enviar solo eventos relevantes a Facebook y evitar duplicados o basura
-    const metaEvents = ['AddToCart', 'ViewContent', 'InitiateCheckout'];
+    const metaEvents = ['AddToCart', 'ViewContent', 'InitiateCheckout', 'Purchase'];
     
     if (metaEvents.includes(event_name)) {
         try {
