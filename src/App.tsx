@@ -23,6 +23,7 @@ import WhatsAppButton from "./components/WhatsAppButton";
 import ReturnsPolicyPage from "./pages/ReturnsPolicyPage";
 import TransferPendingPage from "./pages/TransferPendingPage";
 import NuestraMisionPage from "./pages/NuestraMisionPage";
+import PrivacyPolicyPage from "./pages/PrivacyPolicyPage";
 import ShippingPage from "./pages/ShippingPage.tsx";
 import CartSidebar from "./components/CartSidebar";
 
@@ -48,6 +49,7 @@ const AnimatedRoutes: React.FC<{isHomePage: boolean, paddingTop: string}> = ({is
         <Route path="/pedido-pendiente/:id" element={<TransferPendingPage />} />
         <Route path="/cambios-y-devoluciones" element={<ReturnsPolicyPage />} />
         <Route path="/nuestra-mision" element={<NuestraMisionPage />} />
+        <Route path="/privacy-policy" element={<PrivacyPolicyPage />} />
       </Routes>
     </main>
   );

@@ -8,14 +8,15 @@ const Footer: React.FC = () => {
   ];
 
   const legalLinks = [
+    { href: "/privacy-policy", label: "Políticas de Privacidad" },
   ];
 
   return (
     <footer className="bg-black text-white">
       <div className="container mx-auto max-w-7xl px-4 py-16">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
           {/* Logo y Descripción */}
-          <div>
+          <div className="md:col-span-1">
             <Link
               to="/"
               className="font-poppins text-xl font-bold tracking-widest uppercase"
@@ -34,6 +35,20 @@ const Footer: React.FC = () => {
             <h3 className="font-semibold tracking-wider uppercase text-gray-300">Ayuda</h3>
             <ul className="mt-4 space-y-2">
               {helpLinks.map((link) => (
+                <li key={link.href}>
+                  <Link to={link.href} className="text-gray-400 hover:text-white transition-colors">
+                    {link.label}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          {/* Legal */}
+          <div>
+            <h3 className="font-semibold tracking-wider uppercase text-gray-300">Legal</h3>
+            <ul className="mt-4 space-y-2">
+              {legalLinks.map((link) => (
                 <li key={link.href}>
                   <Link to={link.href} className="text-gray-400 hover:text-white transition-colors">
                     {link.label}
