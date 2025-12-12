@@ -132,6 +132,41 @@ export const getOrderConfirmationEmail = (customerName: string, orderId: string,
   `;
 };
 
+// --------------------------------------------------------------------------
+// NUEVO: CONFIRMACIÓN DE PAGO MANUAL (Transferencia)
+// --------------------------------------------------------------------------
+export const getOrderPaidEmail = (customerName: string, orderId: string, itemsListHtml: string) => {
+  return `
+    <div style="background-color: ${BG_COLOR}; padding: 40px 10px;">
+      <div style="${containerStyle}">
+        <div style="${headerStyle}">
+          <span style="${logoText}">PAGO RECIBIDO</span>
+        </div>
+        <div style="${contentStyle}">
+          <h2 style="margin-top: 0; color: #000; font-size: 18px; font-weight: 400; text-transform: uppercase; letter-spacing: 1px;">Pedido #${orderId}</h2>
+          
+          <p>Hola ${customerName},</p>
+          <p>Hemos recibido y confirmado tu pago. Ya estamos preparando tu selección con la dedicación que se merece.</p>
+          
+          <div style="margin: 40px 0; border-top: 1px solid #eee; border-bottom: 1px solid #eee; padding: 20px 0;">
+            <p style="font-size: 10px; text-transform: uppercase; color: #999; margin-bottom: 15px; letter-spacing: 2px;">Tu Selección</p>
+            ${itemsListHtml} 
+          </div>
+
+          <p style="font-size: 13px; color: #666;">Te notificaremos en cuanto el paquete esté en camino.</p>
+          
+          <center>
+            <a href="https://denimrosario.com.ar/cuenta/pedidos/${orderId}" style="${buttonStyle}">Ver Estado</a>
+          </center>
+        </div>
+        <div style="${footerStyle}">
+          <p>Denim Rosario | ¿Dudas? Respondé este correo.</p>
+        </div>
+      </div>
+    </div>
+  `;
+};
+
 // --- TEMPLATE 3: ALERTA DE DROP (Automática) ---
 export const getDropAlertEmail = (
     customerName: string, 

@@ -74,6 +74,7 @@ const PaymentSuccessPage: React.FC = () => {
 
     useEffect(() => {
         if (order) {
+            const eventId = sessionStorage.getItem('meta_event_id');
             track('Purchase', {
                 value: order.total,
                 currency: 'ARS',
@@ -86,7 +87,7 @@ const PaymentSuccessPage: React.FC = () => {
                 })),
                 content_type: 'product',
                 order_id: order.id,
-            });
+            }, eventId || undefined);
         }
     }, [order]);
 

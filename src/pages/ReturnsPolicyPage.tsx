@@ -37,7 +37,7 @@ const ReturnsPolicyPage: React.FC = () => {
                 <li>Podés cambiarlo por otro talle, otro modelo o solicitar la devolución de tu dinero.</li>
                 <li><strong>Condición:</strong> El producto debe estar en perfectas condiciones, sin uso, sin lavar y con sus etiquetas originales.</li>
                 <li><strong>Costo de envío:</strong> El costo del envío de vuelta a nuestro depósito corre por tu cuenta. Sin embargo, si es un cambio por otro producto, <strong>el envío de vuelta a tu casa es gratis</strong>.</li>
-                 <li>Para iniciar el proceso, simplemente respondé a tu mail de confirmación de compra o escribinos a <a href="mailto:contacto@rosariodenim.com" className="text-blue-500 hover:underline">contacto@rosariodenim.com</a>.</li>
+                 <li>Para iniciar el proceso, simplemente escribinos a nuestro <a href="https://wa.me/543413981584" target="_blank" rel="noopener noreferrer" className="text-blue-500 hover:underline">WhatsApp 3413981584</a>.</li>
               </ul>
             </div>
 

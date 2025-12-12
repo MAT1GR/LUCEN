@@ -15,11 +15,16 @@ export const init = () => {
  * Tracks a standard Meta Pixel event.
  * @param eventName The name of the standard event (e.g., 'ViewContent', 'AddToCart').
  * @param data Optional data payload for the event.
+ * @param eventId Optional unique ID for event deduplication.
  */
-export const track = (eventName: string, data?: object) => {
+export const track = (eventName: string, data?: object, eventId?: string) => {
     // Fire the Meta Pixel event
     if ((window as any).fbq) {
-        (window as any).fbq('track', eventName, data);
+        if (eventId) {
+            (window as any).fbq('track', eventName, data, { eventID: eventId });
+        } else {
+            (window as any).fbq('track', eventName, data);
+        }
     }
 
     // Log the event to our own backend

@@ -107,6 +107,7 @@ const parseOrder = (row: any): Order => ({
   shippingDetails: row.shipping_details,
   paymentMethod: row.payment_method,
   createdAt: new Date(row.created_at),
+  eventId: row.eventId, // Include eventId in the parsed order
 });
 
 const parseCustomer = (row: any): Customer => ({
@@ -388,69 +389,137 @@ export const productService = {
 };
 
 export const orderService = {
+
   create(orderData: any): string {
+
     const db = getDB();
+
     const orderId = crypto.randomUUID();
 
+
+
     // Handle different shapes of shipping data from controllers
+
     const shipping = orderData.shippingAddress || orderData.shippingInfo || {};
+
     
+
     const {
+
         customerId,
+
         customerName,
+
         customerEmail,
+
         customerPhone,
+
         customerDocNumber, // Puede venir undefined
+
         items,
+
         total,
+
         status,
+
         paymentMethod,
+
         shippingDetails, // Corrected from shipping_details to match JS conventions
+
+        eventId, // Added for Meta Pixel deduplication
+
         createdAt = new Date()
+
     } = orderData;
 
+
+
     // --- CORRECCIÓN: Añadimos '|| null' para asegurar que no sea undefined ---
+
     const shippingStreetName = orderData.shippingStreetName || shipping.streetName || null;
+
     const shippingStreetNumber = orderData.shippingStreetNumber || shipping.streetNumber || null;
+
     const shippingApartment = orderData.shippingApartment || shipping.apartment || null;
+
     const shippingDescription = orderData.shippingDescription || shipping.description || null;
+
     const shippingCity = orderData.shippingCity || shipping.city || null;
+
     const shippingPostalCode = orderData.shippingPostalCode || shipping.postalCode || null;
+
     const shippingProvince = orderData.shippingProvince || shipping.province || null;
+
     
+
     const shippingCost = orderData.shippingCost ?? (orderData.shipping?.cost ?? 0);
+
     const shippingName = orderData.shippingName || (orderData.shipping?.name || 'No especificado');
 
+
+
     db.run(
+
       `INSERT INTO orders (id, customer_id, customer_name, customer_email, customer_phone, customer_doc_number, items, total, status, created_at, 
-        shipping_street_name, shipping_street_number, shipping_apartment, shipping_description, shipping_city, shipping_postal_code, shipping_province, shipping_cost, shipping_name, shipping_details, payment_method)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+
+        shipping_street_name, shipping_street_number, shipping_apartment, shipping_description, shipping_city, shipping_postal_code, shipping_province, shipping_cost, shipping_name, shipping_details, payment_method, eventId)
+
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) `,
+
       [
+
         orderId,
+
         customerId,
+
         customerName,
+
         customerEmail,
+
         customerPhone,
+
         customerDocNumber || null, // Aseguramos null aquí también
+
         JSON.stringify(items),
+
         total,
+
         status,
+
         createdAt.toISOString(),
+
         shippingStreetName,
+
         shippingStreetNumber,
+
         shippingApartment,
+
         shippingDescription,
+
         shippingCity,
+
         shippingPostalCode,
+
         shippingProvince,
+
         shippingCost,
+
         shippingName,
+
         shippingDetails || null,
-        paymentMethod || null
+
+        paymentMethod || null,
+
+        eventId || null // Add eventId to the query
+
       ]
+
     );
+
     saveDatabase();
+
     return orderId;
+
   },
 
   getAll(filters: { status?: string; searchTerm?: string; page?: number; limit?: number }): { orders: Order[], totalPages: number, currentPage: number, totalOrders: number } {

@@ -202,6 +202,18 @@ function runMigrations() {
       console.error('[DB] Migration for brand column failed:', e);
     }
   }
+
+  try {
+    console.log('[DB] Migration: Adding eventId to orders...');
+    db.run("ALTER TABLE orders ADD COLUMN eventId TEXT");
+    console.log('[DB] Migration applied successfully: added eventId column.');
+  } catch (e: any) {
+    if (e.message && e.message.includes('duplicate column name')) {
+      console.log('[DB] Migration skipped: eventId column already exists.');
+    } else {
+      console.error('[DB] Migration for eventId column failed:', e);
+    }
+  }
   
   saveDatabase();
 }

@@ -3,7 +3,14 @@ import { db } from '../lib/database.js';
 import { sendMetaConversionEvent } from '../lib/metaConversionService.js';
 import { hashSha256 } from '../lib/utils.js';
 import { sendEmail, sendNewOrderAdminNotification } from '../emailService.js'; // Importa tu servicio de email
-import { getShippedCadeteEmail, getShippedCorreoEmail, getOrderCancelledEmail, getOrderDeliveredAdminEmail } from '../lib/emailTemplates.js';
+import { getShippedCadeteEmail, getShippedCorreoEmail, getOrderCancelledEmail, getOrderDeliveredAdminEmail, getOrderPaidEmail } from '../lib/emailTemplates.js';
+import { Order, CartItem } from '../../types/index.js'; // Import Order and CartItem types
+
+// Define a more specific type for order when shippingMethod is accessed
+interface OrderWithShippingDetails extends Order {
+    shippingMethod?: string; // It seems shippingMethod might be optional on the base Order type
+    shippingName?: string; // Add shippingName as it's used in delivered status
+}
 
 export const createOrder = async (req: Request, res: Response) => {
     try {
@@ -83,23 +90,38 @@ export const updateOrderStatus = async (req: Request, res: Response) => {
 
                 // --- LÓGICA DE CORREOS INTELIGENTES CON NUEVAS PLANTILLAS ---
                 if (status === 'shipped') {
-                    const isRosarioCadete = (order as any).shippingMethod === 'cadete' || (order.shippingDetails && order.shippingDetails.includes('/'));
+                    const typedOrder = order as OrderWithShippingDetails; // Use the specific type here
+                    const isRosarioCadete = typedOrder.shippingMethod === 'cadete' || (typedOrder.shippingDetails && typedOrder.shippingDetails.includes('/'));
 
                     if (isRosarioCadete) {
-                        subject = `¡Tu pedido llega el ${order.shippingDetails}! 🛵`;
-                        htmlBody = getShippedCadeteEmail(order.customerName, orderId, order.shippingDetails || 'próximamente');
+                        subject = `¡Tu pedido llega el ${typedOrder.shippingDetails}! 🛵`;
+                        htmlBody = getShippedCadeteEmail(typedOrder.customerName, orderId, typedOrder.shippingDetails || 'próximamente');
                     } else {
                         subject = `¡Tu pedido está en camino! 🚚`;
-                        htmlBody = getShippedCorreoEmail(order.customerName, orderId, order.shippingDetails || 'sin seguimiento');
+                        htmlBody = getShippedCorreoEmail(typedOrder.customerName, orderId, typedOrder.shippingDetails || 'sin seguimiento');
                     }
                 } else if (status === 'cancelled') {
                     subject = `Aviso sobre tu pedido #${orderId}`;
                     htmlBody = getOrderCancelledEmail(order.customerName, orderId);
+                } else if (status === 'paid') {
+                    subject = `¡Confirmado! Tu pedido #${orderId} ya es tuyo 🎉`;
+                    const itemsListHtml = `
+                        <ul style="list-style: none; padding: 0;">
+                            ${(order.items as CartItem[]).map((item) => `
+                                <li style="margin-bottom: 10px; border-bottom: 1px solid #eee; padding-bottom: 10px;">
+                                    <strong>${item.product.name}</strong> (Talle: ${item.size})
+                                    <br>
+                                    <span>${item.quantity} x $${item.product.price.toLocaleString('es-AR')}</span>
+                                </li>
+                            `).join('')}
+                        </ul>
+                    `;
+                    htmlBody = getOrderPaidEmail(order.customerName, orderId, itemsListHtml);
                 } else if (status === 'delivered') {
                     subject = `¡Pedido Entregado! #${orderId} de ${order.customerName}`;
                     const itemsListHtml = `
                         <ul style="list-style: none; padding: 0;">
-                            ${order.items.map((item: any) => `
+                            ${(order.items as CartItem[]).map((item) => `
                                 <li style="margin-bottom: 5px; border-bottom: 1px solid #eee; padding-bottom: 5px;">
                                     <strong>${item.product.name}</strong> (Talle: ${item.size}) x ${item.quantity} - $${item.product.price.toLocaleString('es-AR')}
                                 </li>
@@ -112,7 +134,7 @@ export const updateOrderStatus = async (req: Request, res: Response) => {
                         order.customerEmail,
                         order.customerPhone || 'N/A',
                         `${order.shippingStreetName} ${order.shippingStreetNumber}, ${order.shippingCity}, ${order.shippingProvince}`,
-                        `${order.shippingName} - ${order.shippingDetails}`,
+                        `${(order as OrderWithShippingDetails).shippingName} - ${order.shippingDetails}`,
                         order.paymentMethod,
                         order.total,
                         itemsListHtml
@@ -152,7 +174,7 @@ export const getOrderById = async (req: Request, res: Response) => {
                     cuit: process.env.TRANSFER_HOLDER_CUIT,
                 };
                 // Attach bank details to the order object being sent to the client
-                (order as any).bankDetails = bankDetails;
+                (order as Order & { bankDetails?: any }).bankDetails = bankDetails;
             }
             res.json(order);
         } else {

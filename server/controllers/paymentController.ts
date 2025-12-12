@@ -61,7 +61,7 @@ const createMercadoPagoPreference = async (req: Request, res: Response) => {
     }
 
     const client = new MercadoPagoConfig({ accessToken });
-    const { items, shippingCost, shippingInfo, shipping, shippingDetails } = req.body;
+    const { items, shippingCost, shippingInfo, shipping, shippingDetails, eventId } = req.body;
 
     if (!items || !Array.isArray(items) || items.length === 0) {
       return res.status(400).json({ message: "Carrito vacío." });
@@ -108,6 +108,7 @@ const createMercadoPagoPreference = async (req: Request, res: Response) => {
       shippingDetails: shippingDetails || null,
       paymentMethod: 'mercado-pago',
       createdAt: new Date(),
+      eventId: eventId, // Pass the eventId to the create method
     });
 
     // --- NEW: Admin Email Notification ---
@@ -131,6 +132,7 @@ const createMercadoPagoPreference = async (req: Request, res: Response) => {
             event_name: 'InitiateCheckout',
             event_time: Math.floor(Date.now() / 1000),
             action_source: 'website',
+            event_id: eventId, // Include event_id for deduplication
             user_data: {
                 em: hashedEmail ? [hashedEmail] : undefined,
                 client_ip_address: clientIpAddress,
@@ -258,6 +260,7 @@ const processPayment = async (req: Request, res: Response) => {
                 event_name: 'Purchase',
                 event_time: Math.floor(Date.now() / 1000), // Unix timestamp
                 action_source: 'website', // Assuming the purchase originated from the website
+                event_id: order.eventId, // Include event_id for deduplication
                 user_data: {
                     em: hashedEmail ? [hashedEmail] : undefined,
                 },
@@ -286,7 +289,7 @@ const processPayment = async (req: Request, res: Response) => {
 };
 
 const createTransferOrder = async (req: Request, res: Response) => {
-  const { items, shippingInfo, shipping, shippingDetails } = req.body;
+  const { items, shippingInfo, shipping, shippingDetails, eventId } = req.body;
 
   try {
     if (!items || items.length === 0) return res.status(400).json({ message: "Carrito vacío." });
@@ -335,6 +338,7 @@ const createTransferOrder = async (req: Request, res: Response) => {
       shippingDetails: shippingDetails || null,
       paymentMethod: 'transferencia',
       createdAt: new Date(),
+      eventId: eventId, // Pass the eventId to the create method
     });
 
     // --- NEW: Admin Email Notification ---
@@ -354,6 +358,7 @@ const createTransferOrder = async (req: Request, res: Response) => {
             event_name: 'InitiateCheckout',
             event_time: Math.floor(Date.now() / 1000),
             action_source: 'website',
+            event_id: eventId, // Include event_id for deduplication
             user_data: {
                 em: hashedEmail ? [hashedEmail] : undefined,
                 client_ip_address: clientIpAddress,
@@ -373,11 +378,11 @@ const createTransferOrder = async (req: Request, res: Response) => {
 
     const emailHtml = getTransferInstructionEmail(shippingInfo.firstName, finalTotal, newOrderId.toString());
 
-    sendEmail(
-        shippingInfo.email,
-        `⏳ Tenés 15 minutos: Instrucciones para tu Pedido #${newOrderId}`,
-        emailHtml
-    );
+    // sendEmail(
+    //     shippingInfo.email,
+    //     `⏳ Tenés 15 minutos: Instrucciones para tu Pedido #${newOrderId}`,
+    //     emailHtml
+    // );
 
     const order = db.orders.getById(newOrderId.toString());
 

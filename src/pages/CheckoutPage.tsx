@@ -5,6 +5,7 @@ import { useCart } from "../hooks/useCart";
 import { CartItem as CartItemType } from "../../server/types";
 import { useSettings } from "../hooks/useSettings";
 import { CadeteDaySelector } from "../components/CadeteDaySelector";
+import { generateEventId } from '../lib/utils';
 import { track } from '../lib/meta';
 
 interface ShippingOption {
@@ -48,6 +49,8 @@ const CheckoutPage: React.FC = () => {
   const totalWithDiscount = total * 0.9;
 
   useEffect(() => {
+    const eventId = generateEventId();
+    sessionStorage.setItem('meta_event_id', eventId);
     track('InitiateCheckout', {
         value: subtotal,
         currency: 'ARS',
@@ -59,7 +62,7 @@ const CheckoutPage: React.FC = () => {
             item_price: item.product.price
         })),
         content_type: 'product',
-    });
+    }, eventId);
   }, []); // Run only once to track the initiation
 
   useEffect(() => {
@@ -139,6 +142,7 @@ const CheckoutPage: React.FC = () => {
     setError(null);
 
     const finalTotal = paymentMethod === "transferencia" ? totalWithDiscount : total;
+    const eventId = sessionStorage.getItem('meta_event_id');
 
     const orderPayload = {
       items: cartItems,
@@ -148,6 +152,7 @@ const CheckoutPage: React.FC = () => {
         : { id: 'correo', name: 'Envío Gratis', cost: 0 }, // Fallback
       shippingDetails: selectedShipping?.id === 'cadete' ? selectedCadeteDay?.label : selectedShipping?.name || 'Envío Estándar',
       total: finalTotal,
+      eventId, // Include the event_id for deduplication
     };
 
     if (paymentMethod === "mercado-pago") {

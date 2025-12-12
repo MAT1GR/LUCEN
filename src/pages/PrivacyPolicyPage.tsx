@@ -2,7 +2,7 @@ const PrivacyPolicyPage = () => (
     <div className="container mx-auto px-4 py-8">
         <h1 className="text-3xl font-bold mb-4">Política de Privacidad</h1>
         <p className="mb-4">
-            En [Nombre de tu marca], nos tomamos muy en serio tu privacidad. Esta Política de Privacidad describe cómo recopilamos, usamos, divulgamos y protegemos tu información personal.
+            En DenimRosario, nos tomamos muy en serio tu privacidad. Esta Política de Privacidad describe cómo recopilamos, usamos, divulgamos y protegemos tu información personal.
         </p>
         <h2 className="text-2xl font-bold mb-2">Información que recopilamos</h2>
         <p className="mb-4">
