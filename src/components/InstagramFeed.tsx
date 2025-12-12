@@ -25,35 +25,7 @@ const InstagramFeed: React.FC = () => {
           @denimrosario
         </a>
 
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-2 md:gap-4 mt-12">
-          {placeholderPosts.map(post => (
-            <a 
-              key={post.id}
-              href="https://www.instagram.com/denim.rosario"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="relative group aspect-square"
-            >
-              <img 
-                src={post.id === 1 ? post.image : post.image.replace('?text=', `?text=${encodeURIComponent('Jean Style ' + post.id)}`)}
-                alt={`Instagram post ${post.id}`} 
-                className="w-full h-full object-cover"
-              />
-              <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-40 transition-all duration-300 flex items-center justify-center">
-                <div className="flex items-center gap-6 opacity-0 group-hover:opacity-100 text-white">
-                  <div className="flex items-center gap-2">
-                    <Heart size={20} fill="white" />
-                    <span className="font-bold text-lg">{post.likes}</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <MessageCircle size={20} fill="white" />
-                    <span className="font-bold text-lg">{post.comments}</span>
-                  </div>
-                </div>
-              </div>
-            </a>
-          ))}
-        </div>
+
       </div>
     </div>
   );

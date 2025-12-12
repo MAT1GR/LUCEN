@@ -7,6 +7,14 @@ if (token) {
   console.warn("[MercadoPago] WARNING: Access token not found.");
 }
 
+// --- DEBUG: Verificar variables de transferencia ---
+console.log("[DEBUG] TRANSFER_BANK_NAME:", process.env.TRANSFER_BANK_NAME);
+console.log("[DEBUG] TRANSFER_CVU:", process.env.TRANSFER_CVU);
+console.log("[DEBUG] TRANSFER_ALIAS:", process.env.TRANSFER_ALIAS);
+console.log("[DEBUG] TRANSFER_HOLDER_NAME:", process.env.TRANSFER_HOLDER_NAME);
+console.log("[DEBUG] TRANSFER_HOLDER_CUIT:", process.env.TRANSFER_HOLDER_CUIT);
+// --- FIN DEBUG ---
+
 const apiBaseUrl = process.env.VITE_API_BASE_URL;
 if (apiBaseUrl) {
     console.log("[Server] VITE_API_BASE_URL is set to:", apiBaseUrl);

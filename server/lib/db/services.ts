@@ -41,11 +41,29 @@ const parseProduct = (row: any): Product => {
     // Defaults to empty array if parsing fails
   }
 
+  let images = [];
+  try {
+    if (row.images) {
+      images = JSON.parse(row.images);
+    }
+  } catch (e) {
+    console.error(`Failed to parse images for product ID ${row.id}:`, e);
+  }
+
+  let sizes = {};
+  try {
+    if (row.sizes) {
+      sizes = JSON.parse(row.sizes);
+    }
+  } catch (e) {
+    console.error(`Failed to parse sizes for product ID ${row.id}:`, e);
+  }
+
   return {
     id: String(row.id),
     name: row.name,
     price: row.price,
-    images: JSON.parse(row.images),
+    images: images,
     video: row.video,
     category: row.category,
     description: row.description,
@@ -56,7 +74,7 @@ const parseProduct = (row: any): Product => {
     waist_flat: row.waist_flat,
     isWaistStretchy: Boolean(row.is_waist_stretchy),
     length: row.length,
-    sizes: JSON.parse(row.sizes),
+    sizes: sizes,
     isNew: Boolean(row.is_new),
     isBestSeller: Boolean(row.is_best_seller),
     isActive: Boolean(row.is_active),

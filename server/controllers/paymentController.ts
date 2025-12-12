@@ -379,7 +379,20 @@ const createTransferOrder = async (req: Request, res: Response) => {
         emailHtml
     );
 
-    res.status(201).json({ id: newOrderId.toString(), order: db.orders.getById(newOrderId.toString()) });
+    const order = db.orders.getById(newOrderId.toString());
+
+    if (order) {
+      const bankDetails = {
+        bank: process.env.TRANSFER_BANK_NAME,
+        cvu: process.env.TRANSFER_CVU,
+        alias: process.env.TRANSFER_ALIAS,
+        titular: process.env.TRANSFER_HOLDER_NAME,
+        cuit: process.env.TRANSFER_HOLDER_CUIT,
+      };
+      (order as any).bankDetails = bankDetails;
+    }
+
+    res.status(201).json({ id: newOrderId.toString(), order });
 
   } catch (error: any) {
     console.error("Error orden transferencia:", error);

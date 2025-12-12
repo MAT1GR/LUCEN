@@ -1,4 +1,4 @@
-import React, { useState, lazy, Suspense } from "react";
+import React, { useState, lazy, Suspense, useEffect } from "react";
 import {
   BrowserRouter as Router,
   Routes,
@@ -26,6 +26,7 @@ import NuestraMisionPage from "./pages/NuestraMisionPage";
 import PrivacyPolicyPage from "./pages/PrivacyPolicyPage";
 import ShippingPage from "./pages/ShippingPage.tsx";
 import CartSidebar from "./components/CartSidebar";
+
 
 const AnimatedRoutes: React.FC<{isHomePage: boolean, paddingTop: string}> = ({isHomePage, paddingTop}) => {
   const location = useLocation();
@@ -62,6 +63,8 @@ const MainLayout: React.FC = () => {
   const paddingTop = isHomePage ? '' : 'pt-[80px]';
   const [isCartOpen, setIsCartOpen] = useState(false); // isCartOpen state moved here
 
+
+
   return (
     <div className="min-h-screen flex flex-col">
       <Header onCartClick={() => setIsCartOpen(true)} />
@@ -80,6 +83,7 @@ const MainLayout: React.FC = () => {
 function App() {
   const auth = useAuthProvider();
   // location, isHomePage, paddingTop, isCartOpen state moved to MainLayout
+
 
 
   return (

@@ -190,7 +190,7 @@ const HomePage: React.FC = () => {
                         <img
                           src={homeImage}
                           alt="Modelo vistiendo jeans de Denim Rosario"
-                          fetchPriority="high"
+                          fetchpriority="high"
                           className="w-full h-full object-cover"
                         />
                       </picture>
