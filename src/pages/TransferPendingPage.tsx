@@ -7,7 +7,7 @@ import {
   Loader,
   Clock,
 } from "lucide-react";
-import whatsappLogo from '../assets/whatsapp-logo.png'; // Import the WhatsApp logo
+import whatsappLogo from '../assets/whatsapp-logo.webp'; // Import the WhatsApp logo
 
 import { Order } from "../types";
 import { useCart } from "../hooks/useCart";

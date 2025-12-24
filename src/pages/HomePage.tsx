@@ -62,7 +62,16 @@ const HomePage: React.FC = () => {
 
         const newProductsData = await newProductsRes.json();
         
-        setNewProducts(newProductsData);
+        // Sort products: available ones first
+        const sortedProducts = [...newProductsData].sort((a, b) => {
+          const aInStock = Object.values(a.sizes).some((s: any) => s.available && s.stock > 0);
+          const bInStock = Object.values(b.sizes).some((s: any) => s.available && s.stock > 0);
+          if (aInStock && !bInStock) return -1;
+          if (!aInStock && bInStock) return 1;
+          return 0;
+        });
+
+        setNewProducts(sortedProducts);
         
 
       } catch (error) {
@@ -183,7 +192,7 @@ const HomePage: React.FC = () => {
 
       <div className={`bg-gradient-to-b from-[#0d0d0d] to-[#1a1a1a] text-white transition-all duration-300 ${isModalOpen ? '' : ''}`}>
                     <section
-                      className="min-h-[70vh] lg:min-h-screen relative flex flex-col items-center justify-center text-center px-4 py-20 lg:py-32"
+                      className="min-h-[70vh] lg:min-h-screen relative flex flex-col items-center justify-start text-center px-4 pt-32 pb-20 lg:pt-48"
                     >
                       <picture className="absolute top-0 left-0 w-full h-full">
                         <source media="(min-width: 1024px)" srcSet={homeImageDesktop} />
@@ -196,30 +205,33 @@ const HomePage: React.FC = () => {
                       </picture>
                       <div className="absolute top-0 left-0 w-full h-full bg-[rgba(0,0,0,0.7)]" />
                       <div className="z-10 w-full px-4">
-            <div className="countdown-section">
-              {/* Ajuste de margen para acercar */}
-              <h3 className="text-xl font-medium tracking-wide">PRÓXIMO DROP EN:</h3> 
-              <div className="mt-4 mx-auto">
+            <div className="countdown-section mt-12 mb-0">
+              <p className="text-sm md:text-base font-medium tracking-normal uppercase text-white/80 mb-1">
+                PRÓXIMO DROP EN:
+              </p>
+              <div className="mx-auto">
                 <CountdownTimer /> 
               </div>
             </div>
-            {/* CORRECCIÓN: Se ajusta mt-4 a mt-2 para subir el botón */}
-            <div className="flex flex-col sm:flex-row justify-center items-center gap-4 sm:gap-2 -mt-6"> 
+            <div className="flex flex-col sm:flex-row justify-center items-center gap-0 -mt-6"> 
               <button
                 onClick={handleScrollToLastDrop}
                 className="inline-flex items-center gap-2 bg-[#F5F5DC] text-[#2C3E50] px-4 sm:px-10 py-2 sm:py-3 rounded-sm text-sm font-bold group transition-colors"
               >
-                COMPRAR ÚLTIMO DROP
+                VER EL DROP
                 <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
               </button>
             </div>
-
-            {/* AGREGAR ESTO: Mensaje de Envío Gratis sutil pero visible */}
-            <p className="mt-6 text-xs md:text-sm font-medium tracking-[0.2em] uppercase text-white/80 animate-pulse-slow">
-              Envíos gratis a toda Argentina
+          </div>
+          {/* Mensaje de Envío Gratis y cambios arriba de la flecha */}
+          <div className="absolute bottom-24 left-0 w-full flex flex-col items-center gap-2 z-10">
+            <p className="text-[10px] md:text-xs font-medium tracking-[0.2em] uppercase text-white/60">
+              Envíos a todo Argentina
             </p>
-
-
+            <div className="w-8 h-[1px] bg-white/20" />
+            <p className="text-[10px] md:text-xs font-medium tracking-[0.2em] uppercase text-white/60">
+              Cambios sin problema
+            </p>
           </div>
           {/* Solo se deja el indicador de flecha */}
           <p className="absolute bottom-8 left-1/2 -translate-x-1/2 text-base text-white animate-pulse-slow">
@@ -235,8 +247,8 @@ const HomePage: React.FC = () => {
               <h2 className="text-3xl lg:text-4xl font-medium tracking-[1px] uppercase">
                 ÚLTIMO DROP
               </h2>
-              <p className="mt-2 text-sm text-red-500">
-                Última unidad de cada prenda
+              <p className="mt-2 text-sm text-gray-500 uppercase tracking-widest">
+                Modelos disponibles ahora
               </p>
             </div>
             {loading ? renderSkeletons() : error ? <p className="text-center text-red-500">{error}</p> : newProducts.length > 0 ? (
@@ -254,8 +266,9 @@ const HomePage: React.FC = () => {
           <div className="container mx-auto px-4">
             <div className="text-center mb-12">
               <h2 className="text-3xl lg:text-4xl font-bold tracking-tight uppercase">
-                Lo que dicen nuestras clientas
+                Opiniones
               </h2>
+              <p className="text-gray-500 mt-2">Mensajes reales de quienes ya nos escribieron.</p>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
               {hardcodedTestimonials.map((testimonial) => (
@@ -273,7 +286,7 @@ const HomePage: React.FC = () => {
                 Lo que nos hace diferentes
               </h2>
             </div>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-12 text-center">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-12 text-center max-w-4xl mx-auto">
   
   {/* Ítem 1: Mantenemos la exclusividad */}
   <div className="flex flex-col items-center">
@@ -284,17 +297,7 @@ const HomePage: React.FC = () => {
     </p>
   </div>
 
-  {/* Ítem 2: Enfocado en modelos únicos */}
-  <div className="flex flex-col items-center">
-    <Box className="w-10 h-10 mb-4 text-gray-800" />
-    <h3 className="text-lg font-semibold uppercase tracking-wider">MODELOS ÚNICOS</h3>
-    <p className="mt-2 text-sm text-gray-600">
-      Encontrá diseños que te hacen diferente.<br />
-      <span className="font-bold">Destacate con un estilo que solo vos tenés.</span>
-    </p>
-  </div>
-
-  {/* Ítem 3: Calidad */}
+  {/* Ítem 2: Calidad */}
   <div className="flex flex-col items-center">
     <Eye className="w-10 h-10 mb-4 text-gray-800" />
     <h3 className="text-lg font-semibold uppercase tracking-wider">CALIDAD RÍGIDA</h3>

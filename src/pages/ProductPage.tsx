@@ -11,13 +11,17 @@ const ProductMeasurements: React.FC<{ product: Product }> = ({ product }) => {
 
   return (
     <div className="py-5 border-y border-gray-100 my-6">
-      <div className="flex items-center justify-center mb-6">
+      <div className="flex items-center justify-center mb-3">
         <div className="flex items-center gap-2">
           <Ruler size={14} className="text-gray-400" />
           <span className="text-base font-bold text-black uppercase tracking-widest">
             Medidas
           </span>
         </div>
+      </div>
+
+      <div className="text-center px-4 mb-6 text-sm text-gray-600">
+        <p>Si dudás entre dos talles, recomendamos elegir el más chico o escribirnos.</p>
       </div>
 
       <div className="grid grid-cols-3 gap-4 text-sm text-gray-800">
@@ -46,22 +50,17 @@ const ProductMeasurements: React.FC<{ product: Product }> = ({ product }) => {
 };
 
 import React, { useState, useEffect, useRef } from "react";
-import { useParams, Link, useNavigate } from "react-router-dom";
+import { useParams, Link } from "react-router-dom";
 import {
-  Plus,
-  Minus,
   CheckCircle,
-  HelpCircle,
   Truck,
   ShieldCheck,
   Undo2,
   Ruler,
   ShoppingCart,
   Loader2,
-  Star,
   FileText,
-  MessageCircle,
-  Eye
+  MessageCircle
 } from "lucide-react";
 import { Product } from "../../server/types";
 import { useCart } from "../hooks/useCart";
@@ -94,15 +93,12 @@ const Breadcrumbs: React.FC<{ product: Product }> = ({ product }) => (
 
 const ProductPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
-  const navigate = useNavigate();
   const { addToCart, isAdding } = useCart();
   const [product, setProduct] = useState<Product | null>(null);
   const [relatedProducts, setRelatedProducts] = useState<Product[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [selectedSize, setSelectedSize] = useState<string>("");
-  const [quantity, setQuantity] = useState(1);
   const [showSuccess, setShowSuccess] = useState(false);
-  const [viewerCount, setViewerCount] = useState(0); // State for simulated viewers
 
   const [postalCode, setPostalCode] = useState("");
   const [shippingOptions, setShippingOptions] = useState<ShippingOption[]>([]);
@@ -180,53 +176,6 @@ const ProductPage: React.FC = () => {
       };
       fetchProductData();
     }, [id]);
-  
-    useEffect(() => {
-        const getArgentinaHour = () => {
-            const now = new Date();
-            const timeZone = 'America/Argentina/Buenos_Aires';
-            const formatter = new Intl.DateTimeFormat('en-US', {
-                hour: '2-digit',
-                hour12: false,
-                timeZone,
-            });
-            return parseInt(formatter.format(now), 10);
-        };
-
-        const isPeakTime = () => {
-            const hour = getArgentinaHour();
-            // Peak times: 12 PM - 2 PM and 8 PM - 11 PM
-            const isLunchPeak = hour >= 12 && hour < 14;
-            const isEveningPeak = hour >= 20 && hour <= 23;
-            return isLunchPeak || isEveningPeak;
-        };
-
-        const getRandomViewerCount = () => {
-            if (isPeakTime()) {
-                return Math.floor(Math.random() * (12 - 7 + 1)) + 7; // Peak: 7-12
-            } else {
-                return Math.floor(Math.random() * (6 - 2 + 1)) + 2; // Off-peak: 2-6
-            }
-        };
-
-        const initialDelay = Math.random() * 2000;
-        const timeoutId = setTimeout(() => {
-            setViewerCount(getRandomViewerCount());
-
-            const intervalId = setInterval(() => {
-                setViewerCount(prevCount => {
-                    const change = Math.random() > 0.5 ? 1 : -1;
-                    const newCount = prevCount + change;
-                    const [min, max] = isPeakTime() ? [7, 12] : [2, 6];
-                    return Math.max(min, Math.min(max, newCount));
-                });
-            }, 8000 + Math.random() * 4000); // Update every 8-12 seconds
-
-            return () => clearInterval(intervalId);
-        }, initialDelay);
-
-        return () => clearTimeout(timeoutId);
-    }, [id]); // Re-trigger when product changes
   
       useEffect(() => {
         const charLimit = 200; // Character limit to trigger "Read More"
@@ -340,115 +289,48 @@ const ProductPage: React.FC = () => {
                     {product.name}
                   </h1>
   
-                                                                                                            <p className="text-3xl mt-2">${product.price.toLocaleString('es-AR')}</p>
-
-                  {viewerCount > 0 && (
-                    <div className="mt-4 flex items-center text-sm text-red-500 animate-pulse">
-                      <Eye size={16} className="mr-2" />
-                      <span>
-                        <strong>{viewerCount}</strong> personas están viendo este producto
-                      </span>
-                    </div>
-                  )}
+                  <p className="text-3xl mt-2 font-bold">${product.price.toLocaleString('es-AR')}</p>
+                  <p className="text-base text-gray-600 mt-2">
+                    Jean de calce relajado, tiro medio y denim firme para uso diario.
+                  </p>
   
                                                         
   
-                                                                                                                                                              {/* BOTONES DE COMPRA */}
-  
-                                                                                                                                                              <div className="mt-12 mb-6 flex flex-col sm:flex-row gap-3">
-  
-                                                                                                                                                                  <div className="relative flex-1">
-  
-                                                                                                                                                                      <div className="absolute bottom-full w-full bg-green-600 text-white text-xs font-bold text-center py-1 rounded-t-md">
-  
-                                                                                                                                                                          <Truck size={12} className="inline-block mr-1" />
-                                                                                                                                                                          <span dangerouslySetInnerHTML={{ __html: `Recibilo <strong>gratis</strong> a partir del ${getDeliveryDate()}` }} />
-                                
-                                                                                                                                                                      </div>
-  
-                                                                                                                                                                      <button
-  
-                                                                                                            onClick={() => {
-  
-                                                                                                              if (!product) return;
-  
-                                                                                                              addToCart(product, selectedSize, 1);
-  
-                                                                                                              navigate("/checkout");
-  
-                                                                                                            }}
-  
-                                                                                                            disabled={!selectedSize || !isInStock}
-  
-                                                                                                            className={`w-full py-3 text-sm font-bold rounded-b-md border transition-colors ${
-  
-                                                                                                              selectedSize && isInStock
-  
-                                                                                                                ? "bg-black text-white border-black hover:bg-gray-800 hover:text-white"
-  
-                                                                                                                : "bg-arena/50 text-gray-400 cursor-not-allowed border-transparent"
-  
-                                                                                                            }`}
-  
-                                                                                                          >
-  
-                                                                                                            COMPRAR AHORA
-  
-                                                                                                          </button>
-  
-                                                                                                                                                                  </div>
-  
-                                                                                                                                                                  <button
-  
-                                                                                                            onClick={handleAddToCart}
-  
-                                                                                                            disabled={!selectedSize || !isInStock || isAdding || showSuccess}
-  
-                                                                                                            className={`flex-1 flex items-center justify-center gap-2 py-3 text-sm font-bold rounded-md border transition-all duration-300 ${
-  
-                                                                                                              !selectedSize || !isInStock
-  
-                                                                                                                ? "bg-arena/50 text-gray-400 cursor-not-allowed border-transparent"
-  
-                                                                                                                : showSuccess
-  
-                                                                                                                ? "bg-green-500 text-white border-green-500"
-  
-                                                                                                                : "bg-transparent text-black border-black hover:bg-black hover:text-white"
-  
-                                                                                                            }`}
-  
-                                                                                                          >
-  
-                                                                                                            {isAdding ? (
-  
-                                                                                                              <Loader2 size={20} className="animate-spin" />
-  
-                                                                                                            ) : showSuccess ? (
-  
-                                                                                                              <>
-  
-                                                                                                                <CheckCircle size={20} />
-  
-                                                                                                                AGREGADO
-  
-                                                                                                              </>
-  
-                                                                                                            ) : (
-  
-                                                                                                              <>
-  
-                                                                                                                <ShoppingCart size={16} />
-  
-                                                                                                                AGREGAR AL CARRITO
-  
-                                                                                                              </>
-  
-                                                                                                            )}
-  
-                                                                                                          </button>
-  
-                                                                                                                                                              </div>                  {/* ICONOS */}
+                  {/* BOTONES DE COMPRA */}
+                  <div className="mt-12 mb-6">
+                    <div className="relative w-full">
+                      <div className="absolute bottom-full w-full bg-green-600 text-white text-xs font-bold text-center py-1 rounded-t-md">
+                        <Truck size={12} className="inline-block mr-1" />
+                        <span dangerouslySetInnerHTML={{ __html: `Recibilo <strong>gratis</strong> a partir del ${getDeliveryDate()}` }} />
+                      </div>
+
+                      <button
+                        onClick={handleAddToCart}
+                        disabled={!selectedSize || !isInStock || isAdding || showSuccess}
+                        className={`w-full flex items-center justify-center gap-2 py-3 text-sm font-bold rounded-b-md border transition-all duration-300 ${
+                          !selectedSize || !isInStock
+                            ? "bg-arena/50 text-gray-400 cursor-not-allowed border-transparent"
+                            : showSuccess
+                            ? "bg-green-500 text-white border-green-500"
+                            : "bg-black text-white border-black hover:bg-gray-800 hover:text-white"
+                        }`}
+                      >
+                        {isAdding ? (
+                          <Loader2 size={20} className="animate-spin" />
+                        ) : showSuccess ? (
+                          <>
+                            <CheckCircle size={20} />
+                            AGREGADO
+                          </>
+                        ) : (
+                          <>
+                            <ShoppingCart size={16} />
+                            AGREGAR AL CARRITO
+                          </>
+                        )}
+                      </button>
+                    </div>
+                  </div>                  {/* ICONOS */}
                   <div className="mt-3 space-y-3 text-[#7a7a7a] text-sm">
                     <div className="flex gap-3">
                       <ShieldCheck size={18} /> Compra segura con Mercado Pago

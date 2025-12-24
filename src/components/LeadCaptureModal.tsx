@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { X, User, Phone } from 'lucide-react';
 import Portal from './Portal';
-import WhatsappLogo from '../assets/whatsapp-logo.png'; // Import the WhatsApp logo
+import WhatsappLogo from '../assets/whatsapp-logo.webp'; // Import the WhatsApp logo
 
 interface LeadCaptureModalProps {
   isOpen: boolean;

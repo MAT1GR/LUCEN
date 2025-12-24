@@ -1,5 +1,5 @@
 import React from 'react';
-import WhatsAppLogo from '../assets/whatsapp-logo.png';
+import WhatsAppLogo from '../assets/whatsapp-logo.webp';
 import { useSettings } from '../hooks/useSettings';
 
 const WhatsAppButton: React.FC<{ message?: string }> = ({ message: propMessage }) => {

@@ -1,6 +1,6 @@
 import React from "react";
 import { Ruler, ArrowLeft, Heart, Scale } from "lucide-react";
-import WhatsAppLogo from '../assets/whatsapp-logo.png';
+import WhatsAppLogo from '../assets/whatsapp-logo.webp';
 import { Link } from "react-router-dom";
 import { useScrollAnimation } from "../hooks/useScrollAnimation";
 import JeanMeasureImage from "../assets/4.webp";
