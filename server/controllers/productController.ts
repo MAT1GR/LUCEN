@@ -24,7 +24,9 @@ export const getAllProducts = async (req: Request, res: Response) => {
 
 export const getAllAdminProducts = async (req: Request, res: Response) => {
     try {
+        console.log('[ProductController] Fetching all admin products...');
         const products = await db.products.getAllAdmin();
+        console.log(`[ProductController] Retrieved ${products.length} products for admin.`);
         res.json(products);
     } catch (error) {
         console.error("Error fetching admin products:", error);

@@ -255,8 +255,15 @@ export const productService = {
 
   getAllAdmin(): Product[] {
     const db = getDB();
-    const rows = toObjects(db.exec('SELECT * FROM products ORDER BY id DESC'));
-    return rows.map(parseProduct);
+    try {
+        const result = db.exec('SELECT * FROM products ORDER BY id DESC');
+        const rows = toObjects(result);
+        console.log(`[ProductService] getAllAdmin fetched ${rows.length} raw rows.`);
+        return rows.map(parseProduct);
+    } catch (error) {
+        console.error("[ProductService] Error in getAllAdmin:", error);
+        throw error;
+    }
   },
 
   getNewest(limit: number): Product[] {

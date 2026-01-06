@@ -80,7 +80,7 @@ const SizeGuidePage: React.FC = () => {
             <h3 className="text-xl font-bold mb-4 uppercase tracking-wide">¿Te quedó alguna duda?</h3>
             {/* Removed descriptive paragraph as requested */}
             <a
-              href="https://wa.me/543541374915?text=Hola%20tengo%20una%20duda%20sobre%20el%20talle"
+              href="https://wa.me/543413981584?text=Hola%20tengo%20una%20duda%20sobre%20el%20talle"
               className="inline-flex items-center justify-center bg-gris-oscuro hover:opacity-90 text-blanco-hueso px-8 py-3 rounded-sm font-medium transition-colors uppercase tracking-wider text-sm"
             >
               <img src={WhatsAppLogo} alt="WhatsApp Logo" className="inline mr-2 brightness-0 invert" style={{ height: '18px', width: '18px' }} /> WhatsApp

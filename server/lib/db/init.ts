@@ -228,6 +228,18 @@ function runMigrations() {
       console.error('[DB] Migration for eventId column failed:', e);
     }
   }
+
+  try {
+    console.log('[DB] Migration: Adding is_active to products...');
+    db.run("ALTER TABLE products ADD COLUMN is_active BOOLEAN DEFAULT 1");
+    console.log('[DB] Migration applied successfully: added is_active column.');
+  } catch (e: any) {
+    if (e.message && e.message.includes('duplicate column name')) {
+      console.log('[DB] Migration skipped: is_active column already exists.');
+    } else {
+      console.error('[DB] Migration for is_active column failed:', e);
+    }
+  }
   
   saveDatabase();
 }
@@ -263,6 +275,7 @@ function seedInitialData() {
       ["site_name", "Rosario Denim"],
       ["contact_email", "hola@rosariodenim.com"],
       ["contact_phone", "+54 9 341 123-4567"],
+      ["contact_whatsapp", "543413981584"],
     ];
     const stmt = db.prepare("INSERT OR REPLACE INTO site_settings (key, value) VALUES (?, ?)");
     for (const [key, value] of settings) {

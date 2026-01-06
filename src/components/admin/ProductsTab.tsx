@@ -65,6 +65,7 @@ export const ProductsTab: React.FC = () => {
   const [activeProducts, setActiveProducts] = useState<Product[]>([]); // Tienen Stock
   const [soldProducts, setSoldProducts] = useState<Product[]>([]);     // Agotados
   const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [isSaving, setIsSaving] = useState(false);
   const [showForm, setShowForm] = useState(false);
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
@@ -77,21 +78,36 @@ export const ProductsTab: React.FC = () => {
 
   const fetchProducts = async () => {
     setIsLoading(true);
+    setError(null);
     try {
       const token = localStorage.getItem('auth_token');
       const headers: HeadersInit = {};
       if (token) headers['Authorization'] = `Bearer ${token}`;
 
       const res = await fetch('/api/products/all', { headers });
-      if (!res.ok) throw new Error('Failed to fetch');
+      
+      if (res.status === 401) {
+        alert("Tu sesión ha expirado. Por favor, inicia sesión nuevamente.");
+        localStorage.removeItem('auth_token');
+        localStorage.removeItem('admin_user');
+        window.location.reload();
+        return;
+      }
+
+      if (!res.ok) throw new Error(`Failed to fetch: ${res.status} ${res.statusText}`);
       const data = await res.json();
+      console.log('[ProductsTab] API Response data:', data);
 
       const inStock: Product[] = [];
       const outOfStock: Product[] = [];
       
+      console.log('Fetched products:', data); // Debug log
+
       for (const p of data) {
-        const totalStock = Object.values(p.sizes || {}).reduce((acc: any, s: any) => acc + (s.stock || 0), 0);
-        if (totalStock > 0 && p.isActive) {
+        // Robust check for isActive
+        const isActive = p.isActive === true || p.isActive === 1 || String(p.isActive) === 'true';
+        
+        if (isActive) {
             inStock.push(p);
         } else {
             outOfStock.push(p);
@@ -108,6 +124,7 @@ export const ProductsTab: React.FC = () => {
 
     } catch (err) {
       console.error(err);
+      setError(err instanceof Error ? err.message : 'Error desconocido al cargar productos');
     } finally {
       setIsLoading(false);
     }
@@ -262,6 +279,12 @@ export const ProductsTab: React.FC = () => {
         </button>
       </div>
 
+      {error && (
+        <div className="bg-red-50 text-red-600 p-4 rounded-lg mb-6 border border-red-200">
+          Error: {error}
+        </div>
+      )}
+
       {isLoading ? <div>Cargando...</div> : (
         <>
           {/* SECCIÓN ACTIVA */}
@@ -299,25 +322,25 @@ export const ProductsTab: React.FC = () => {
             {activeProducts.length === 0 && <p className="text-gray-400 italic">No hay productos activos.</p>}
           </div>
 
-          {/* SECCIÓN VENDIDOS (ESTÁTICA AL FONDO) */}
+          {/* SECCIÓN ARCHIVADOS */}
           <div className="pt-8 border-t border-gray-200 opacity-75">
             <h3 className="text-lg font-bold mb-4 text-gray-500 flex items-center gap-2">
-                🔴 Agotados / Archivados 
-                <span className="text-xs font-normal text-gray-400">Se mueven acá automáticamente</span>
+                🔴 Archivados 
+                <span className="text-xs font-normal text-gray-400">Productos desactivados manualmente</span>
             </h3>
             <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-4 grayscale">
-                {soldProducts.map((product) => (
-                    <div key={product.id} className="bg-gray-50 rounded border p-4 relative">
-                        <span className="absolute top-2 right-2 bg-gray-200 text-gray-600 text-xs font-bold px-2 py-1 rounded">VENDIDO</span>
-                        <img src={product.images[0] ? `/api${product.images[0]}` : ''} className="w-full h-32 object-contain opacity-50" />
-                        <p className="font-bold text-sm mt-2 text-gray-600 truncate">{product.name}</p>
-                        <div className="flex gap-2 mt-2 justify-end">
-                            <button onClick={() => handleOpenForm(product)}><Edit size={14} /></button>
-                            <button onClick={() => handleDeleteProduct(product.id)}><Trash2 size={14} /></button>
-                        </div>
-                    </div>
-                ))}
+              {soldProducts.map((product) => (
+                <EditableProductCard 
+                  key={product.id} 
+                  product={product}
+                  onEdit={handleOpenForm}
+                  onDelete={handleDeleteProduct}
+                  onToggleActive={handleToggleActive}
+                  onOrderChange={handleOrderChange}
+                />
+              ))}
             </div>
+            {soldProducts.length === 0 && <p className="text-gray-400 italic">No hay productos archivados.</p>}
           </div>
         </>
       )}

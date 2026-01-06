@@ -4,9 +4,8 @@ import { useSettings } from '../hooks/useSettings';
 
 const WhatsAppButton: React.FC<{ message?: string }> = ({ message: propMessage }) => {
   const { settings } = useSettings();
-  const phoneNumber = settings.contact_whatsapp || '543541374915'; // Fallback to old number
-  const defaultMessage = ''; // No default message
-  const finalMessage = propMessage || defaultMessage;
+  const phoneNumber = settings.contact_whatsapp || '543413981584'; // New number as fallback
+  const finalMessage = propMessage || '';
 
   const whatsappUrl = finalMessage
     ? `https://wa.me/${phoneNumber}?text=${encodeURIComponent(finalMessage)}`
