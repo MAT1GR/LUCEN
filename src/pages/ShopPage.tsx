@@ -50,42 +50,60 @@ const ShopPage: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-blanco-hueso py-8 text-gris-oscuro">
+    <div className="min-h-screen bg-white py-12 text-gray-900 font-sans">
       <div className="container mx-auto px-4 max-w-7xl">
           <main ref={productsRef} className="w-full scroll-animate">
-            <div className="flex flex-col sm:flex-row justify-between items-center mb-10 gap-4">
-              <h1 className="text-2xl sm:text-3xl font-black uppercase tracking-tighter">
-                Tienda <span className="text-sm font-normal opacity-40 ml-2">({totalProducts} productos)</span>
+            <div className="flex flex-col sm:flex-row justify-between items-center mb-12 gap-4 border-b border-gray-100 pb-8">
+              <h1 className="text-3xl font-bold uppercase tracking-tight">
+                Colección <span className="text-sm font-normal text-gray-400 ml-2">({totalProducts} modelos)</span>
               </h1>
-              <select
-                value={filters.sortBy}
-                onChange={(e) => handleFilterChange('sortBy', e.target.value)}
-                className="px-4 py-2 border border-gris-oscuro/20 rounded-sm focus:outline-none focus:ring-1 focus:ring-gris-oscuro w-full sm:w-auto bg-blanco-hueso uppercase text-xs font-bold tracking-widest"
-              >
-                <option value="newest">Novedades</option>
-                <option value="popular">Más Populares</option>
-                <option value="price-asc">Precio: Menor a Mayor</option>
-                <option value="price-desc">Precio: Mayor a Menor de Mayor</option>
-              </select>
+              <div className="flex items-center gap-2">
+                <span className="text-xs font-bold uppercase text-gray-500">Ordenar por:</span>
+                <select
+                    value={filters.sortBy}
+                    onChange={(e) => handleFilterChange('sortBy', e.target.value)}
+                    className="pl-2 pr-8 py-2 border-none bg-gray-50 text-sm font-bold text-gray-900 focus:ring-0 cursor-pointer uppercase tracking-wide rounded-sm hover:bg-gray-100 transition-colors"
+                >
+                    <option value="newest">Novedades</option>
+                    <option value="popular">Más Populares</option>
+                    <option value="price-asc">Menor Precio</option>
+                    <option value="price-desc">Mayor Precio</option>
+                </select>
+              </div>
             </div>
 
             {isLoading ? (
-                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-x-6 gap-y-10">
                     {Array.from({ length: 8 }).map((_, i) => <SkeletonCard key={i} />)}
                 </div>
             ) : products.length > 0 ? (
-                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-x-6 gap-y-10">
                     {products.map(product => <ProductCard key={product.id} product={product} />)}
                 </div>
             ) : (
-                <div className="text-center py-16"><p className="text-xl opacity-60">No se encontraron productos.</p></div>
+                <div className="text-center py-24 bg-gray-50 rounded-lg">
+                    <p className="text-xl text-gray-400 font-medium">No encontramos productos con esos filtros.</p>
+                    <button onClick={() => setFilters({sortBy: 'newest', page: 1})} className="mt-4 text-black underline font-bold">Ver todos</button>
+                </div>
             )}
 
             {totalPages > 1 && (
-                <div className="flex justify-center items-center mt-12 gap-4">
-                    <button onClick={() => handleFilterChange('page', filters.page - 1)} disabled={filters.page <= 1} className="p-2 disabled:opacity-30 transition-opacity hover:opacity-100"><ChevronLeft/></button>
-                    <span className="text-sm font-medium">Página {filters.page} de {totalPages}</span>
-                    <button onClick={() => handleFilterChange('page', filters.page + 1)} disabled={filters.page >= totalPages} className="p-2 disabled:opacity-30 transition-opacity hover:opacity-100"><ChevronRight/></button>
+                <div className="flex justify-center items-center mt-16 gap-4 border-t border-gray-100 pt-8">
+                    <button 
+                        onClick={() => handleFilterChange('page', filters.page - 1)} 
+                        disabled={filters.page <= 1} 
+                        className="p-3 border border-gray-200 rounded-full disabled:opacity-30 disabled:cursor-not-allowed hover:bg-black hover:text-white transition-all"
+                    >
+                        <ChevronLeft size={20} />
+                    </button>
+                    <span className="text-sm font-bold tracking-widest text-gray-500">PÁGINA {filters.page} DE {totalPages}</span>
+                    <button 
+                        onClick={() => handleFilterChange('page', filters.page + 1)} 
+                        disabled={filters.page >= totalPages} 
+                        className="p-3 border border-gray-200 rounded-full disabled:opacity-30 disabled:cursor-not-allowed hover:bg-black hover:text-white transition-all"
+                    >
+                        <ChevronRight size={20} />
+                    </button>
                 </div>
             )}
           </main>

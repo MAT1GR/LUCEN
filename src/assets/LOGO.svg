@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 80" fill="none">
+  <rect width="300" height="80" fill="white"/>
+  <path d="M60 40C60 51.0457 51.0457 60 40 60C28.9543 60 20 51.0457 20 40C20 28.9543 28.9543 20 40 20C51.0457 20 60 28.9543 60 40Z" stroke="#111827" stroke-width="4"/>
+  <path d="M140 40C140 51.0457 131.046 60 120 60C108.954 60 100 51.0457 100 40C100 28.9543 108.954 20 120 20C131.046 20 140 28.9543 140 40Z" stroke="#111827" stroke-width="4"/>
+  <path d="M60 40L100 40" stroke="#111827" stroke-width="4"/>
+  <text x="160" y="52" font-family="Arial, sans-serif" font-size="32" font-weight="bold" fill="#111827">VISION</text>
+  <text x="160" y="65" font-family="Arial, sans-serif" font-size="10" letter-spacing="2" fill="#2563EB">BLUE LIGHT PROTECTION</text>
+</svg>

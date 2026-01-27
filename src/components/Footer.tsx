@@ -1,106 +1,79 @@
-import React, { useState } from "react";
+import React from "react";
 import { Link } from "react-router-dom";
-import { Instagram, Loader2, Check } from "lucide-react";
+import { Instagram, Mail } from "lucide-react";
 import logo from "../assets/LOGO.webp";
 
 const Footer: React.FC = () => {
-  const [phone, setPhone] = useState("");
-  const [loading, setLoading] = useState(false);
-  const [success, setSuccess] = useState(false);
-
-  const helpLinks = [
-    { href: "/cambios-y-devoluciones", label: "Envíos y Devoluciones" },
-  ];
-
-  const legalLinks = [
-    { href: "/privacy-policy", label: "Políticas de Privacidad" },
-  ];
-
-  const handleSubscribe = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!phone) return;
-    
-    setLoading(true);
-    try {
-      const response = await fetch('/api/notifications/drop', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ phone }), // Name will default to 'Suscriptor' in backend
-      });
-      
-      if (response.ok) {
-        setSuccess(true);
-        setPhone("");
-        setTimeout(() => setSuccess(false), 3000);
-      } else {
-        alert("Hubo un error al suscribirte. Intenta nuevamente.");
-      }
-    } catch (error) {
-      console.error("Error subscribing:", error);
-      alert("Error de conexión.");
-    } finally {
-      setLoading(false);
-    }
-  };
-
   return (
-    <footer className="bg-gris-oscuro text-blanco-hueso">
-      <div className="container mx-auto max-w-7xl px-4 py-16">
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
-          {/* Logo y Descripción */}
+    <footer className="bg-[#111827] text-white pt-16 pb-8">
+      <div className="container mx-auto max-w-7xl px-6">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-12 mb-12">
+          {/* Brand Column */}
           <div className="md:col-span-1">
             <Link to="/">
               <img 
                 src={logo} 
-                alt="Denim Rosario" 
-                className="h-12 w-auto object-contain mb-4"
+                alt="LUCEN" 
+                className="h-8 w-auto mb-6 brightness-0 invert" 
               />
             </Link>
-            <p className="mt-4 text-sm opacity-80">
-              Redefiniendo el denim con un calce perfecto y un estilo que
-              perdura.
+            <p className="text-gray-400 text-sm leading-relaxed mb-6">
+              Protegemos tu visión digital con tecnología de vanguardia y diseño premium.
+              Tus ojos merecen descansar con LUCEN.
             </p>
-          </div>
-
-          {/* Ayuda */}
-          <div>
-            <h3 className="font-semibold tracking-wider uppercase opacity-90">Ayuda</h3>
-            <ul className="mt-4 space-y-2">
-              {helpLinks.map((link) => (
-                <li key={link.href}>
-                  <Link to={link.href} className="opacity-70 hover:opacity-100 transition-colors">
-                    {link.label}
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          </div>
-
-          {/* Legal */}
-          <div>
-            <h3 className="font-semibold tracking-wider uppercase opacity-90">Legal</h3>
-            <ul className="mt-4 space-y-2">
-              {legalLinks.map((link) => (
-                <li key={link.href}>
-                  <Link to={link.href} className="opacity-70 hover:opacity-100 transition-colors">
-                    {link.label}
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          </div>
-
-          {/* Social */}
-          <div className="text-left md:text-right">
-            <h3 className="font-semibold tracking-wider uppercase opacity-90">Social</h3>
-            <div className="flex mt-4 space-x-4 md:justify-end">
-              <a href="https://www.instagram.com/denimrosario/" className="opacity-70 hover:opacity-100 transition-colors"><Instagram size={20} /></a>
+            <div className="flex space-x-4">
+              <a href="#" className="text-gray-400 hover:text-white transition-colors">
+                <Instagram size={20} />
+              </a>
+              <a href="mailto:hola@lucen.com.ar" className="text-gray-400 hover:text-white transition-colors">
+                <Mail size={20} />
+              </a>
             </div>
+          </div>
+
+          {/* Links Column */}
+          <div>
+            <h4 className="text-sm font-bold uppercase tracking-wider mb-6">Tienda</h4>
+            <ul className="space-y-3 text-sm text-gray-400">
+              <li><Link to="/tienda" className="hover:text-white transition-colors">Ver Todo</Link></li>
+              <li><Link to="/tienda?category=hombre" className="hover:text-white transition-colors">Hombre</Link></li>
+              <li><Link to="/tienda?category=mujer" className="hover:text-white transition-colors">Mujer</Link></li>
+            </ul>
+          </div>
+
+          {/* Help Column */}
+          <div>
+            <h4 className="text-sm font-bold uppercase tracking-wider mb-6">Ayuda</h4>
+            <ul className="space-y-3 text-sm text-gray-400">
+              <li><Link to="/cambios" className="hover:text-white transition-colors">Cambios y Devoluciones</Link></li>
+              <li><Link to="/shipping" className="hover:text-white transition-colors">Envíos</Link></li>
+              <li><Link to="/faq" className="hover:text-white transition-colors">Preguntas Frecuentes</Link></li>
+            </ul>
+          </div>
+
+          {/* Newsletter (Simplified) */}
+          <div>
+            <h4 className="text-sm font-bold uppercase tracking-wider mb-6">Novedades</h4>
+            <p className="text-gray-400 text-sm mb-4">Suscríbete para recibir ofertas exclusivas.</p>
+            <form className="flex gap-2">
+              <input 
+                type="email" 
+                placeholder="Tu email" 
+                className="bg-gray-800 border-none text-white text-sm px-4 py-2 w-full focus:ring-1 focus:ring-white outline-none"
+              />
+              <button className="bg-white text-black text-xs font-bold px-4 py-2 uppercase hover:bg-gray-200 transition-colors">
+                OK
+              </button>
+            </form>
           </div>
         </div>
 
-        <div className="mt-16 pt-8 border-t border-white/10 text-center text-sm opacity-50">
-          <p>&copy; {new Date().getFullYear()} DenimRosario. Todos los derechos reservados.</p>
+        <div className="border-t border-gray-800 pt-8 flex flex-col md:flex-row justify-between items-center text-xs text-gray-500">
+          <p>&copy; {new Date().getFullYear()} LUCEN. Todos los derechos reservados.</p>
+          <div className="flex space-x-4 mt-4 md:mt-0">
+            <span>Privacidad</span>
+            <span>Términos</span>
+          </div>
         </div>
       </div>
     </footer>

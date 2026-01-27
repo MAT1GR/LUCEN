@@ -128,6 +128,17 @@ export interface AnalyticsEvent {
   event_type: string;
   event_data?: any;
   user_agent?: string;
-  ip_address?: string;
+  created_at: Date;
+}
+
+export interface Review {
+  id: number;
+  product_id: number;
+  title: string;
+  rating: number;
+  comment: string;
+  user_name: string;
+  user_email: string;
+  is_approved: boolean;
   created_at: Date;
 }

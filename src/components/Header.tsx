@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
-import { ShoppingCart, Menu, X, User, Search } from "lucide-react";
+import { ShoppingBag, Menu, X, Search } from "lucide-react"; 
 import { useCart } from "../hooks/useCart.tsx";
-import logo from "../assets/LOGO.webp";
+import logo from "../assets/LOGO.webp"; 
 
 interface HeaderProps {
   onCartClick: () => void;
@@ -15,125 +15,110 @@ const Header: React.FC<HeaderProps> = ({ onCartClick }) => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
 
-  const isHomePage = location.pathname === "/";
-
   useEffect(() => {
     const handleScroll = () => {
-      const scrollTop = window.scrollY;
-      if (isHomePage) {
-        setIsScrolled(scrollTop > window.innerHeight * 0.8);
-      } else {
-        setIsScrolled(scrollTop > 10);
-      }
+      setIsScrolled(window.scrollY > 0);
     };
     window.addEventListener("scroll", handleScroll);
-    handleScroll(); 
     return () => window.removeEventListener("scroll", handleScroll);
-  }, [isHomePage]);
+  }, []);
 
   useEffect(() => {
     setIsMenuOpen(false);
   }, [location.pathname]);
 
   const navLinks = [
-    { href: "/tienda", label: "Tienda" },
-    { href: "/tallas", label: "Guía de Talles" },
-    { href: "/cambios-y-devoluciones", label: "Devoluciones" },
+    { href: "/", label: "Inicio" },
+    { href: "/tienda", label: "Colección" },
+    { href: "/blue-light-info", label: "¿Qué es?" }, 
   ];
-
-  const headerClasses = `
-    fixed top-0 left-0 right-0 z-40 transition-all duration-300
-    ${isScrolled ? "bg-blanco-hueso/95 backdrop-blur-lg shadow-sm" : "bg-blanco-hueso"}
-    text-gris-oscuro
-  `;
-
-  const linkClasses = `
-    font-poppins text-sm font-medium hover:text-opacity-80
-    relative after:content-[''] after:absolute after:w-full after:h-[1px] 
-    after:bottom-[-4px] after:left-0 after:bg-current after:transition-transform 
-    after:duration-300
-    text-gris-oscuro
-  `;
 
   return (
     <>
-      <header className={headerClasses}>
-        <div className="w-full px-4">
-          <div className="flex items-center h-20">
-            {/* Navegación (Izquierda - para pantallas grandes) */}
-            <div className="flex-1 hidden md:block">
-              <nav className="flex items-center space-x-8 pl-4">
+      <header 
+        className={`fixed top-10 left-0 right-0 z-40 transition-all duration-300 border-b ${
+          isScrolled ? "bg-white/95 backdrop-blur-md shadow-sm border-gray-100" : "bg-white border-transparent"
+        }`}
+      >
+        <div className="w-full px-6 max-w-7xl mx-auto">
+          <div className="flex items-center justify-between h-20">
+            
+            {/* 1. LEFT: Navigation (Desktop) / Menu Icon (Mobile) */}
+            <div className="flex-1 flex items-center">
+              <nav className="hidden md:flex items-center space-x-6">
                 {navLinks.map((link) => (
                   <Link
                     key={link.href}
                     to={link.href}
-                    className={`${linkClasses} ${
-                      location.pathname === link.href
-                        ? "after:scale-x-100"
-                        : "after:scale-x-0 hover:after:scale-x-50"
-                    }`}
+                    className="text-[11px] font-bold text-gray-900 hover:text-blue-600 transition-colors uppercase tracking-[0.2em]"
                   >
                     {link.label}
                   </Link>
                 ))}
               </nav>
+              <button
+                className="md:hidden p-2 text-gray-600 -ml-2"
+                onClick={() => setIsMenuOpen(true)}
+              >
+                <Menu size={22} strokeWidth={1.5} />
+              </button>
             </div>
 
-            {/* Logo (Centro) */}
-            <div className="md:flex-none flex-1 text-center md:text-left flex justify-center md:justify-start">
+            {/* 2. CENTER: Logo (Perfectly Centered) */}
+            <div className="flex-shrink-0 flex justify-center">
               <Link to="/">
                 <img 
                   src={logo} 
-                  alt="Denim Rosario" 
-                  className="h-12 w-auto object-contain"
+                  alt="LUCEN" 
+                  className="h-8 md:h-10 w-auto object-contain transition-all" 
                 />
               </Link>
             </div>
 
-            {/* Iconos (Derecha) */}
-            <div className="flex-1 flex justify-end items-center space-x-2">
-              
+            {/* 3. RIGHT: Icons */}
+            <div className="flex-1 flex justify-end items-center space-x-2 md:space-x-4">
+              <button className="hidden sm:block p-2 text-gray-600 hover:text-black transition-colors">
+                <Search size={18} strokeWidth={1.5} />
+              </button>
               
               <button
                 onClick={onCartClick}
-                className="relative p-2"
+                className="relative p-2 text-gray-600 hover:text-black transition-colors"
               >
-                <ShoppingCart size={20} />
+                <ShoppingBag size={18} strokeWidth={1.5} />
                 {totalItems > 0 && (
-                  <span className="absolute top-0 right-0 text-[10px] rounded-full h-4 w-4 flex items-center justify-center font-bold bg-gris-oscuro text-blanco-hueso">
+                  <span className="absolute top-1 right-1 h-3.5 w-3.5 bg-black text-white text-[9px] flex items-center justify-center rounded-full font-bold">
                     {totalItems}
                   </span>
                 )}
               </button>
-              <div className="md:hidden">
-                <button
-                  className="p-2"
-                  onClick={() => setIsMenuOpen(true)}
-                >
-                  <Menu size={22} />
-                </button>
-              </div>
             </div>
+
           </div>
         </div>
       </header>
 
-      {/* Menú Móvil */}
+      {/* Mobile Menu */}
       <div
-        className={`fixed inset-0 bg-black/40 z-50 transition-opacity duration-300 md:hidden ${
-          isMenuOpen ? "opacity-100" : "opacity-0 pointer-events-none"
+        className={`fixed inset-0 z-50 transition-all duration-300 md:hidden ${
+          isMenuOpen ? "visible" : "invisible"
         }`}
-        onClick={() => setIsMenuOpen(false)}
       >
+        <div 
+          className={`absolute inset-0 bg-black/30 transition-opacity duration-300 ${
+            isMenuOpen ? "opacity-100" : "opacity-0"
+          }`}
+          onClick={() => setIsMenuOpen(false)}
+        />
         <div
-          className={`absolute top-0 right-0 h-full w-3/4 max-w-xs bg-blanco-hueso shadow-xl p-6 transition-transform duration-300 ${
+          className={`absolute top-0 left-0 h-full w-[80%] max-w-sm bg-white shadow-2xl p-8 transition-transform duration-300 ease-out ${
             isMenuOpen ? "translate-x-0" : "translate-x-full"
           }`}
-          onClick={(e) => e.stopPropagation()}
         >
-          <div className="flex justify-end items-center mb-12">
-            <button onClick={() => setIsMenuOpen(false)} className="p-2 text-gris-oscuro">
-              <X />
+          <div className="flex justify-between items-center mb-12">
+            <span className="text-sm font-bold tracking-widest uppercase text-gray-400">Menú</span>
+            <button onClick={() => setIsMenuOpen(false)} className="p-2 text-gray-500 hover:text-black">
+              <X size={24} />
             </button>
           </div>
           <nav className="flex flex-col space-y-8">
@@ -141,9 +126,7 @@ const Header: React.FC<HeaderProps> = ({ onCartClick }) => {
               <Link
                 key={link.href}
                 to={link.href}
-                className={`text-2xl font-bold font-poppins text-gris-oscuro uppercase tracking-tighter ${
-                  location.pathname === link.href ? "underline" : ""
-                }`}
+                className="text-xl font-bold text-gray-900 uppercase tracking-tighter border-b border-gray-50 pb-4"
               >
                 {link.label}
               </Link>

@@ -26,6 +26,7 @@ import NuestraMisionPage from "./pages/NuestraMisionPage";
 import PrivacyPolicyPage from "./pages/PrivacyPolicyPage";
 import ShippingPage from "./pages/ShippingPage.tsx";
 import CartSidebar from "./components/CartSidebar";
+import AnnouncementBar from "./components/AnnouncementBar";
 
 
 const AnimatedRoutes: React.FC<{isHomePage: boolean, paddingTop: string}> = ({isHomePage, paddingTop}) => {
@@ -60,13 +61,13 @@ const AnimatedRoutes: React.FC<{isHomePage: boolean, paddingTop: string}> = ({is
 const MainLayout: React.FC = () => {
   const location = useLocation();
   const isHomePage = location.pathname === "/";
-  const paddingTop = isHomePage ? '' : 'pt-[80px]';
-  const [isCartOpen, setIsCartOpen] = useState(false); // isCartOpen state moved here
-
-
+  // Header (80px) + Announcement (40px) = 120px
+  const paddingTop = 'pt-[120px]'; 
+  const [isCartOpen, setIsCartOpen] = useState(false); 
 
   return (
     <div className="min-h-screen flex flex-col">
+      <AnnouncementBar />
       <Header onCartClick={() => setIsCartOpen(true)} />
       <AnimatedRoutes isHomePage={isHomePage} paddingTop={paddingTop} />
       <Footer />

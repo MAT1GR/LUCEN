@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1920 800" preserveAspectRatio="xMidYMid slice">
+  <rect width="1920" height="800" fill="#F3F4F6"/>
+  <circle cx="960" cy="400" r="300" fill="#E5E7EB"/>
+  <text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" font-family="Arial" font-size="48" fill="#9CA3AF">Hero Image Placeholder: People using screens</text>
+</svg>

@@ -8,10 +8,10 @@ import { CustomersTab } from '../components/admin/CustomersTab';
 import { Calculator } from 'lucide-react'; 
 import { CalculatorTab } from '../components/admin/CalculatorTab';
 import { SettingsTab } from '../components/admin/SettingsTab';
-import SubscribersTab from '../components/admin/SubscribersTab'; // Import new tab
+import ReviewsTab from '../components/admin/ReviewsTab'; // Import the new ReviewsTab
 
 import { 
-  BarChart3, Package, ShoppingCart, Users, Settings, LogOut, Mail // Import Mail icon
+  BarChart3, Package, ShoppingCart, Users, Settings, LogOut, Star // Removed Mail import as SubscribersTab is removed
 } from 'lucide-react';
 
 const AdminPage: React.FC = () => {
@@ -27,8 +27,8 @@ const tabs = [
     { id: 'products', label: 'Productos', icon: Package, component: <ProductsTab /> },
     { id: 'orders', label: 'Pedidos', icon: ShoppingCart, component: <OrdersTab /> },
     { id: 'customers', label: 'Clientes', icon: Users, component: <CustomersTab /> },
-    { id: 'calculator', label: 'Calculadora', icon: Calculator, component: <CalculatorTab /> }, // <-- NUEVA LÍNEA
-    { id: 'subscribers', label: 'Suscriptores', icon: Mail, component: <SubscribersTab /> },
+    { id: 'reviews', label: 'Reseñas', icon: Star, component: <ReviewsTab /> },
+    { id: 'calculator', label: 'Calculadora', icon: Calculator, component: <CalculatorTab /> },
     { id: 'settings', label: 'Configuración', icon: Settings, component: <SettingsTab /> }
   ];
 

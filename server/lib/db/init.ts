@@ -107,6 +107,18 @@ export function initializeSchema() {
       event_data TEXT,
       created_at DATETIME DEFAULT CURRENT_TIMESTAMP
     );
+
+    CREATE TABLE IF NOT EXISTS reviews (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      product_id INTEGER NOT NULL,
+      title TEXT NOT NULL,
+      rating INTEGER NOT NULL,
+      comment TEXT NOT NULL,
+      user_name TEXT NOT NULL,
+      user_email TEXT NOT NULL,
+      is_approved BOOLEAN DEFAULT 0,
+      created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+    );
   `;
   
   db.exec(createTablesSQL);
@@ -239,6 +251,26 @@ function runMigrations() {
     } else {
       console.error('[DB] Migration for is_active column failed:', e);
     }
+  }
+
+  try {
+    console.log('[DB] Migration: Creating reviews table...');
+    db.run(`
+      CREATE TABLE IF NOT EXISTS reviews (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        product_id INTEGER NOT NULL,
+        title TEXT NOT NULL,
+        rating INTEGER NOT NULL,
+        comment TEXT NOT NULL,
+        user_name TEXT NOT NULL,
+        user_email TEXT NOT NULL,
+        is_approved BOOLEAN DEFAULT 0,
+        created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+      )
+    `);
+    console.log('[DB] Migration applied successfully: reviews table created.');
+  } catch (e: any) {
+    console.error('[DB] Migration for reviews table failed:', e);
   }
   
   saveDatabase();

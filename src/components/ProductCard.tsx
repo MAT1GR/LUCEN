@@ -16,75 +16,77 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
 
   const imageUrl = (product.images && product.images.length > 0)
     ? getCorrectImageUrl(product.images[0])
-    : 'https://via.placeholder.com/400x500';
+    : 'https://via.placeholder.com/400x500?text=Vision+Product';
 
   const secondImageUrl = (product.images && product.images.length > 1)
     ? getCorrectImageUrl(product.images[1])
     : '';
 
-  // Stock
+  // Stock logic (reused)
   const totalStock = Object.values(product.sizes || {}).reduce((acc, s) => acc + (s.stock || 0), 0);
   const isSoldOut = totalStock === 0;
 
-  // Precios
+  // Pricing
   const installmentPrice = (product.price / 3).toLocaleString('es-AR', { maximumFractionDigits: 0 });
 
   return (
     <Link to={`/producto/${product.id}`} className="group block h-full">
       
-      {/* CONTENEDOR TARJETA */}
-      <div className="flex flex-col h-full bg-blanco-hueso border border-gris-oscuro/10 rounded-sm overflow-hidden transition-all duration-300 hover:shadow-md hover:border-gris-oscuro/20">
+      {/* CARD CONTAINER: Clean, minimal, no heavy borders */}
+      <div className="flex flex-col h-full bg-white overflow-hidden transition-all duration-300">
         
-        {/* 1. IMAGEN (Ocupa todo el ancho) */}
-        <div className="relative aspect-[3/4] w-full bg-gris-oscuro/5 overflow-hidden">
+        {/* 1. IMAGE CONTAINER */}
+        <div className="relative aspect-[3/4] w-full bg-gray-100 overflow-hidden">
           <img
             src={imageUrl}
-            alt={`Jean ${product.name}`}
-            className={`w-full h-full object-cover transition-opacity duration-500 ${isSoldOut ? 'grayscale opacity-60' : ''} ${secondImageUrl ? 'group-hover:opacity-0' : ''}`}
+            alt={`${product.name} - Vision`}
+            className={`w-full h-full object-cover transition-transform duration-700 ease-in-out group-hover:scale-105 ${isSoldOut ? 'grayscale opacity-60' : ''} ${secondImageUrl ? 'group-hover:opacity-0' : ''}`}
             loading="lazy"
           />
           {secondImageUrl && !isSoldOut && (
             <img
               src={secondImageUrl}
-              alt={`Jean ${product.name} vista trasera`}
+              alt={`${product.name} alternate view`}
               className="absolute inset-0 w-full h-full object-cover opacity-0 group-hover:opacity-100 transition-opacity duration-500"
               loading="lazy"
             />
           )}
           {isSoldOut && (
-             <div className="absolute inset-0 flex items-center justify-center bg-blanco-hueso/60 backdrop-blur-[1px]">
-                <span className="bg-gris-oscuro text-blanco-hueso text-[10px] font-bold px-3 py-1 uppercase tracking-widest">
-                    VENDIDO
+             <div className="absolute inset-0 flex items-center justify-center bg-white/80 backdrop-blur-[2px]">
+                <span className="text-black text-xs font-bold px-4 py-2 uppercase tracking-widest border border-black">
+                    AGOTADO
                 </span>
              </div>
           )}
+          {/* Badge: New / Sale (Optional) */}
+          {product.isNew && !isSoldOut && (
+            <div className="absolute top-2 left-2 bg-black text-white text-[10px] font-bold px-2 py-1 uppercase tracking-wider">
+              Nuevo
+            </div>
+          )}
         </div>
 
-        {/* 2. INFO (Padding reducido a p-2 para aprovechar el espacio) */}
-        <div className="p-2 flex flex-col flex-1 text-left justify-between">
-          <div>
-            {/* A. NOMBRE (Texto un poco más grande para llenar) */}
-            <h3 className="text-sm md:text-base font-black text-gris-oscuro uppercase tracking-tight leading-tight mb-1 line-clamp-2">
-              {product.name}
-            </h3>
-            
-            {/* B. PRECIO + ENVÍO */}
-            <div className="flex flex-wrap items-center gap-x-2 gap-y-1 mb-1">
-              <p className="text-lg font-bold text-gris-oscuro leading-none">
-                ${product.price.toLocaleString('es-AR')}
-              </p>
-              {!isSoldOut && (
-                <span className="whitespace-nowrap bg-green-50 text-green-700 text-[10px] font-black uppercase tracking-wide px-1.5 py-0.5 rounded border border-green-100">
-                  + Envío Gratis
-                </span>
-              )}
-            </div>
+        {/* 2. INFO CONTAINER */}
+        <div className="pt-4 pb-2 flex flex-col flex-1 text-center md:text-left">
+          
+          <h3 className="text-sm font-medium text-gray-900 tracking-tight leading-snug mb-1 group-hover:text-blue-600 transition-colors">
+            {product.name}
+          </h3>
+          
+          <div className="flex flex-col md:flex-row md:items-center gap-1 md:gap-3 mb-1">
+            <p className="text-sm font-bold text-gray-900">
+              ${product.price.toLocaleString('es-AR')}
+            </p>
+            {!isSoldOut && (
+              <span className="text-[10px] text-green-600 font-bold uppercase tracking-wide">
+                Envío Gratis
+              </span>
+            )}
           </div>
 
-          {/* C. CUOTAS */}
-          <div className="mt-0.5">
-            <p className="text-xs opacity-60 font-medium">
-                3 cuotas de <span className="text-gris-oscuro font-bold">${installmentPrice}</span>
+          <div className="mt-1">
+            <p className="text-xs text-gray-500">
+                3 cuotas de <span className="font-semibold text-gray-900">${installmentPrice}</span>
             </p>
           </div>
         </div>

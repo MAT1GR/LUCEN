@@ -1,92 +1,81 @@
 import React from "react";
-import { Ruler, ArrowLeft, Heart, Scale } from "lucide-react";
-import WhatsAppLogo from '../assets/whatsapp-logo.webp';
+import { Ruler, Info } from "lucide-react";
 import { Link } from "react-router-dom";
-import { useScrollAnimation } from "../hooks/useScrollAnimation";
-import JeanMeasureImage from "../assets/4.webp";
 
 const SizeGuidePage: React.FC = () => {
-  const contentRef = useScrollAnimation<HTMLDivElement>();
-
   return (
-    <div className="min-h-screen bg-blanco-hueso py-8 text-gris-oscuro">
-      <div
-        ref={contentRef}
-        className="container mx-auto px-4 max-w-4xl scroll-animate"
-      >
-        <div className="bg-blanco-hueso-oscuro rounded-sm shadow-sm p-8 md:p-12 border border-gris-oscuro/5">
-          <div className="text-center mb-12">
-            <div className="bg-gris-oscuro p-4 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-6">
-              <Ruler className="text-blanco-hueso" size={32} />
-            </div>
-            <h1 className="text-4xl font-bold mb-4 uppercase tracking-tighter">¡Encontrá tu Talle Perfecto!</h1>
-            {/* Removed the introductory paragraph as requested */}
+    <div className="min-h-screen bg-white py-12 text-gray-900 font-sans">
+      <div className="container mx-auto px-4 max-w-4xl">
+        
+        {/* Header */}
+        <div className="text-center mb-16">
+          <div className="inline-flex items-center justify-center p-4 bg-gray-100 rounded-full mb-6">
+             <Ruler size={32} className="text-black" />
           </div>
-
-          <div className="grid grid-cols-1 gap-12 mb-12"> {/* Changed to grid-cols-1 */}
-            <div>
-              <h2 className="text-2xl font-bold mb-6 uppercase tracking-wide">
-                Medí tu Jean Favorito
-              </h2>
-              <p className="opacity-70 text-sm mb-6">
-                Para encontrar tu talle ideal, agarrá un jean que te encante cómo te queda, extendelo en una superficie plana y medí lo siguiente:
-              </p>
-
-              <div className="space-y-6">
-                <div className="flex gap-4 items-start">
-                  <div className="bg-gris-oscuro text-blanco-hueso rounded-full w-8 h-8 flex items-center justify-center font-bold flex-shrink-0">
-                    1
-                  </div>
-                  <div>
-                    <h3 className="font-semibold mb-2 uppercase text-sm">Cintura (A)</h3>
-                    <p className="opacity-70 text-sm">
-                      Medí el contorno de la cintura del jean, de borde a borde. No estires la tela.
-                    </p>
-                  </div>
-                </div>
-
-                <div className="flex gap-4 items-start">
-                  <div className="bg-gris-oscuro text-blanco-hueso rounded-full w-8 h-8 flex items-center justify-center font-bold flex-shrink-0">
-                    2
-                  </div>
-                  <div>
-                    <h3 className="font-semibold mb-2 uppercase text-sm">Tiro Delantero (B)</h3>
-                    <p className="opacity-70 text-sm">
-                      Medí desde la costura de la entrepierna hasta el botón de la cintura.
-                    </p>
-                  </div>
-                </div>
-
-                <div className="flex gap-4 items-start">
-                  <div className="bg-gris-oscuro text-blanco-hueso rounded-full w-8 h-8 flex items-center justify-center font-bold flex-shrink-0">
-                    3
-                  </div>
-                  <div>
-                    <h3 className="font-semibold mb-2 uppercase text-sm">Largo (C)</h3>
-                    <p className="opacity-70 text-sm">
-                      Medí desde la costura de la entrepierna hasta abajo, a lo largo de la pierna.
-                    </p>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div> {/* End of grid container */}
-
-          <div className="mt-8"> {/* Added margin-top for spacing */}
-            <img src={JeanMeasureImage} alt="Guía de medidas del jean" className="rounded-sm shadow-sm w-full opacity-90 border border-gris-oscuro/10" />
-          </div>
-
-          <div className="text-center bg-blanco-hueso p-8 rounded-sm mt-12 border border-gris-oscuro/5">
-            <h3 className="text-xl font-bold mb-4 uppercase tracking-wide">¿Te quedó alguna duda?</h3>
-            {/* Removed descriptive paragraph as requested */}
-            <a
-              href="https://wa.me/543413981584?text=Hola%20tengo%20una%20duda%20sobre%20el%20talle"
-              className="inline-flex items-center justify-center bg-gris-oscuro hover:opacity-90 text-blanco-hueso px-8 py-3 rounded-sm font-medium transition-colors uppercase tracking-wider text-sm"
-            >
-              <img src={WhatsAppLogo} alt="WhatsApp Logo" className="inline mr-2 brightness-0 invert" style={{ height: '18px', width: '18px' }} /> WhatsApp
-            </a>
-          </div>
+          <h1 className="text-4xl font-bold uppercase tracking-tight mb-4">Guía de Medidas</h1>
+          <p className="text-gray-500 max-w-xl mx-auto">
+            Encontrar el lente perfecto es fácil. Te enseñamos cómo entender las medidas de nuestros marcos para que elijas con confianza.
+          </p>
         </div>
+
+        {/* Main Content */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-12 items-center mb-16">
+           
+           {/* Visual Aid (CSS Graphic) */}
+           <div className="bg-gray-50 p-10 rounded-lg flex items-center justify-center h-80 relative border border-gray-100">
+              {/* Abstract Glasses Drawing */}
+              <div className="relative w-64 h-24 border-4 border-black rounded-lg flex items-center justify-center">
+                 <div className="absolute top-1/2 left-0 w-full h-[1px] border-t border-dashed border-gray-400 -translate-y-1/2" />
+                 <span className="absolute -top-8 left-1/2 -translate-x-1/2 bg-white px-2 text-xs font-bold text-gray-500">ANCHO TOTAL</span>
+                 
+                 <div className="w-[1px] h-full bg-transparent mx-auto relative">
+                    <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-4 h-2 bg-black rounded-full" /> {/* Bridge */}
+                 </div>
+              </div>
+              {/* Arm */}
+              <div className="absolute right-10 top-1/2 w-20 h-1 bg-black rotate-12 origin-left opacity-20"></div>
+           </div>
+
+           {/* Instructions */}
+           <div className="space-y-8">
+              <div>
+                 <h3 className="font-bold text-lg mb-2">1. Ancho del Marco</h3>
+                 <p className="text-sm text-gray-600 leading-relaxed">
+                    Es la medida total de frente, de bisagra a bisagra. Si tienes un rostro pequeño, busca medidas entre 130mm y 135mm. Para rostros medianos/grandes, de 136mm en adelante.
+                 </p>
+              </div>
+              <div>
+                 <h3 className="font-bold text-lg mb-2">2. Alto del Lente</h3>
+                 <p className="text-sm text-gray-600 leading-relaxed">
+                    Importante para lentes progresivos o de sol. Un alto mayor ofrece más campo de visión y protección.
+                 </p>
+              </div>
+              <div>
+                 <h3 className="font-bold text-lg mb-2">3. Largo de Patilla</h3>
+                 <p className="text-sm text-gray-600 leading-relaxed">
+                    La mayoría de los lentes estándar tienen patillas de 140mm o 145mm. Esto asegura que se apoyen cómodamente detrás de tus orejas.
+                 </p>
+              </div>
+           </div>
+        </div>
+
+        {/* Pro Tip */}
+        <div className="bg-blue-50 p-8 rounded-lg border border-blue-100 flex gap-4 items-start">
+           <Info className="text-blue-600 shrink-0 mt-1" />
+           <div>
+              <h4 className="font-bold text-blue-900 mb-2">Tip de Experto</h4>
+              <p className="text-sm text-blue-800 leading-relaxed">
+                 Si ya usas lentes, mira en la parte interior de la patilla. A menudo verás tres números (ej. 52-18-140). Esos corresponden al <strong>ancho del lente</strong>, <strong>ancho del puente</strong> y <strong>largo de patilla</strong> respectivamente.
+              </p>
+           </div>
+        </div>
+
+        <div className="text-center mt-12">
+           <Link to="/tienda" className="inline-block bg-black text-white px-8 py-4 font-bold uppercase tracking-widest hover:bg-gray-800 transition-colors">
+              Ir a la Tienda
+           </Link>
+        </div>
+
       </div>
     </div>
   );

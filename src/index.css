@@ -1,16 +1,16 @@
-/* Import de Google Fonts (un solo import para todo) */
-@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;900&family=Poppins:wght@300;400;500;600;700&display=swap");
+/* Import de Google Fonts */
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap");
 
-/* PASO CLAVE: 
-  Importa los estilos de Tailwind v4.
-  Esto reemplaza a @tailwind base, components, y utilities 
-*/
+/* PASO CLAVE: Importa Tailwind v4 */
 @import "tailwindcss";
 
 @theme {
-  --color-gris-oscuro: #4A3728; /* Dark Brown from Logo */
-  --color-blanco-hueso: #F5F0E4; /* Main parchment color */
-  --color-blanco-hueso-oscuro: #EBE6DA; /* Slightly darker parchment for contrast */
+  /* Paleta Amazonas / Tech Minimalist */
+  --color-primary: #111827; /* Casi negro para textos principales */
+  --color-accent: #467498; /* Lucen Blue */
+  --color-background: #FFFFFF; /* Blanco puro */
+  --color-surface: #F9FAFB; /* Gris muy claro para fondos alternativos */
+  --color-border: #E5E7EB; /* Gris suave para bordes */
 }
 
 /* Base styles personalizados */
@@ -21,19 +21,14 @@
 
   body {
     font-family: 'Inter', sans-serif;
-
-    /* PASO CLAVE:
-      Usamos las variables CSS que Tailwind v4 crea automáticamente.
-    */
-    color: var(--color-gris-oscuro);
-    background-color: var(--color-blanco-hueso);
+    color: var(--color-primary);
+    background-color: var(--color-background);
     @apply antialiased;
-
     -moz-osx-font-smoothing: grayscale;
   }
 
   h1, h2, h3, h4, h5, h6 {
-    @apply font-bold;
+    @apply font-semibold tracking-tight;
   }
 }
 
@@ -54,19 +49,8 @@
     }
   }
 
-  .scroll-animate {
-    opacity: 0;
-    transform: translateY(20px);
-    transition: opacity 0.6s ease-out, transform 0.6s ease-out;
-  }
-
-  .scroll-animate-visible {
-    opacity: 1;
-    transform: translateY(0);
-  }
-
   .animate-marquee-scroll {
-    animation: marquee-scroll 25s linear infinite;
+    animation: marquee-scroll 20s linear infinite;
   }
 
   @keyframes marquee-scroll {
@@ -78,53 +62,12 @@
     }
   }
 
-  @keyframes pulse {
-    50% {
-      opacity: 0.5;
-    }
+  /* Animación suave para hover en tarjetas */
+  .hover-lift {
+    transition: transform 0.2s ease-out, box-shadow 0.2s ease-out;
   }
-
-  .animate-pulse-slow {
-    animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  .hover-lift:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
   }
-}
-
-/* Estilos de Countdown */
-.countdown-section {
-  font-family: 'Poppins', sans-serif;
-  color: white;
-  text-align: center;
-  padding: 60px 0;
-}
-
-.countdown-section h3 {
-  font-size: 1rem;
-  letter-spacing: 1.5px;
-  margin-bottom: 5px;
-  text-transform: uppercase;
-  font-weight: 400;
-}
-
-.countdown {
-  display: flex;
-  justify-content: center;
-  gap: 25px;
-}
-
-.countdown div {
-  text-align: center;
-}
-
-.countdown span {
-  display: block;
-  font-size: 3rem;
-  font-weight: 600;
-  text-shadow: 0 2px 4px rgba(0,0,0,0.3);
-}
-
-.countdown p {
-  font-size: 0.8rem;
-  margin-top: 0px;
-  letter-spacing: 1px;
-  color: #ccc;
 }
