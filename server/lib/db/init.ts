@@ -19,30 +19,19 @@ export function initializeSchema() {
     CREATE TABLE IF NOT EXISTS products (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       name TEXT NOT NULL,
-      price INTEGER NOT NULL,
-      images TEXT NOT NULL,
+      price REAL NOT NULL,
+      compare_at_price REAL,
+      transfer_price REAL,
+      images TEXT,
       video TEXT,
-      category TEXT NOT NULL,
-      description TEXT NOT NULL,
-      material TEXT NOT NULL,
-      rise TEXT NOT NULL,
-      rise_cm INTEGER,
-      fit TEXT NOT NULL,
-      waist_flat INTEGER,
-      is_waist_stretchy BOOLEAN DEFAULT 0,
-      length INTEGER,
-      sizes TEXT NOT NULL,
-      is_new BOOLEAN DEFAULT 0,
-      is_best_seller BOOLEAN DEFAULT 0,
+      stock INTEGER NOT NULL DEFAULT 0,
+      colors TEXT,
       is_active BOOLEAN DEFAULT 1,
-      brand TEXT,
-      short_description TEXT,
-      faqs TEXT DEFAULT '[]',
       created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
       updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
     );
 
-    CREATE INDEX IF NOT EXISTS idx_product_category ON products (category);
+    CREATE INDEX IF NOT EXISTS idx_product_category ON products (name);
 
     CREATE TABLE IF NOT EXISTS categories (
       id INTEGER PRIMARY KEY AUTOINCREMENT,

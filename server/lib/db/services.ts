@@ -28,17 +28,13 @@ const toObjects = (res: QueryExecResult[] | undefined): any[] => {
 };
 
 const parseProduct = (row: any): Product => {
-  let faqs = [];
+  let colors = [];
   try {
-    if (row.faqs) {
-      const parsedFaqs = JSON.parse(row.faqs);
-      if (Array.isArray(parsedFaqs)) {
-        faqs = parsedFaqs;
-      }
+    if (row.colors) {
+      colors = JSON.parse(row.colors);
     }
   } catch (e) {
-    console.error(`Failed to parse FAQs for product ID ${row.id}:`, e);
-    // Defaults to empty array if parsing fails
+    console.error(`Failed to parse colors for product ID ${row.id}:`, e);
   }
 
   let images = [];
@@ -50,38 +46,17 @@ const parseProduct = (row: any): Product => {
     console.error(`Failed to parse images for product ID ${row.id}:`, e);
   }
 
-  let sizes = {};
-  try {
-    if (row.sizes) {
-      sizes = JSON.parse(row.sizes);
-    }
-  } catch (e) {
-    console.error(`Failed to parse sizes for product ID ${row.id}:`, e);
-  }
-
   return {
     id: String(row.id),
     name: row.name,
     price: row.price,
+    compare_at_price: row.compare_at_price,
+    transfer_price: row.transfer_price,
     images: images,
     video: row.video,
-    category: row.category,
-    description: row.description,
-    material: row.material,
-    rise: row.rise,
-    rise_cm: row.rise_cm,
-    fit: row.fit,
-    waist_flat: row.waist_flat,
-    isWaistStretchy: Boolean(row.is_waist_stretchy),
-    length: row.length,
-    sizes: sizes,
-    isNew: Boolean(row.is_new),
-    isBestSeller: Boolean(row.is_best_seller),
+    stock: Number(row.stock),
+    colors: colors,
     isActive: Boolean(row.is_active),
-    faqs: faqs,
-    brand: row.brand,
-    short_description: row.short_description,
-    sort_order: row.sort_order,
   };
 };
 
@@ -155,15 +130,16 @@ export const authService = {
 };
 
 export const productService = {
-  getAll(filters: { category?: string; size?: string; minPrice?: number; maxPrice?: number; sortBy?: string; page?: number; limit?: number }) {
+  getAll(filters: { category?: string; minPrice?: number; maxPrice?: number; sortBy?: string; page?: number; limit?: number }) {
     const db = getDB();
-    const { category, size, minPrice, maxPrice, sortBy, page = 1, limit = 9 } = filters;
+    const { category, minPrice, maxPrice, sortBy, page = 1, limit = 9 } = filters;
     
     const whereClauses = ["is_active = 1"];
     const params: (string | number)[] = [];
     if (category) {
-      whereClauses.push("category = ?");
-      params.push(category);
+      // This part might need adjustment if category is removed from DB
+      // whereClauses.push("category = ?");
+      // params.push(category);
     }
     if (minPrice) {
       whereClauses.push("price >= ?");
@@ -175,29 +151,22 @@ export const productService = {
     }
 
     const where = `WHERE ${whereClauses.join(" AND ")}`;
-    let orderBy = "ORDER BY sort_order ASC, id DESC";
+    let orderBy = "ORDER BY id DESC";
     if (sortBy === "price-asc") orderBy = "ORDER BY price ASC";
     if (sortBy === "price-desc") orderBy = "ORDER BY price DESC";
-    if (sortBy === "popular") orderBy = "ORDER BY is_best_seller DESC, id DESC";
-
-    // Fetch all products matching WHERE clauses, without pagination for now
-    const allProductsQuery = `SELECT * FROM products ${where} ${orderBy}`;
-    const allProducts = toObjects(db.exec(allProductsQuery, params)).map(parseProduct);
-
-    // Filter by size in application code
-    const filteredBySize = size 
-      ? allProducts.filter(p => p.sizes[size] && p.sizes[size].available && p.sizes[size].stock > 0)
-      : allProducts;
-
-    // Apply pagination manually
+    
+    const countQuery = `SELECT COUNT(*) as total FROM products ${where}`;
+    const totalResult = toObjects(db.exec(countQuery, params))[0] as { total: number };
+    
     const offset = (page - 1) * limit;
-    const paginatedProducts = filteredBySize.slice(offset, offset + limit);
+    const paginatedQuery = `SELECT * FROM products ${where} ${orderBy} LIMIT ? OFFSET ?`;
+    const paginatedProducts = toObjects(db.exec(paginatedQuery, [...params, limit, offset])).map(parseProduct);
     
     return {
       products: paginatedProducts,
-      totalPages: Math.ceil(filteredBySize.length / limit),
+      totalPages: Math.ceil(totalResult.total / limit),
       currentPage: page,
-      totalProducts: filteredBySize.length,
+      totalProducts: totalResult.total,
     };
   },
 
@@ -207,50 +176,6 @@ export const productService = {
     const row = stmt.getAsObject([id]);
     stmt.free();
     return row ? parseProduct(row) : null;
-  },
-
-  updateProductStock(items: CartItem[]): void {
-    const db = getDB();
-    for (const item of items) {
-      const stmt = db.prepare('SELECT * FROM products WHERE id = ?');
-      const productRow = stmt.getAsObject([item.product.id]);
-      stmt.free();
-
-      if (productRow) {
-        const sizes = JSON.parse(productRow.sizes as string);
-        if (sizes[item.size] && sizes[item.size].stock >= item.quantity) {
-          sizes[item.size].stock -= item.quantity;
-          db.run('UPDATE products SET sizes = ? WHERE id = ?', [JSON.stringify(sizes), productRow.id]);
-        } else {
-          console.warn(`[Stock] Insufficient stock for product ${productRow.id}, size ${item.size}.`);
-        }
-      }
-    }
-    saveDatabase();
-  },
-
-  restoreProductStock(items: CartItem[]): void {
-    const db = getDB();
-    for (const item of items) {
-      const stmt = db.prepare('SELECT * FROM products WHERE id = ?');
-      // Asegúrate de que el ID del producto se está pasando correctamente
-      const productRow = stmt.getAsObject([item.product.id]);
-      stmt.free();
-
-      if (productRow) {
-        const sizes = JSON.parse(productRow.sizes as string);
-        // Asegúrate de que el talle (size) existe en el producto
-        if (sizes[item.size]) {
-          sizes[item.size].stock += item.quantity;
-          db.run('UPDATE products SET sizes = ? WHERE id = ?', [JSON.stringify(sizes), productRow.id]);
-        } else {
-          console.warn(`[Stock Restore] Size ${item.size} not found for product ${item.product.id}.`);
-        }
-      } else {
-        console.warn(`[Stock Restore] Product not found for ID ${item.product.id}.`);
-      }
-    }
-    saveDatabase();
   },
 
   getAllAdmin(): Product[] {
@@ -268,63 +193,34 @@ export const productService = {
 
   getNewest(limit: number): Product[] {
     const db = getDB();
-    // 1. Fetch all 'new' products, regardless of active status
-    const allNewProducts = toObjects(db.exec('SELECT * FROM products WHERE is_new = 1')).map(parseProduct);
-
-    // 2. Separate into in-stock and sold-out
-    const inStock: Product[] = [];
-    const soldOut: Product[] = [];
-
-    for (const p of allNewProducts) {
-      const totalStock = Object.values(p.sizes || {}).reduce((acc: any, s: any) => acc + (s.stock || 0), 0);
-      if (totalStock > 0 && p.isActive) {
-        inStock.push(p);
-      } else {
-        soldOut.push(p);
-      }
-    }
-
-    // 3. Sort the in-stock products by their manual order
-    inStock.sort((a, b) => (a.sort_order ?? 9999) - (b.sort_order ?? 9999));
-    
-    // 4. Combine, with in-stock items first
-    const sortedProducts = [...inStock, ...soldOut];
-
-    // 5. Return the limited number of products
-    return sortedProducts.slice(0, limit);
-  },
-
-  getBestsellers(): Product[] {
-    const db = getDB();
-    const rows = toObjects(db.exec('SELECT * FROM products WHERE is_best_seller = 1 AND is_active = 1 ORDER BY created_at DESC'));
+    // Fetch active products with stock, ordered by creation date
+    const rows = toObjects(db.exec('SELECT * FROM products WHERE is_active = 1 AND stock > 0 ORDER BY created_at DESC LIMIT ?', [limit]));
     return rows.map(parseProduct);
   },
 
-  create(product: Omit<Product, 'id' | 'isActive'>): number {
+  getBestsellers(): Product[] {
+    // This logic might need to be re-evaluated as is_best_seller is removed.
+    // For now, returning newest products as a placeholder.
+    const db = getDB();
+    const rows = toObjects(db.exec('SELECT * FROM products WHERE is_active = 1 ORDER BY created_at DESC'));
+    return rows.map(parseProduct);
+  },
+
+  create(product: Partial<Product>): number {
     const db = getDB();
     const stmt = db.prepare(
-      'INSERT INTO products (name, price, images, video, category, description, material, rise, rise_cm, fit, waist_flat, is_waist_stretchy, length, sizes, is_new, is_best_seller, faqs, brand, short_description) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)'
+      'INSERT INTO products (name, price, compare_at_price, transfer_price, images, video, stock, colors, is_active, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP)'
     );
     stmt.run([
       product.name,
       product.price,
-      JSON.stringify(product.images),
+      product.compare_at_price ?? null,
+      product.transfer_price ?? null,
+      JSON.stringify(product.images || []),
       product.video ?? null,
-      product.category,
-      product.description,
-      product.material,
-      product.rise,
-      product.rise_cm ?? null,
-      product.fit,
-      product.waist_flat ?? null,
-      Number(product.isWaistStretchy),
-      product.length ?? null,
-      JSON.stringify(product.sizes),
-      Number(product.isNew),
-      Number(product.isBestSeller),
-      product.faqs ? JSON.stringify(product.faqs) : '[]', // Store FAQs as JSON string
-      product.brand ?? null,
-      product.short_description ?? null
+      product.stock ?? 0,
+      JSON.stringify(product.colors || []),
+      Number(product.isActive ?? true)
     ]);
     stmt.free();
     const id = toObjects(db.exec("SELECT last_insert_rowid() as id"))[0].id;
@@ -334,59 +230,30 @@ export const productService = {
 
   update(productId: string, product: Partial<Product>): boolean {
     const db = getDB();
-    db.run(
-      'UPDATE products SET name = COALESCE(?, name), price = COALESCE(?, price), images = COALESCE(?, images), video = COALESCE(?, video), category = COALESCE(?, category), description = COALESCE(?, description), material = COALESCE(?, material), rise = COALESCE(?, rise), rise_cm = COALESCE(?, rise_cm), fit = COALESCE(?, fit), waist_flat = COALESCE(?, waist_flat), is_waist_stretchy = COALESCE(?, is_waist_stretchy), length = COALESCE(?, length), sizes = COALESCE(?, sizes), is_new = COALESCE(?, is_new), is_best_seller = COALESCE(?, is_best_seller), is_active = COALESCE(?, is_active), faqs = COALESCE(?, faqs), brand = COALESCE(?, brand), short_description = COALESCE(?, short_description), sort_order = COALESCE(?, sort_order) WHERE id = ?',
-      [
+    const stmt = db.prepare(
+      'UPDATE products SET name = COALESCE(?, name), price = COALESCE(?, price), compare_at_price = COALESCE(?, compare_at_price), transfer_price = COALESCE(?, transfer_price), images = COALESCE(?, images), video = ?, stock = COALESCE(?, stock), colors = COALESCE(?, colors), is_active = COALESCE(?, is_active) WHERE id = ?'
+    );
+    stmt.run([
         product.name ?? null,
         product.price ?? null,
+        product.compare_at_price ?? null,
+        product.transfer_price ?? null,
         product.images ? JSON.stringify(product.images) : null,
-        product.video ?? null,
-        product.category ?? null,
-        product.description ?? null,
-        product.material ?? null,
-        product.rise ?? null,
-        product.rise_cm ?? null,
-        product.fit ?? null,
-        product.waist_flat ?? null,
-        product.isWaistStretchy !== undefined ? Number(product.isWaistStretchy) : null,
-        product.length ?? null,
-        product.sizes ? JSON.stringify(product.sizes) : null,
-        product.isNew !== undefined ? Number(product.isNew) : null,
-        product.isBestSeller !== undefined ? Number(product.isBestSeller) : null,
+        product.video, // Use direct value, allowing setting it to null
+        product.stock ?? null,
+        product.colors ? JSON.stringify(product.colors) : null,
         product.isActive !== undefined ? Number(product.isActive) : null,
-        product.faqs ? JSON.stringify(product.faqs) : null,
-        product.brand ?? null,
-        product.short_description ?? null,
-        product.sort_order ?? null,
         productId
-      ]
-    );
+    ]);
+    stmt.free();
     const changes = db.getRowsModified();
     saveDatabase();
     return changes > 0;
   },
 
   updateOrder(items: { id: string; sort_order: number }[]): boolean {
-    const db = getDB();
-    // Begin transaction
-    db.exec("BEGIN TRANSACTION;");
-    try {
-        const stmt = db.prepare('UPDATE products SET sort_order = :sort_order WHERE id = :id');
-        for (const item of items) {
-            stmt.run({ ':sort_order': item.sort_order, ':id': Number(item.id) });
-        }
-        stmt.free();
-        // Commit transaction
-        db.exec("COMMIT;");
-        console.log(`[Reorder] Transaction committed for ${items.length} products.`);
-        saveDatabase();
-        return true;
-    } catch (e) {
-        db.exec("ROLLBACK;");
-        console.error("[Reorder] Transaction rolled back due to error:", e);
-        // Do not save database on error
-        return false;
-    }
+    // This may no longer be relevant if sort_order is removed
+    return true;
   },
 
   delete(productId: string): boolean {

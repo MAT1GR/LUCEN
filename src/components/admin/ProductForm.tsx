@@ -1,6 +1,6 @@
 import React, { useState, FormEvent, useEffect } from 'react';
 import { Product } from '../../types';
-import { Plus, Trash2, UploadCloud, Image, Video, GripVertical } from 'lucide-react';
+import { Plus, Trash2, UploadCloud, Image, Video, GripVertical, X } from 'lucide-react';
 import {
   DndContext,
   closestCenter,
@@ -18,7 +18,6 @@ import {
   rectSortingStrategy,
 } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
-import crypto from 'crypto';
 
 // --- INTERFACES ---
 interface ProductFormProps {
@@ -28,16 +27,16 @@ interface ProductFormProps {
   isSaving: boolean;
 }
 
-interface SizeRow {
-  size: string;
-  available: boolean;
-  stock: number;
+interface ColorRow {
+  id: string;
+  name: string;
+  hex: string;
 }
 
 interface SortableImage {
   id: string;
-  file: File | string; // File object for new images, string (URL) for existing
-  url: string; // Blob URL for new, original URL for existing
+  file: File | string; 
+  url: string; 
 }
 
 // --- SORTABLE IMAGE COMPONENT ---
@@ -70,36 +69,17 @@ const SortableImageItem: React.FC<{ image: SortableImage; onRemove: (id: string)
 
 // --- MAIN FORM COMPONENT ---
 export const ProductForm: React.FC<ProductFormProps> = ({ product, onClose, onSave, isSaving }) => {
-  const [formData, setFormData] = useState({
-    name: product?.name || '',
-    price: product?.price || 0,
-    category: product?.category || '',
-    description: product?.description || '',
-    short_description: product?.short_description || '',
-    material: product?.material || '',
-    rise: product?.rise || 'Medio',
-    rise_cm: product?.rise_cm || 0,
-    fit: product?.fit || '',
-    waist_flat: product?.waist_flat || 0,
-    length: product?.length || 0,
-    isWaistStretchy: product?.isWaistStretchy || false,
-    isNew: product?.isNew || false,
-    isActive: product?.isActive ?? true,
-    brand: product?.brand || '',
-  });
+  const [name, setName] = useState(product?.name || '');
+  const [price, setPrice] = useState<number | ''>(product?.price || '');
+  const [compareAtPrice, setCompareAtPrice] = useState<number | ''>(product?.compare_at_price || '');
+  const [transferPrice, setTransferPrice] = useState<number | ''>(product?.transfer_price || '');
+  const [stock, setStock] = useState<number | ''>(product?.stock || '');
+  const [isActive, setIsActive] = useState(product?.isActive ?? true);
 
+  const [colors, setColors] = useState<ColorRow[]>(product?.colors || []);
   const [sortableImages, setSortableImages] = useState<SortableImage[]>([]);
   const [videoFile, setVideoFile] = useState<File | null>(null);
   const [videoPreview, setVideoPreview] = useState<string | null>(product?.video || null);
-
-  const initialSizes = product?.sizes 
-    ? Object.entries(product.sizes).map(([size, details]) => ({ size, ...details }))
-    : [{ size: '', available: true, stock: 0 }];
-
-  const [sizeRows, setSizeRows] = useState<SizeRow[]>(initialSizes);
-  
-  const defaultFaq = { question: '¿Cómo debo lavarlo?', answer: 'Recomendamos lavar del revés, con agua fría y evitar el uso de secadoras para mantener la forma y el color.' };
-  const [faqs, setFaqs] = useState(product?.faqs && product.faqs.length > 0 ? product.faqs : (product ? [] : [defaultFaq]));
   
   const sensors = useSensors(
     useSensor(PointerSensor),
@@ -118,7 +98,7 @@ export const ProductForm: React.FC<ProductFormProps> = ({ product, onClose, onSa
 
   useEffect(() => {
     const initialImages = (product?.images || []).map((imgUrl): SortableImage => ({
-      id: `existing-${imgUrl}-${Math.random()}`, // Create a somewhat unique ID for existing images
+      id: `existing-${imgUrl}-${Math.random()}`,
       file: imgUrl,
       url: getCorrectImageUrl(imgUrl as string),
     }));
@@ -136,18 +116,12 @@ export const ProductForm: React.FC<ProductFormProps> = ({ product, onClose, onSa
       });
     }
   };
-  
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
-    const { name, value, type } = e.target;
-    const isCheckbox = type === 'checkbox';
-    setFormData(prev => ({ ...prev, [name]: isCheckbox ? (e.target as HTMLInputElement).checked : value }));
-  };
 
   const handleNewImagesChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files) {
       const newFiles = Array.from(e.target.files);
       const newSortableImages: SortableImage[] = newFiles.map(file => ({
-        id: `new-${file.name}-${Date.now()}-${Math.random()}`, // Reasonably unique ID
+        id: `new-${file.name}-${Date.now()}-${Math.random()}`,
         file: file,
         url: URL.createObjectURL(file),
       }));
@@ -169,21 +143,13 @@ export const ProductForm: React.FC<ProductFormProps> = ({ product, onClose, onSa
     e.preventDefault();
     const data = new FormData();
 
-    Object.entries(formData).forEach(([key, value]) => {
-      data.append(key, String(value));
-    });
-
-    const sizesAsObject = sizeRows.reduce((acc, row) => {
-      if (row.size.trim() !== '') {
-        acc[row.size] = {
-          available: row.available,
-          stock: Number(row.stock),
-        };
-      }
-      return acc;
-    }, {} as Product['sizes']);
-    data.append('sizes', JSON.stringify(sizesAsObject));
-    data.append('faqs', JSON.stringify(faqs));
+    data.append('name', name);
+    data.append('price', String(price));
+    data.append('compare_at_price', String(compareAtPrice || 0));
+    data.append('transfer_price', String(transferPrice || 0));
+    data.append('stock', String(stock || 0));
+    data.append('isActive', String(isActive));
+    data.append('colors', JSON.stringify(colors));
 
     const existingImagesPaths = sortableImages
       .map(img => img.file)
@@ -207,49 +173,18 @@ export const ProductForm: React.FC<ProductFormProps> = ({ product, onClose, onSa
     onSave(data);
   };
   
-  // Other handlers (size, faq, video, json upload) remain mostly the same
-    const handleSizeChange = (index: number, field: keyof SizeRow, value: string | number | boolean) => {
-    const newSizes = [...sizeRows];
-    const sizeToUpdate = { ...newSizes[index] };
-    
-    switch (field) {
-      case 'size':
-        if (typeof value === 'string') sizeToUpdate.size = value;
-        break;
-      case 'stock':
-        const stockValue = Number(value);
-        sizeToUpdate.stock = isNaN(stockValue) ? 0 : Math.max(0, Math.floor(stockValue));
-        break;
-      case 'available':
-        if (typeof value === 'boolean') sizeToUpdate.available = value;
-        break;
-    }
+    const handleColorChange = (id: string, field: 'name' | 'hex', value: string) => {
+        setColors(colors.map(color => color.id === id ? { ...color, [field]: value } : color));
+    };
 
-    newSizes[index] = sizeToUpdate;
-    setSizeRows(newSizes);
-  };
+    const addColor = () => {
+        setColors([...colors, { id: `color-${Date.now()}`, name: '', hex: '#000000' }]);
+    };
 
-  const addSizeRow = () => {
-    setSizeRows([...sizeRows, { size: '', available: true, stock: 0 }]);
-  };
+    const removeColor = (id: string) => {
+        setColors(colors.filter(color => color.id !== id));
+    };
 
-  const removeSizeRow = (index: number) => {
-    setSizeRows(sizeRows.filter((_, i) => i !== index));
-  };
-  
-  const handleFaqChange = (index: number, field: 'question' | 'answer', value: string) => {
-    const newFaqs = [...faqs];
-    newFaqs[index][field] = value;
-    setFaqs(newFaqs);
-  };
-
-  const addFaq = () => {
-    setFaqs([...faqs, { question: '', answer: '' }]);
-  };
-
-  const removeFaq = (index: number) => {
-    setFaqs(faqs.filter((_, i) => i !== index));
-  };
 
   const handleVideoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
@@ -269,48 +204,17 @@ export const ProductForm: React.FC<ProductFormProps> = ({ product, onClose, onSa
     setVideoFile(null);
     setVideoPreview(null);
   };
-
-    const handleJsonUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (!file) return;
-
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      try {
-        const jsonContent = JSON.parse(e.target?.result as string);
-        
-        const newFormData = {
-          name: jsonContent.nombre_producto || formData.name,
-          price: jsonContent.price || formData.price,
-          category: jsonContent.categoria || formData.category,
-          description: jsonContent.descripcion || formData.description,
-          material: jsonContent.material || formData.material,
-          rise: jsonContent.tiro || formData.rise,
-          rise_cm: parseFloat(jsonContent.tiro_cm) || formData.rise_cm,
-          fit: jsonContent.calce || formData.fit,
-          waist_flat: parseFloat(jsonContent.cintura_cm) || formData.waist_flat,
-          length: parseFloat(jsonContent.alto_cm) || formData.length,
-          isWaistStretchy: jsonContent.elastizado === 'Sí',
-          isNew: formData.isNew,
-          isActive: formData.isActive,
-          brand: jsonContent.marca || formData.brand,
-        };
-        setFormData(newFormData);
-
-        if (jsonContent.preguntas_frecuentes) {
-          const newFaqs = jsonContent.preguntas_frecuentes.map((faq: any) => ({
-            question: faq.pregunta,
-            answer: faq.respuesta,
-          }));
-          setFaqs(newFaqs);
+  
+  const handleNumericChange = (setter: React.Dispatch<React.SetStateAction<number | ''>>) => (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    if (value === '') {
+        setter('');
+    } else {
+        const num = parseFloat(value);
+        if (!isNaN(num)) {
+            setter(num);
         }
-        event.target.value = '';
-      } catch (error) {
-        console.error("Error parsing JSON file:", error);
-        alert("Error al procesar el archivo JSON. Asegúrate de que el formato sea correcto.");
-      }
-    };
-    reader.readAsText(file);
+    }
   };
 
   return (
@@ -318,7 +222,7 @@ export const ProductForm: React.FC<ProductFormProps> = ({ product, onClose, onSa
       {/* Header */}
       <header className="flex-shrink-0 bg-white border-b px-8 py-4 flex items-center justify-between">
         <h2 className="text-2xl font-bold text-gray-800">{product ? 'Editar Producto' : 'Nuevo Producto'}</h2>
-        <div className="flex items-center space-x-4">
+        <div>
           <button type="button" onClick={onClose} className="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-md">
             Cerrar
           </button>
@@ -332,89 +236,12 @@ export const ProductForm: React.FC<ProductFormProps> = ({ product, onClose, onSa
             
             {/* Columna Izquierda */}
             <div className="lg:col-span-2 space-y-8">
-              {/* JSON Import Section */}
-              { !product && (
-                <div className="p-6 bg-white border rounded-lg shadow-sm">
-                  <h3 className="text-xl font-semibold text-gray-800 mb-6">Importar desde JSON</h3>
-                  <div className="border-2 border-dashed rounded-lg p-6 text-center">
-                    <UploadCloud className="mx-auto h-10 w-10 text-gray-400" />
-                    <label htmlFor="json-upload" className="mt-2 block text-sm font-semibold text-black hover:text-gray-800 cursor-pointer">
-                      Seleccionar archivo JSON
-                      <input
-                        type="file"
-                        id="json-upload"
-                        accept=".json"
-                        className="sr-only"
-                        onChange={handleJsonUpload}
-                      />
-                    </label>
-                    <p className="text-xs leading-5 text-gray-500 mt-1">Sube un archivo .json</p>
-                  </div>
-                </div>
-              )}
-
               <div className="p-6 bg-white border rounded-lg shadow-sm">
-                <h3 className="text-xl font-semibold text-gray-800 mb-6">Información Esencial</h3>
+                <h3 className="text-xl font-semibold text-gray-800 mb-6">Información Principal</h3>
                 <div className="space-y-4">
                   <div>
                     <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-1">Nombre del Producto <span className="text-red-500">*</span></label>
-                    <input id="name" name="name" value={formData.name} onChange={handleChange} placeholder="Ej: Jean Mom Fit Vintage" className="w-full p-2 border border-gray-300 rounded-md focus:ring-black focus:border-black" required />
-                  </div>
-                  <div>
-                    <label htmlFor="short_description" className="block text-sm font-medium text-gray-700 mb-1">Descripción Corta (aparece abajo del precio)</label>
-                    <input id="short_description" name="short_description" value={formData.short_description} onChange={handleChange} placeholder="Ej: Jean de calce relajado, tiro medio..." className="w-full p-2 border border-gray-300 rounded-md focus:ring-black focus:border-black" />
-                  </div>
-                  <div>
-                    <label htmlFor="description" className="block text-sm font-medium text-gray-700 mb-1">Descripción <span className="text-red-500">*</span></label>
-                    <textarea id="description" name="description" value={formData.description} onChange={handleChange} placeholder="Descripción detallada del producto." className="w-full p-2 border border-gray-300 rounded-md focus:ring-black focus:border-black" rows={4} required />
-                  </div>
-                </div>
-              </div>
-
-              <div className="p-6 bg-white border rounded-lg shadow-sm">
-                <h3 className="text-xl font-semibold text-gray-800 mb-6">Detalles y Medidas</h3>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
-                  <div>
-                    <label htmlFor="category" className="block text-sm font-medium text-gray-700 mb-1">Categoría <span className="text-red-500">*</span></label>
-                    <input id="category" name="category" value={formData.category} onChange={handleChange} placeholder="Ej: Jeans" className="w-full p-2 border border-gray-300 rounded-md focus:ring-black focus:border-black" required />
-                  </div>
-                  <div>
-                    <label htmlFor="brand" className="block text-sm font-medium text-gray-700 mb-1">Marca</label>
-                    <input id="brand" name="brand" value={formData.brand} onChange={handleChange} placeholder="Ej: Levi's" className="w-full p-2 border border-gray-300 rounded-md focus:ring-black focus:border-black" />
-                  </div>
-                  <div>
-                    <label htmlFor="material" className="block text-sm font-medium text-gray-700 mb-1">Material</label>
-                    <input id="material" name="material" value={formData.material} onChange={handleChange} placeholder="Ej: Denim Rígido" className="w-full p-2 border border-gray-300 rounded-md focus:ring-black focus:border-black" />
-                  </div>
-                  <div>
-                    <label htmlFor="fit" className="block text-sm font-medium text-gray-700 mb-1">Calce</label>
-                    <input id="fit" name="fit" value={formData.fit} onChange={handleChange} placeholder="Ej: Mom Fit" className="w-full p-2 border border-gray-300 rounded-md focus:ring-black focus:border-black" />
-                  </div>
-                </div>
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-                  <div>
-                    <label htmlFor="length" className="block text-sm font-medium text-gray-700 mb-1">Alto (cm)</label>
-                    <input id="length" name="length" type="number" value={formData.length} onChange={handleChange} placeholder="105" className="w-full p-2 border border-gray-300 rounded-md focus:ring-black focus:border-black" />
-                  </div>
-                  <div className="flex flex-col">
-                    <label htmlFor="waist_flat" className="block text-sm font-medium text-gray-700 mb-1">Cintura (cm)</label>
-                    <input id="waist_flat" name="waist_flat" type="number" value={formData.waist_flat} onChange={handleChange} placeholder="38" className="w-full p-2 border border-gray-300 rounded-md focus:ring-black focus:border-black" />
-                    <label className="flex items-center text-sm text-gray-600 mt-2">
-                      <input type="checkbox" name="isWaistStretchy" checked={formData.isWaistStretchy} onChange={handleChange} className="h-4 w-4 text-black focus:ring-black border-gray-300 rounded"/>
-                      <span className="ml-2">Elastizado</span>
-                    </label>
-                  </div>
-                  <div>
-                    <label htmlFor="rise" className="block text-sm font-medium text-gray-700 mb-1">Tiro</label>
-                    <select id="rise" name="rise" value={formData.rise} onChange={handleChange} className="w-full p-2 border border-gray-300 rounded-md focus:ring-black focus:border-black">
-                      <option value="Bajo">Bajo</option>
-                      <option value="Medio">Medio</option>
-                      <option value="Alto">Alto</option>
-                    </select>
-                  </div>
-                  <div>
-                    <label htmlFor="rise_cm" className="block text-sm font-medium text-gray-700 mb-1">Tiro (cm)</label>
-                    <input id="rise_cm" name="rise_cm" type="number" value={formData.rise_cm} onChange={handleChange} placeholder="30" className="w-full p-2 border border-gray-300 rounded-md focus:ring-black focus:border-black" />
+                    <input id="name" value={name} onChange={(e) => setName(e.target.value)} placeholder="Ej: Jean Mom Fit Vintage" className="w-full p-2 border border-gray-300 rounded-md focus:ring-black focus:border-black" required />
                   </div>
                 </div>
               </div>
@@ -423,67 +250,46 @@ export const ProductForm: React.FC<ProductFormProps> = ({ product, onClose, onSa
                 <h3 className="text-xl font-semibold text-gray-800 mb-6">Precio y Stock</h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div>
-                      <label htmlFor="price" className="block text-sm font-medium text-gray-700 mb-1">Precio <span className="text-red-500">*</span></label>
-                      <input id="price" name="price" type="number" value={formData.price} onChange={handleChange} placeholder="Ej: 8500" className="w-full p-2 border border-gray-300 rounded-md focus:ring-black focus:border-black" required />
+                        <label htmlFor="price" className="block text-sm font-medium text-gray-700 mb-1">Precio <span className="text-red-500">*</span></label>
+                        <input id="price" type="number" value={price} onChange={handleNumericChange(setPrice)} placeholder="Ej: 25000" className="w-full p-2 border border-gray-300 rounded-md focus:ring-black focus:border-black" required />
                     </div>
-                    <div className="space-y-2">
-                        <h4 className="text-sm font-medium text-gray-700">Tallas Disponibles</h4>
-                        {sizeRows.map((row, index) => (
-                          <div key={index} className="grid grid-cols-12 gap-2 items-center">
-                              <div className="col-span-5">
-                                <label className="sr-only">Talle</label>
-                                <input value={row.size} onChange={(e) => handleSizeChange(index, 'size', e.target.value)} placeholder="Talle (40)" className="w-full p-2 border border-gray-300 rounded-md text-sm"/>
-                              </div>
-                              <div className="col-span-4">
-                                <label className="sr-only">Stock</label>
-                                <input value={row.stock} type="number" onChange={(e) => handleSizeChange(index, 'stock', Number(e.target.value))} placeholder="Stock" className="w-full p-2 border border-gray-300 rounded-md text-sm"/>
-                              </div>
-                              <label className="col-span-2 flex items-center justify-center text-xs gap-1">
-                                  <input type="checkbox" checked={row.available} onChange={(e) => handleSizeChange(index, 'available', e.target.checked)} className="h-4 w-4 text-black focus:ring-black border-gray-300 rounded"/>
-                              </label>
-                              <button type="button" onClick={() => removeSizeRow(index)} className="col-span-1 text-red-500 hover:text-red-700 justify-self-end"><Trash2 size={16}/></button>
-                          </div>
-                        ))}
-                        <button type="button" onClick={addSizeRow} className="mt-2 flex items-center gap-2 text-sm font-semibold text-black hover:text-gray-800 px-3 py-1.5 rounded-md border border-dashed border-black/50">
-                            <Plus size={16}/> Añadir Talle
-                        </button>
+                    <div>
+                        <label htmlFor="compareAtPrice" className="block text-sm font-medium text-gray-700 mb-1">Precio Tachado (Opcional)</label>
+                        <input id="compareAtPrice" type="number" value={compareAtPrice} onChange={handleNumericChange(setCompareAtPrice)} placeholder="Ej: 30000" className="w-full p-2 border border-gray-300 rounded-md focus:ring-black focus:border-black" />
+                    </div>
+                    <div>
+                        <label htmlFor="transferPrice" className="block text-sm font-medium text-gray-700 mb-1">Precio con Transferencia (Opcional)</label>
+                        <input id="transferPrice" type="number" value={transferPrice} onChange={handleNumericChange(setTransferPrice)} placeholder="Ej: 22000" className="w-full p-2 border border-gray-300 rounded-md focus:ring-black focus:border-black" />
+                    </div>
+                    <div>
+                        <label htmlFor="stock" className="block text-sm font-medium text-gray-700 mb-1">Stock Total <span className="text-red-500">*</span></label>
+                        <input id="stock" type="number" value={stock} onChange={handleNumericChange(setStock)} placeholder="Ej: 50" className="w-full p-2 border border-gray-300 rounded-md focus:ring-black focus:border-black" required />
                     </div>
                 </div>
               </div>
 
-              {/* FAQs Section */}
               <div className="p-6 bg-white border rounded-lg shadow-sm">
-                <h3 className="text-xl font-semibold text-gray-800 mb-6">Preguntas Frecuentes (Opcional)</h3>
-                <div className="space-y-4">
-                  {faqs.map((faq, index) => (
-                    <div key={index} className="p-4 border rounded-md bg-gray-50 relative">
-                      <div className="space-y-2">
-                        <div>
-                          <label className="block text-xs font-medium text-gray-600 mb-1">Pregunta</label>
-                          <input 
-                            value={faq.question} 
-                            onChange={(e) => handleFaqChange(index, 'question', e.target.value)} 
-                            placeholder="Ej: ¿Este jean es elastizado?"
-                            className="w-full p-2 border border-gray-300 rounded-md text-sm"
-                          />
+                <h3 className="text-xl font-semibold text-gray-800 mb-6">Colores</h3>
+                 <div className="space-y-3">
+                    {colors.map((color) => (
+                        <div key={color.id} className="grid grid-cols-12 gap-3 items-center p-2 border rounded-md">
+                            <div className="col-span-5">
+                                <label className="sr-only">Nombre del Color</label>
+                                <input value={color.name} onChange={(e) => handleColorChange(color.id, 'name', e.target.value)} placeholder="Nombre (ej: Azul)" className="w-full p-2 border-gray-300 rounded-md text-sm"/>
+                            </div>
+                            <div className="col-span-5 flex items-center gap-2">
+                                <label className="sr-only">Código Hex</label>
+                                <input value={color.hex} onChange={(e) => handleColorChange(color.id, 'hex', e.target.value)} placeholder="#0000ff" className="w-full p-2 border-gray-300 rounded-md text-sm"/>
+                                <input type="color" value={color.hex} onChange={(e) => handleColorChange(color.id, 'hex', e.target.value)} className="w-8 h-8 p-0 border-none rounded cursor-pointer"/>
+                            </div>
+                            <div className="col-span-2 flex justify-end">
+                                <button type="button" onClick={() => removeColor(color.id)} className="text-red-500 hover:text-red-700"><Trash2 size={16}/></button>
+                            </div>
                         </div>
-                        <div>
-                          <label className="block text-xs font-medium text-gray-600 mb-1">Respuesta</label>
-                          <textarea 
-                            value={faq.answer} 
-                            onChange={(e) => handleFaqChange(index, 'answer', e.target.value)} 
-                            placeholder="Ej: Sí, este modelo contiene un 2% de elastano..."
-                            className="w-full p-2 border border-gray-300 rounded-md text-sm"
-                            rows={2}
-                          />
-                        </div>
-                      </div>
-                      <button type="button" onClick={() => removeFaq(index)} className="absolute -top-2 -right-2 bg-red-600 text-white rounded-full p-1"><Trash2 size={12}/></button>
-                    </div>
-                  ))}
-                  <button type="button" onClick={addFaq} className="mt-2 flex items-center gap-2 text-sm font-semibold text-black hover:text-gray-800 px-3 py-1.5 rounded-md border border-dashed border-black/50">
-                      <Plus size={16}/> Añadir Pregunta
-                  </button>
+                    ))}
+                    <button type="button" onClick={addColor} className="mt-2 flex items-center gap-2 text-sm font-semibold text-black hover:text-gray-800 px-3 py-1.5 rounded-md border border-dashed border-black/50">
+                        <Plus size={16}/> Añadir Color
+                    </button>
                 </div>
               </div>
             </div>
@@ -549,12 +355,8 @@ export const ProductForm: React.FC<ProductFormProps> = ({ product, onClose, onSa
                 <h3 className="text-xl font-semibold text-gray-800 mb-6">Visibilidad</h3>
                 <div className="space-y-4">
                   <label className="flex items-center text-gray-700 cursor-pointer">
-                    <input type="checkbox" name="isActive" checked={formData.isActive} onChange={handleChange} className="h-4 w-4 text-black focus:ring-black border-gray-300 rounded"/> 
+                    <input type="checkbox" name="isActive" checked={isActive} onChange={(e) => setIsActive(e.target.checked)} className="h-4 w-4 text-black focus:ring-black border-gray-300 rounded"/> 
                     <span className="ml-3 text-sm">Producto Activo (visible en la tienda)</span>
-                  </label>
-                  <label className="flex items-center text-gray-700 cursor-pointer">
-                    <input type="checkbox" name="isNew" checked={formData.isNew} onChange={handleChange} className="h-4 w-4 text-black focus:ring-black border-gray-300 rounded"/> 
-                    <span className="ml-3 text-sm">Marcar como "Last Drop" (aparece en Homepage)</span>
                   </label>
                 </div>
               </div>

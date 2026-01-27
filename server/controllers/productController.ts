@@ -84,23 +84,19 @@ export const createProduct = async (req: Request, res: Response) => {
         const newProductData = req.body;
         const files = req.files as { [fieldname: string]: Express.Multer.File[] };
         
-        console.log('[DEBUG] Raw data received:', newProductData);
+        console.log('[DEBUG] Raw data received for create:', newProductData);
 
         // Data Type Conversion
         newProductData.price = parseFloat(newProductData.price) || 0;
-        const waistFlat = parseInt(newProductData.waist_flat, 10);
-        newProductData.waist_flat = isNaN(waistFlat) ? null : waistFlat;
-        const length = parseInt(newProductData.length, 10);
-        newProductData.length = isNaN(length) ? null : length;
-        const riseCm = parseInt(newProductData.rise_cm, 10);
-        newProductData.rise_cm = isNaN(riseCm) ? null : riseCm;
-        newProductData.isNew = newProductData.isNew === 'true';
-        newProductData.isBestSeller = newProductData.isBestSeller === 'true';
+        newProductData.compare_at_price = parseFloat(newProductData.compare_at_price) || 0;
+        newProductData.transfer_price = parseFloat(newProductData.transfer_price) || 0;
+        newProductData.stock = parseInt(newProductData.stock, 10) || 0;
         newProductData.isActive = newProductData.isActive === 'true';
-        newProductData.isWaistStretchy = newProductData.isWaistStretchy === 'true';
         
-        if (newProductData.sizes && typeof newProductData.sizes === 'string') {
-            newProductData.sizes = JSON.parse(newProductData.sizes);
+        if (newProductData.colors && typeof newProductData.colors === 'string') {
+            newProductData.colors = JSON.parse(newProductData.colors);
+        } else {
+            newProductData.colors = [];
         }
         
         if (files.newImages) {
@@ -109,11 +105,11 @@ export const createProduct = async (req: Request, res: Response) => {
             newProductData.images = [];
         }
 
-        if (files.video) {
+        if (files.video && files.video.length > 0) {
             newProductData.video = `/uploads/${files.video[0].filename}`;
         }
         
-        console.log('[DEBUG] Data before sending to DB:', newProductData);
+        console.log('[DEBUG] Data before sending to DB for create:', newProductData);
 
         const createdProductId = await db.products.create(newProductData);
         productsCache.del('newest-products');
@@ -130,32 +126,18 @@ export const updateProduct = async (req: Request, res: Response) => {
     try {
         const { existingImages, existingVideoUrl, ...productData } = req.body;
         const files = req.files as { [fieldname: string]: Express.Multer.File[] };
+        
+        console.log('[DEBUG] Raw data received for update:', req.body);
 
         // Data Type Conversion
         if (productData.price) productData.price = parseFloat(productData.price);
-        if (productData.hasOwnProperty('waist_flat')) {
-            const parsed = parseInt(productData.waist_flat, 10);
-            productData.waist_flat = isNaN(parsed) ? null : parsed;
-        }
-        if (productData.hasOwnProperty('length')) {
-            const parsed = parseInt(productData.length, 10);
-            productData.length = isNaN(parsed) ? null : parsed;
-        }
-        if (productData.hasOwnProperty('rise_cm')) {
-            const parsed = parseInt(productData.rise_cm, 10);
-            productData.rise_cm = isNaN(parsed) ? null : parsed;
-        }
-        if (productData.hasOwnProperty('isNew')) productData.isNew = productData.isNew === 'true';
-        if (productData.hasOwnProperty('isBestSeller')) productData.isBestSeller = productData.isBestSeller === 'true';
+        if (productData.compare_at_price) productData.compare_at_price = parseFloat(productData.compare_at_price);
+        if (productData.transfer_price) productData.transfer_price = parseFloat(productData.transfer_price);
+        if (productData.stock) productData.stock = parseInt(productData.stock, 10);
         if (productData.hasOwnProperty('isActive')) productData.isActive = productData.isActive === 'true';
-        if (productData.hasOwnProperty('isWaistStretchy')) productData.isWaistStretchy = productData.isWaistStretchy === 'true';
 
-        if (productData.sizes && typeof productData.sizes === 'string') {
-            productData.sizes = JSON.parse(productData.sizes);
-        }
-
-        if (productData.faqs && typeof productData.faqs === 'string') {
-            productData.faqs = JSON.parse(productData.faqs);
+        if (productData.colors && typeof productData.colors === 'string') {
+            productData.colors = JSON.parse(productData.colors);
         }
 
         let finalImagePaths: string[] = [];
@@ -185,6 +167,8 @@ export const updateProduct = async (req: Request, res: Response) => {
         } else {
             productData.video = null;
         }
+
+        console.log('[DEBUG] Data before sending to DB for update:', productData);
 
         const updated = await db.products.update(req.params.id, productData);
         if (updated) {

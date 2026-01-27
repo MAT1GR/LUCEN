@@ -5,32 +5,21 @@ export interface Product {
   id: string;
   name: string;
   price: number;
+  compare_at_price?: number;
+  transfer_price?: number;
   images: string[];
   video?: string;
-  category: string;
-  description: string;
-  material: string;
-  rise: string;
-  rise_cm?: number;
-  fit: string;
-  waist_flat?: number;
-  length?: number;
-  isWaistStretchy?: boolean;
-  sizes: {
-    [key: string]: { available: boolean; stock: number; };
-  };
-  isNew: boolean;
-  isBestSeller: boolean;
+  stock: number;
+  colors: {
+    name: string;
+    hex: string;
+  }[];
   isActive: boolean;
-  faqs?: { question: string; answer: string }[];
-  brand?: string;
-  short_description?: string;
-  sort_order?: number;
 }
 
 export interface CartItem {
   product: Product;
-  size: string;
+  color: string;
   quantity: number;
 }
 

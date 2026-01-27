@@ -1,18 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { Product } from '../../types';
-import { Plus, Edit, Trash2, Eye, EyeOff, Save, XCircle, ListOrdered } from 'lucide-react';
+import { Plus, Edit, Trash2, Eye, EyeOff } from 'lucide-react';
 import { ProductForm } from './ProductForm';
 
 // --- COMPONENTE TARJETA EDITABLE ---
-const EditableProductCard = ({ product, onEdit, onDelete, onToggleActive, onOrderChange }: any) => {
+const EditableProductCard = ({ product, onEdit, onDelete, onToggleActive }: any) => {
   
-  const totalStock = Object.values(product.sizes || {}).reduce((acc: any, size: any) => acc + (size.stock || 0), 0);
+  const totalStock = product.stock || 0;
   const imageUrl = (product.images && product.images.length > 0) ? (product.images[0].startsWith('/uploads/') ? `/api${product.images[0]}` : product.images[0]) : 'https://via.placeholder.com/400x500';
-
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const newOrder = e.target.value === '' ? 9999 : parseInt(e.target.value, 10);
-    onOrderChange(product.id, newOrder);
-  };
 
   return (
     <div className="bg-white rounded-lg shadow-sm border overflow-hidden relative group">
@@ -37,17 +32,6 @@ const EditableProductCard = ({ product, onEdit, onDelete, onToggleActive, onOrde
 
       <div className="p-3">
         <h3 className="font-bold text-gray-800 truncate text-sm">{product.name}</h3>
-        {/* Input para el orden */}
-        <div className="flex items-center gap-2 mt-2">
-            <ListOrdered size={16} className="text-gray-500"/>
-            <input
-              type="number"
-              value={product.sort_order === 9999 ? '' : product.sort_order}
-              onChange={handleInputChange}
-              placeholder="#"
-              className="w-full p-1 border border-gray-200 rounded-md text-sm focus:ring-black focus:border-black"
-            />
-        </div>
         <div className="flex justify-between items-center mt-2">
           <p className="text-gray-700 font-semibold text-sm">${product.price.toLocaleString('es-AR')}</p>
           <span className={`text-xs font-bold px-2 py-1 rounded-full ${totalStock > 0 ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-500'}`}>
@@ -69,8 +53,6 @@ export const ProductsTab: React.FC = () => {
   const [isSaving, setIsSaving] = useState(false);
   const [showForm, setShowForm] = useState(false);
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
-  const [orderChanged, setOrderChanged] = useState(false);
-  const [isSavingOrder, setIsSavingOrder] = useState(false);
 
   useEffect(() => {
     fetchProducts();
@@ -114,13 +96,12 @@ export const ProductsTab: React.FC = () => {
         }
       }
 
-      inStock.sort((a, b) => (a.sort_order || 9999) - (b.sort_order || 9999));
-      
+      // Sort by creation date or another relevant field, since sort_order is removed
+      inStock.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
       outOfStock.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
 
       setActiveProducts(inStock);
       setSoldProducts(outOfStock);
-      setOrderChanged(false); // Reset changed status on fetch
 
     } catch (err) {
       console.error(err);
@@ -130,58 +111,6 @@ export const ProductsTab: React.FC = () => {
     }
   };
   
-  const handleOrderChange = (productId: string, newOrderValue: number) => {
-    setActiveProducts(currentProducts => {
-      const updatedProducts = currentProducts.map(p => 
-        p.id === productId ? { ...p, sort_order: newOrderValue } : p
-      );
-      updatedProducts.sort((a, b) => (a.sort_order || 9999) - (b.sort_order || 9999));
-      return updatedProducts;
-    });
-    setOrderChanged(true);
-  };
-
-  const handleSaveOrder = async () => {
-    setIsSavingOrder(true);
-    // The sort_order is already in the state from the input fields
-    const itemsToSend = activeProducts.map(p => ({ id: p.id, sort_order: p.sort_order }));
-
-    try {
-      const token = localStorage.getItem('auth_token');
-      const headers: HeadersInit = { 'Content-Type': 'application/json' };
-      if (token) headers['Authorization'] = `Bearer ${token}`;
-
-      const response = await fetch('/api/products/reorder', {
-        method: 'POST',
-        headers: headers,
-        body: JSON.stringify({ items: itemsToSend })
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.message || 'El servidor respondió con un error.');
-      }
-      
-      alert("Orden guardado con éxito.");
-      setOrderChanged(false);
-      // Optional: re-fetch to confirm from server
-      await fetchProducts();
-      
-    } catch (error) {
-      console.error("Error guardando el orden:", error);
-      alert(`Error al guardar el orden: ${error instanceof Error ? error.message : 'Error desconocido'}. El orden se revertirá.`);
-      await fetchProducts(); // Revert on error
-    } finally {
-      setIsSavingOrder(false);
-    }
-  };
-  
-  const handleCancelOrder = () => {
-    if (window.confirm("¿Descartar los cambios en el orden?")) {
-      fetchProducts(); // Re-fetches original order from server
-    }
-  };
-
   const handleOpenForm = (p: Product | null = null) => {
     setEditingProduct(p);
     setShowForm(true);
@@ -291,19 +220,8 @@ export const ProductsTab: React.FC = () => {
           <div className="mb-12">
             <div className="flex justify-between items-center mb-4">
               <h3 className="text-lg font-bold flex items-center gap-2">
-                  🟢 En Vidriera (Orden Manual)
-                  <span className="text-xs font-normal text-gray-500 bg-gray-100 px-2 py-1 rounded">Editá el # para ordenar</span>
+                  🟢 En Vidriera
               </h3>
-              {orderChanged && (
-                <div className="flex items-center gap-2 animate-fade-in">
-                  <button onClick={handleCancelOrder} disabled={isSavingOrder} className="px-3 py-1.5 text-sm rounded-md text-gray-600 hover:bg-gray-100 disabled:opacity-50 flex items-center gap-1.5">
-                    <XCircle size={16} /> Cancelar
-                  </button>
-                  <button onClick={handleSaveOrder} disabled={isSavingOrder} className="px-3 py-1.5 text-sm rounded-md bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50 flex items-center gap-1.5">
-                    <Save size={16} /> {isSavingOrder ? 'Guardando...' : 'Guardar Orden'}
-                  </button>
-                </div>
-              )}
             </div>
             
             <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-4">
@@ -314,7 +232,6 @@ export const ProductsTab: React.FC = () => {
                   onEdit={handleOpenForm}
                   onDelete={handleDeleteProduct}
                   onToggleActive={handleToggleActive}
-                  onOrderChange={handleOrderChange}
                 />
               ))}
             </div>
@@ -336,7 +253,6 @@ export const ProductsTab: React.FC = () => {
                   onEdit={handleOpenForm}
                   onDelete={handleDeleteProduct}
                   onToggleActive={handleToggleActive}
-                  onOrderChange={handleOrderChange}
                 />
               ))}
             </div>

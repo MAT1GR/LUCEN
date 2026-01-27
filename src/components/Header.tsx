@@ -28,7 +28,6 @@ const Header: React.FC<HeaderProps> = ({ onCartClick }) => {
   }, [location.pathname]);
 
   const navLinks = [
-    { href: "/", label: "Inicio" },
     { href: "/tienda", label: "Colección" },
     { href: "/blue-light-info", label: "¿Qué es?" }, 
   ];
