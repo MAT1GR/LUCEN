@@ -20,6 +20,7 @@ export function initializeSchema() {
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       name TEXT NOT NULL,
       price REAL NOT NULL,
+      category TEXT,
       compare_at_price REAL,
       transfer_price REAL,
       images TEXT,
@@ -260,6 +261,114 @@ function runMigrations() {
     console.log('[DB] Migration applied successfully: reviews table created.');
   } catch (e: any) {
     console.error('[DB] Migration for reviews table failed:', e);
+  }
+
+  try {
+    console.log('[DB] Migration: Adding compare_at_price to products...');
+    db.run("ALTER TABLE products ADD COLUMN compare_at_price REAL");
+    console.log('[DB] Migration applied successfully: added compare_at_price column.');
+  } catch (e: any) {
+    if (e.message && e.message.includes('duplicate column name')) {
+      console.log('[DB] Migration skipped: compare_at_price column already exists.');
+    } else {
+      console.error('[DB] Migration for compare_at_price column failed:', e);
+    }
+  }
+
+  try {
+    console.log('[DB] Migration: Adding stock to products...');
+    db.run("ALTER TABLE products ADD COLUMN stock INTEGER NOT NULL DEFAULT 0");
+    console.log('[DB] Migration applied successfully: added stock column.');
+  } catch (e: any) {
+    if (e.message && e.message.includes('duplicate column name')) {
+      console.log('[DB] Migration skipped: stock column already exists.');
+    } else {
+    console.log('[DB] Migration for stock column failed:', e);
+    }
+  }
+
+  try {
+    console.log('[DB] Migration: Adding transfer_price to products...');
+    db.run("ALTER TABLE products ADD COLUMN transfer_price REAL");
+    console.log('[DB] Migration applied successfully: added transfer_price column.');
+  } catch (e: any) {
+    if (e.message && e.message.includes('duplicate column name')) {
+      console.log('[DB] Migration skipped: transfer_price column already exists.');
+    } else {
+      console.error('[DB] Migration for transfer_price column failed:', e);
+    }
+  }
+
+  try {
+    console.log('[DB] Migration: Adding colors to products...');
+    db.run("ALTER TABLE products ADD COLUMN colors TEXT");
+    console.log('[DB] Migration applied successfully: added colors column.');
+  } catch (e: any) {
+    if (e.message && e.message.includes('duplicate column name')) {
+      console.log('[DB] Migration skipped: colors column already exists.');
+    } else {
+      console.error('[DB] Migration for colors column failed:', e);
+    }
+  }
+
+  try {
+    console.log('[DB] Migration: Adding images to products...');
+    db.run("ALTER TABLE products ADD COLUMN images TEXT");
+    console.log('[DB] Migration applied successfully: added images column.');
+  } catch (e: any) {
+    if (e.message && e.message.includes('duplicate column name')) {
+      console.log('[DB] Migration skipped: images column already exists.');
+    } else {
+      console.error('[DB] Migration for images column failed:', e);
+    }
+  }
+
+  try {
+    console.log('[DB] Migration: Adding video to products...');
+    db.run("ALTER TABLE products ADD COLUMN video TEXT");
+    console.log('[DB] Migration applied successfully: added video column.');
+  } catch (e: any) {
+    if (e.message && e.message.includes('duplicate column name')) {
+      console.log('[DB] Migration skipped: video column already exists.');
+    } else {
+      console.error('[DB] Migration for video column failed:', e);
+    }
+  }
+  
+  try {
+    console.log('[DB] Migration: Adding created_at to products...');
+    db.run("ALTER TABLE products ADD COLUMN created_at DATETIME DEFAULT CURRENT_TIMESTAMP");
+    console.log('[DB] Migration applied successfully: added created_at column.');
+  } catch (e: any) {
+    if (e.message && e.message.includes('duplicate column name')) {
+      console.log('[DB] Migration skipped: created_at column already exists.');
+    } else {
+      console.error('[DB] Migration for created_at column failed:', e);
+    }
+  }
+
+  try {
+    console.log('[DB] Migration: Adding updated_at to products...');
+    db.run("ALTER TABLE products ADD COLUMN updated_at DATETIME DEFAULT CURRENT_TIMESTAMP");
+    console.log('[DB] Migration applied successfully: added updated_at column.');
+  } catch (e: any) {
+    if (e.message && e.message.includes('duplicate column name')) {
+      console.log('[DB] Migration skipped: updated_at column already exists.');
+    } else {
+      console.error('[DB] Migration for updated_at column failed:', e);
+    }
+  }
+
+  try {
+    console.log('[DB] Migration: Adding nullable category to products...');
+    db.run("ALTER TABLE products ADD COLUMN category TEXT");
+    console.log('[DB] Migration applied successfully: added nullable category column.');
+  } catch (e: any) {
+    if (e.message && e.message.includes('duplicate column name')) {
+      console.log('[DB] Migration skipped: category column already exists.');
+    } else {
+      console.error('[DB] Migration for category column failed:', e);
+    }
   }
   
   saveDatabase();

@@ -4,6 +4,7 @@
 export interface Product {
   id: string;
   name: string;
+  category?: string;
   price: number;
   compare_at_price?: number;
   transfer_price?: number;

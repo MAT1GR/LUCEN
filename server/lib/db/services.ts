@@ -206,14 +206,15 @@ export const productService = {
     return rows.map(parseProduct);
   },
 
-  create(product: Partial<Product>): number {
+  create(product: Partial<Product> & { category?: string }): number {
     const db = getDB();
     const stmt = db.prepare(
-      'INSERT INTO products (name, price, compare_at_price, transfer_price, images, video, stock, colors, is_active, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP)'
+      'INSERT INTO products (name, price, category, compare_at_price, transfer_price, images, video, stock, colors, is_active, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP)'
     );
     stmt.run([
       product.name,
       product.price,
+      product.category || 'general',
       product.compare_at_price ?? null,
       product.transfer_price ?? null,
       JSON.stringify(product.images || []),
