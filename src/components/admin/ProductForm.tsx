@@ -73,6 +73,7 @@ export const ProductForm: React.FC<ProductFormProps> = ({ product, onClose, onSa
   const [description, setDescription] = useState(product?.description || '');
   const [material, setMaterial] = useState(product?.material || '');
   const [rise, setRise] = useState(product?.rise || '');
+  const [sizes, setSizes] = useState(JSON.stringify(product?.sizes || {}, null, 2));
   const [price, setPrice] = useState<number | ''>(product?.price || '');
   const [compareAtPrice, setCompareAtPrice] = useState<number | ''>(product?.compare_at_price || '');
   const [transferPrice, setTransferPrice] = useState<number | ''>(product?.transfer_price || '');
@@ -150,6 +151,7 @@ export const ProductForm: React.FC<ProductFormProps> = ({ product, onClose, onSa
     data.append('description', description);
     data.append('material', material);
     data.append('rise', rise);
+    data.append('sizes', sizes);
     data.append('price', String(price));
     data.append('compare_at_price', String(compareAtPrice || 0));
     data.append('transfer_price', String(transferPrice || 0));
@@ -260,6 +262,10 @@ export const ProductForm: React.FC<ProductFormProps> = ({ product, onClose, onSa
                   <div>
                     <label htmlFor="rise" className="block text-sm font-medium text-gray-700 mb-1">Rise <span className="text-red-500">*</span></label>
                     <input id="rise" value={rise} onChange={(e) => setRise(e.target.value)} placeholder="Ej: High" className="w-full p-2 border border-gray-300 rounded-md focus:ring-black focus:border-black" required />
+                  </div>
+                  <div>
+                    <label htmlFor="sizes" className="block text-sm font-medium text-gray-700 mb-1">Sizes (JSON) <span className="text-red-500">*</span></label>
+                    <textarea id="sizes" value={sizes} onChange={(e) => setSizes(e.target.value)} placeholder='{ "S": { "available": true, "stock": 10 } }' rows={6} className="w-full p-2 border border-gray-300 rounded-md focus:ring-black focus:border-black font-mono text-sm" required></textarea>
                   </div>
                 </div>
               </div>

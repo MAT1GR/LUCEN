@@ -46,6 +46,15 @@ const parseProduct = (row: any): Product => {
     console.error(`Failed to parse images for product ID ${row.id}:`, e);
   }
 
+  let sizes = {};
+  try {
+    if (row.sizes) {
+      sizes = JSON.parse(row.sizes);
+    }
+  } catch (e) {
+    console.error(`Failed to parse sizes for product ID ${row.id}:`, e);
+  }
+
   return {
     id: String(row.id),
     name: row.name,
@@ -59,6 +68,7 @@ const parseProduct = (row: any): Product => {
     video: row.video,
     stock: Number(row.stock),
     colors: colors,
+    sizes: sizes,
     isActive: Boolean(row.is_active),
   };
 };
@@ -212,7 +222,7 @@ export const productService = {
   create(product: Partial<Product> & { category?: string }): number {
     const db = getDB();
     const stmt = db.prepare(
-      'INSERT INTO products (name, description, material, rise, price, category, compare_at_price, transfer_price, images, video, stock, colors, is_active, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP)'
+      'INSERT INTO products (name, description, material, rise, price, category, compare_at_price, transfer_price, images, video, stock, colors, sizes, is_active, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP)'
     );
     stmt.run([
       product.name,
@@ -227,6 +237,7 @@ export const productService = {
       product.video ?? null,
       product.stock ?? 0,
       JSON.stringify(product.colors || []),
+      JSON.stringify(product.sizes || {}),
       Number(product.isActive ?? true)
     ]);
     stmt.free();
@@ -238,7 +249,7 @@ export const productService = {
   update(productId: string, product: Partial<Product>): boolean {
     const db = getDB();
     const stmt = db.prepare(
-      'UPDATE products SET name = COALESCE(?, name), description = COALESCE(?, description), material = COALESCE(?, material), rise = COALESCE(?, rise), price = COALESCE(?, price), compare_at_price = COALESCE(?, compare_at_price), transfer_price = COALESCE(?, transfer_price), images = COALESCE(?, images), video = ?, stock = COALESCE(?, stock), colors = COALESCE(?, colors), is_active = COALESCE(?, is_active) WHERE id = ?'
+      'UPDATE products SET name = COALESCE(?, name), description = COALESCE(?, description), material = COALESCE(?, material), rise = COALESCE(?, rise), price = COALESCE(?, price), compare_at_price = COALESCE(?, compare_at_price), transfer_price = COALESCE(?, transfer_price), images = COALESCE(?, images), video = ?, stock = COALESCE(?, stock), colors = COALESCE(?, colors), sizes = COALESCE(?, sizes), is_active = COALESCE(?, is_active) WHERE id = ?'
     );
     stmt.run([
         product.name ?? null,
@@ -252,6 +263,7 @@ export const productService = {
         product.video, // Use direct value, allowing setting it to null
         product.stock ?? null,
         product.colors ? JSON.stringify(product.colors) : null,
+        product.sizes ? JSON.stringify(product.sizes) : null,
         product.isActive !== undefined ? Number(product.isActive) : null,
         productId
     ]);

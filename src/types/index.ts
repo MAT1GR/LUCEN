@@ -6,6 +6,7 @@ export interface Product {
   description: string;
   material: string;
   rise: string;
+  sizes: { [key: string]: { available: boolean; stock: number } };
   category?: string;
   price: number;
   compare_at_price?: number;

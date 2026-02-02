@@ -33,15 +33,23 @@ async function runMigration() {
       return;
     }
 
+    // Check if migration has already been run by looking for a marker
+    const migrationCheck = db.exec("SELECT name FROM sqlite_master WHERE type='table' AND name='migration_marker_20260202'");
+    if (migrationCheck.length > 0) {
+        console.log('Migration has already been run. Skipping.');
+        return;
+    }
+
+
     console.log('Step 2: Creating a new temporary table "products_new"...');
     
     const createNewTableSql = `
       CREATE TABLE products_new (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         name TEXT NOT NULL,
-        description TEXT NOT NULL,
-        material TEXT NOT NULL,
-        rise TEXT NOT NULL,
+        description TEXT,
+        material TEXT,
+        rise TEXT,
         price REAL NOT NULL,
         category TEXT,
         compare_at_price REAL,
@@ -50,6 +58,7 @@ async function runMigration() {
         video TEXT,
         stock INTEGER NOT NULL DEFAULT 0,
         colors TEXT,
+        sizes TEXT,
         is_active BOOLEAN DEFAULT 1,
         created_at DATETIME,
         updated_at DATETIME
@@ -72,19 +81,23 @@ async function runMigration() {
     const descriptionValue = existingColumns.includes('description') ? 'description' : "'' AS description";
     const materialValue = existingColumns.includes('material') ? 'material' : "'' AS material";
     const riseValue = existingColumns.includes('rise') ? 'rise' : "'' AS rise";
+    const sizesValue = existingColumns.includes('sizes') ? 'sizes' : "'{}' AS sizes";
+
 
     const insertSql = `
       INSERT INTO products_new (
         ${sharedColumns.join(', ')},
         description,
         material,
-        rise
+        rise,
+        sizes
       )
       SELECT
         ${sharedColumns.join(', ')},
         ${descriptionValue},
         ${materialValue},
-        ${riseValue}
+        ${riseValue},
+        ${sizesValue}
       FROM products;
     `;
     
@@ -99,6 +112,11 @@ async function runMigration() {
     console.log('Step 5: Renaming "products_new" to "products"...');
     db.run('ALTER TABLE products_new RENAME TO products');
     console.log('  -> Table renamed.');
+
+    // Add a marker table to indicate that the migration has been run
+    db.run("CREATE TABLE migration_marker_20260202 (migrated_at DATETIME)");
+    db.run("INSERT INTO migration_marker_20260202 VALUES (CURRENT_TIMESTAMP)");
+
 
     console.log('Step 6: Saving the updated database...');
     const data = db.export();
