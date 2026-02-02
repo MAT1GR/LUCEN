@@ -3,6 +3,9 @@
 export interface Product {
   id: string;
   name: string;
+  description: string;
+  material: string;
+  rise: string;
   category?: string;
   price: number;
   compare_at_price?: number;

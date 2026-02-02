@@ -49,6 +49,9 @@ const parseProduct = (row: any): Product => {
   return {
     id: String(row.id),
     name: row.name,
+    description: row.description,
+    material: row.material,
+    rise: row.rise,
     price: row.price,
     compare_at_price: row.compare_at_price,
     transfer_price: row.transfer_price,
@@ -209,10 +212,13 @@ export const productService = {
   create(product: Partial<Product> & { category?: string }): number {
     const db = getDB();
     const stmt = db.prepare(
-      'INSERT INTO products (name, price, category, compare_at_price, transfer_price, images, video, stock, colors, is_active, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP)'
+      'INSERT INTO products (name, description, material, rise, price, category, compare_at_price, transfer_price, images, video, stock, colors, is_active, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP)'
     );
     stmt.run([
       product.name,
+      product.description || '',
+      product.material || '',
+      product.rise || '',
       product.price,
       product.category || 'general',
       product.compare_at_price ?? null,
@@ -232,10 +238,13 @@ export const productService = {
   update(productId: string, product: Partial<Product>): boolean {
     const db = getDB();
     const stmt = db.prepare(
-      'UPDATE products SET name = COALESCE(?, name), price = COALESCE(?, price), compare_at_price = COALESCE(?, compare_at_price), transfer_price = COALESCE(?, transfer_price), images = COALESCE(?, images), video = ?, stock = COALESCE(?, stock), colors = COALESCE(?, colors), is_active = COALESCE(?, is_active) WHERE id = ?'
+      'UPDATE products SET name = COALESCE(?, name), description = COALESCE(?, description), material = COALESCE(?, material), rise = COALESCE(?, rise), price = COALESCE(?, price), compare_at_price = COALESCE(?, compare_at_price), transfer_price = COALESCE(?, transfer_price), images = COALESCE(?, images), video = ?, stock = COALESCE(?, stock), colors = COALESCE(?, colors), is_active = COALESCE(?, is_active) WHERE id = ?'
     );
     stmt.run([
         product.name ?? null,
+        product.description ?? null,
+        product.material ?? null,
+        product.rise ?? null,
         product.price ?? null,
         product.compare_at_price ?? null,
         product.transfer_price ?? null,

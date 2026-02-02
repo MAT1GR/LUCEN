@@ -70,6 +70,9 @@ const SortableImageItem: React.FC<{ image: SortableImage; onRemove: (id: string)
 // --- MAIN FORM COMPONENT ---
 export const ProductForm: React.FC<ProductFormProps> = ({ product, onClose, onSave, isSaving }) => {
   const [name, setName] = useState(product?.name || '');
+  const [description, setDescription] = useState(product?.description || '');
+  const [material, setMaterial] = useState(product?.material || '');
+  const [rise, setRise] = useState(product?.rise || '');
   const [price, setPrice] = useState<number | ''>(product?.price || '');
   const [compareAtPrice, setCompareAtPrice] = useState<number | ''>(product?.compare_at_price || '');
   const [transferPrice, setTransferPrice] = useState<number | ''>(product?.transfer_price || '');
@@ -144,6 +147,9 @@ export const ProductForm: React.FC<ProductFormProps> = ({ product, onClose, onSa
     const data = new FormData();
 
     data.append('name', name);
+    data.append('description', description);
+    data.append('material', material);
+    data.append('rise', rise);
     data.append('price', String(price));
     data.append('compare_at_price', String(compareAtPrice || 0));
     data.append('transfer_price', String(transferPrice || 0));
@@ -242,6 +248,18 @@ export const ProductForm: React.FC<ProductFormProps> = ({ product, onClose, onSa
                   <div>
                     <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-1">Nombre del Producto <span className="text-red-500">*</span></label>
                     <input id="name" value={name} onChange={(e) => setName(e.target.value)} placeholder="Ej: Jean Mom Fit Vintage" className="w-full p-2 border border-gray-300 rounded-md focus:ring-black focus:border-black" required />
+                  </div>
+                  <div>
+                    <label htmlFor="description" className="block text-sm font-medium text-gray-700 mb-1">Descripción <span className="text-red-500">*</span></label>
+                    <textarea id="description" value={description} onChange={(e) => setDescription(e.target.value)} placeholder="Detalles del producto..." rows={4} className="w-full p-2 border border-gray-300 rounded-md focus:ring-black focus:border-black" required></textarea>
+                  </div>
+                  <div>
+                    <label htmlFor="material" className="block text-sm font-medium text-gray-700 mb-1">Material <span className="text-red-500">*</span></label>
+                    <input id="material" value={material} onChange={(e) => setMaterial(e.target.value)} placeholder="Ej: Acetato" className="w-full p-2 border border-gray-300 rounded-md focus:ring-black focus:border-black" required />
+                  </div>
+                  <div>
+                    <label htmlFor="rise" className="block text-sm font-medium text-gray-700 mb-1">Rise <span className="text-red-500">*</span></label>
+                    <input id="rise" value={rise} onChange={(e) => setRise(e.target.value)} placeholder="Ej: High" className="w-full p-2 border border-gray-300 rounded-md focus:ring-black focus:border-black" required />
                   </div>
                 </div>
               </div>
