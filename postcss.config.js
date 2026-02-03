@@ -12,10 +12,16 @@ export default {
       theme: {
         // NOTA: Ya no se usa 'extend' en v4, va directo
         colors: {
-          blancoHueso: "#ffffff",
-          arena: "#D3CFC3",
-          caramelo: "#B5651D",
-          grisoscuro: "#41403E", // <-- Aquí está tu color
+          'blanco-hueso': 'var(--color-blanco-hueso)',
+          arena: 'var(--color-arena)',
+          caramelo: 'var(--color-caramelo)',
+          'gris-oscuro': 'var(--color-gris-oscuro)',
+          
+          primary: 'var(--color-primary)',
+          accent: 'var(--color-accent)',
+          background: 'var(--color-background)',
+          surface: 'var(--color-surface)',
+          border: 'var(--color-border)',
           
           brandBg: "#ffffff",
           brandPrimaryText: "#41403E",

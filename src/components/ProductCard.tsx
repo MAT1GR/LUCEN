@@ -23,7 +23,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
     : '';
 
   // Stock logic (reused)
-  const totalStock = Object.values(product.sizes || {}).reduce((acc, s) => acc + (s.stock || 0), 0);
+  const totalStock = product.stock || 0;
   const isSoldOut = totalStock === 0;
 
   // Pricing
@@ -86,7 +86,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
 
           <div className="mt-1">
             <p className="text-xs text-gray-500">
-                3 cuotas de <span className="font-semibold text-gray-900">${installmentPrice}</span>
+                3 cuotas sin interés de <span className="font-semibold text-gray-900">${installmentPrice}</span>
             </p>
           </div>
         </div>

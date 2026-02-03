@@ -1,81 +1,92 @@
 import axios from 'axios';
-import dotenv from 'dotenv';
+import crypto from 'crypto';
 
-dotenv.config();
+const API_VERSION = 'v19.0';
+const PIXEL_ID = process.env.META_PIXEL_ID;
+const ACCESS_TOKEN = process.env.META_ACCESS_TOKEN;
 
-const META_API_VERSION = 'v19.0'; 
-const META_PIXEL_ID = process.env.META_PIXEL_ID;
-const META_ACCESS_TOKEN = process.env.META_ACCESS_TOKEN;
+const hashData = (data: string) => {
+  return crypto.createHash('sha256').update(data).digest('hex');
+};
 
-interface UserData {
-  em?: string[]; // Hashed email
-  ph?: string[]; // Hashed phone
-  fn?: string[]; // Hashed first name
-  ln?: string[]; // Hashed last name
-  ct?: string[]; // Hashed city
-  st?: string[]; // Hashed state
-  zip?: string[]; // Hashed zip code
-  country?: string[]; // Hashed country
-  external_id?: string[]; // Hashed external ID
-  client_ip_address?: string;
-  client_user_agent?: string;
-  fbc?: string; // Facebook click ID
-  fbp?: string; // Facebook browser ID
-}
-
-interface CustomData {
-  currency?: string;
-  value?: number;
-  content_ids?: string[];
-  content_name?: string;
-  content_type?: string;
-  contents?: Array<{ id: string; quantity: number; item_price: number }>;
-  num_items?: number;
-  order_id?: string;
-  search_string?: string;
-  status?: string;
-}
-
-interface Event {
-  event_name: string;
-  event_time: number; // Unix timestamp
-  action_source: string; // e.g., 'website', 'app', 'physical_store', 'system_generated'
-  event_id?: string; // Unique event ID
-  user_data?: UserData;
-  custom_data?: CustomData;
-  data_processing_options?: string[]; // e.g., ['LDU'] for Limited Data Use
-  data_processing_options_country?: number; // e.g., 1 for US
-  data_processing_options_state?: number; // e.g., 1000 for California
-}
-
-/**
- * Sends an event to the Meta Conversion API.
- * @param event The event object conforming to Meta's API specification.
- */
-export async function sendMetaConversionEvent(event: Event): Promise<any> {
-  if (!META_PIXEL_ID || !META_ACCESS_TOKEN) {
-    console.warn('Meta Pixel ID or Access Token not configured. Skipping event.');
+export const sendEvent = async (eventName: string, userData: any, customData: any, eventSourceUrl: string, actionSource: string = 'website') => {
+  if (!PIXEL_ID || !ACCESS_TOKEN) {
+    console.error('Meta Pixel ID or Access Token is not configured.');
     return;
   }
 
-  const url = `https://graph.facebook.com/${META_API_VERSION}/${META_PIXEL_ID}/events?access_token=${META_ACCESS_TOKEN}`;
+  const url = `https://graph.facebook.com/${API_VERSION}/${PIXEL_ID}/events?access_token=${ACCESS_TOKEN}`;
+
+  const payload = {
+    data: [
+      {
+        event_name: eventName,
+        event_time: Math.floor(Date.now() / 1000),
+        action_source: actionSource,
+        event_source_url: eventSourceUrl,
+        user_data: {
+          em: userData.email ? [hashData(userData.email)] : [],
+          ph: userData.phone ? [hashData(userData.phone)] : [],
+          client_ip_address: userData.ip,
+          client_user_agent: userData.userAgent,
+          ci: userData.city ? [hashData(userData.city.toLowerCase())] : [],
+          zp: userData.zip ? [hashData(userData.zip)] : [],
+          country: userData.country ? [hashData(userData.country.toLowerCase())] : [],
+        },
+        custom_data: customData,
+      },
+    ],
+  };
 
   try {
-    const response = await axios.post(url, {
-      data: [event],
-          }, {
-            headers: {
-              'Content-Type': 'application/json',
-            },
-          });
-    console.log(`Meta Conversion Event Sent (${event.event_name}):`, response.data);
-    return response.data;
-  } catch (error: unknown) {
-    if (axios.isAxiosError(error)) {
-      console.error('Error sending Meta Conversion Event:', error.response?.data || error.message);
-    } else {
-      console.error('An unexpected error occurred:', error);
-    }
-    // No lanzamos el error para no interrumpir el flujo de compra si falla Meta
+    await axios.post(url, payload);
+    console.log(`Successfully sent ${eventName} event to Meta.`);
+  } catch (error) {
+    console.error(`Error sending ${eventName} event to Meta:`, error.response?.data || error.message);
   }
-}
+};
+
+export const trackViewContent = (userData: any, product: any, eventSourceUrl: string) => {
+  const customData = {
+    content_name: product.name,
+    content_ids: [product.id],
+    content_type: 'product',
+    value: product.price,
+    currency: 'ARS',
+  };
+  sendEvent('ViewContent', userData, customData, eventSourceUrl);
+};
+
+export const trackAddToCart = (userData: any, product: any, quantity: number, eventSourceUrl: string) => {
+  const customData = {
+    content_name: product.name,
+    content_ids: [product.id],
+    content_type: 'product',
+    value: product.price * quantity,
+    currency: 'ARS',
+  };
+  sendEvent('AddToCart', userData, customData, eventSourceUrl);
+};
+
+export const trackInitiateCheckout = (userData: any, cart: any[], eventSourceUrl: string) => {
+  const customData = {
+    content_ids: cart.map(item => item.product.id),
+    content_type: 'product',
+    value: cart.reduce((total, item) => total + item.product.price * item.quantity, 0),
+    currency: 'ARS',
+    num_items: cart.reduce((total, item) => total + item.quantity, 0),
+  };
+  sendEvent('InitiateCheckout', userData, customData, eventSourceUrl);
+};
+
+export const trackPurchase = (userData: any, order: any, eventSourceUrl: string) => {
+  const customData = {
+    content_ids: order.items.map(item => item.product_id),
+    content_type: 'product',
+    value: order.total,
+    currency: 'ARS',
+    num_items: order.items.reduce((total, item) => total + item.quantity, 0),
+    order_id: order.id,
+  };
+  sendEvent('Purchase', userData, customData, eventSourceUrl);
+};

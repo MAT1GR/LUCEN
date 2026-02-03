@@ -9,9 +9,9 @@ interface CartSidebarProps {
 }
 
 const CartSidebar: React.FC<CartSidebarProps> = ({ isOpen, onClose }) => {
-  const { cartItems, removeFromCart, updateQuantity, getTotalPrice } =
+  const { cartItems, removeFromCart, updateQuantity, getCartSummary } =
     useCart();
-  const total = getTotalPrice();
+  const summary = getCartSummary();
 
   const getCorrectImageUrl = (path: string) => {
     if (!path) return '';
@@ -76,9 +76,6 @@ const CartSidebar: React.FC<CartSidebarProps> = ({ isOpen, onClose }) => {
                     <div className="flex justify-between items-start mb-2">
                       <div>
                         <h3 className="font-bold uppercase text-sm tracking-tight leading-tight">{item.product.name}</h3>
-                        <p className="opacity-60 text-xs mt-1">
-                          Talle: {item.size}
-                        </p>
                       </div>
                       <button
                         onClick={() =>
@@ -101,7 +98,7 @@ const CartSidebar: React.FC<CartSidebarProps> = ({ isOpen, onClose }) => {
                         <span className="px-3 text-sm font-bold">{item.quantity}</span>
                         <button 
                           onClick={() => updateQuantity(item.product.id, item.size, item.quantity + 1)}
-                          disabled={item.quantity >= item.product.sizes[item.size].stock}
+                          disabled={item.quantity >= item.product.stock}
                           className="px-2 py-1 disabled:opacity-30"
                         >
                           <Plus size={14} />
@@ -121,22 +118,37 @@ const CartSidebar: React.FC<CartSidebarProps> = ({ isOpen, onClose }) => {
 
             {/* Footer Section (Fixed at the bottom) */}
             <div className="p-6 border-t border-gris-oscuro/10 bg-blanco-hueso">
-              
+              {summary.discount > 0 && (
+                <div className="flex justify-between items-center text-lg">
+                  <span className="font-bold uppercase tracking-tight">Subtotal</span>
+                  <span className="font-bold line-through text-gray-500">
+                    ${summary.subtotal.toLocaleString("es-AR")}
+                  </span>
+                </div>
+              )}
+              {summary.discount > 0 && (
+                <div className="flex justify-between items-center text-lg">
+                  <span className="font-bold uppercase tracking-tight text-red-500">Descuento 3x2</span>
+                  <span className="font-bold text-red-500">
+                    -${summary.discount.toLocaleString("es-AR")}
+                  </span>
+                </div>
+              )}
               <div className="flex justify-between items-center text-lg">
-                <span className="font-bold uppercase tracking-tight">Subtotal</span>
+                <span className="font-bold uppercase tracking-tight">Total</span>
                 <span className="font-bold">
-                  ${total.toLocaleString("es-AR")}
+                  ${summary.total.toLocaleString("es-AR")}
                 </span>
               </div>
               <p className="text-right text-xs opacity-60 mt-1 mb-6">
                 O 3 cuotas sin interés de ${" "}
-                {(total / 3).toLocaleString("es-AR", {
+                {(summary.total / 3).toLocaleString("es-AR", {
                   maximumFractionDigits: 0,
                 })}
               </p>
 
               {/* Aviso de Envío Gratis en el Footer del Carrito */}
-              {total > 0 && (
+              {summary.total > 0 && (
                 <div className="text-center text-[10px] mb-6 bg-gris-oscuro text-blanco-hueso p-2 rounded-sm font-black uppercase tracking-widest">
                   <p className="flex items-center justify-center gap-2">
                     <Truck size={14} /> ENVÍO GRATIS INCLUIDO.

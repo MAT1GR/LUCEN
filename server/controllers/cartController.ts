@@ -2,6 +2,7 @@ import { Request, Response } from 'express';
 import { db } from '../lib/database.js';
 import { getAbandonedCartEmail } from '../lib/emailTemplates.js';
 import { sendEmail } from '../emailService.js';
+import { trackAddToCart, trackInitiateCheckout } from '../lib/metaConversionService.js';
 
 export const captureAbandonedCart = async (req: Request, res: Response) => {
     const { email, cartItems } = req.body;
@@ -12,6 +13,20 @@ export const captureAbandonedCart = async (req: Request, res: Response) => {
 
     try {
         const cartId = db.carts.createOrUpdateAbandonedCart(email, cartItems);
+
+        const userData = {
+            email: email,
+            ip: req.ip,
+            userAgent: req.get('user-agent'),
+        };
+        const eventSourceUrl = `${req.protocol}://${req.get('host')}${req.originalUrl}`;
+
+        trackInitiateCheckout(userData, cartItems, eventSourceUrl);
+
+        for (const item of cartItems) {
+            trackAddToCart(userData, item.product, item.quantity, eventSourceUrl);
+        }
+        
         res.status(200).json({ message: 'Cart captured', cartId });
     } catch (error) {
         console.error('Error capturing abandoned cart:', error);

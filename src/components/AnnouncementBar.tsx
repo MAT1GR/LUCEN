@@ -6,7 +6,7 @@ const MarqueeContent = () => (
     <span className="text-white/50">✦</span>
     <span className="mx-8">ENVÍO GRATIS A TODO EL PAÍS</span>
     <span className="text-white/50">✦</span>
-    <span className="mx-8">6 CUOTAS SIN INTERÉS</span>
+    <span className="mx-8">3 CUOTAS SIN INTERÉS</span>
     <span className="text-white/50">✦</span>
     <span className="mx-8">CAMBIOS GRATIS</span>
     <span className="text-white/50">✦</span>
@@ -14,7 +14,7 @@ const MarqueeContent = () => (
     <span className="text-white/50">✦</span>
     <span className="mx-8">ENVÍO GRATIS A TODO EL PAÍS</span>
     <span className="text-white/50">✦</span>
-    <span className="mx-8">6 CUOTAS SIN INTERÉS</span>
+    <span className="mx-8">3 CUOTAS SIN INTERÉS</span>
     <span className="text-white/50">✦</span>
     <span className="mx-8">CAMBIOS GRATIS</span>
     <span className="text-white/50">✦</span>

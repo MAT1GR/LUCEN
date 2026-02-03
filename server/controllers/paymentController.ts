@@ -1,5 +1,5 @@
 // server/controllers/paymentController.ts
-import { sendMetaConversionEvent } from '../lib/metaConversionService.js';
+import { trackInitiateCheckout, trackPurchase } from '../lib/metaConversionService.js';
 import { hashSha256 } from '../lib/utils.js';
 import { Request, Response, Router } from "express";
 import { MercadoPagoConfig, Preference, Payment } from "mercadopago";
@@ -47,8 +47,22 @@ const validateItemsWithDB = (items: any[]) => {
 
     subtotal += Number(dbProduct.price) * Number(item.quantity);
   }
+  
+  const totalItems = validatedItems.reduce((total, item) => total + item.quantity, 0);
+  let discount = 0;
+  if (totalItems >= 3) {
+    const allItems = validatedItems.flatMap(item => Array(item.quantity).fill(item.product));
+    allItems.sort((a, b) => a.price - b.price);
+    
+    const numberOfDiscounts = Math.floor(totalItems / 3);
+    for (let i = 0; i < numberOfDiscounts; i++) {
+      discount += allItems[i].price;
+    }
+  }
 
-  return { validatedItems, subtotal };
+  const total = subtotal - discount;
+
+  return { validatedItems, subtotal, discount, total };
 };
 
 const createMercadoPagoPreference = async (req: Request, res: Response) => {
@@ -76,9 +90,9 @@ const createMercadoPagoPreference = async (req: Request, res: Response) => {
         return res.status(400).json({ message: e.message });
     }
 
-    const { validatedItems, subtotal } = validationResult;
+    const { validatedItems, subtotal, discount, total } = validationResult;
     const safeShippingCost = Number(shippingCost) || 0;
-    const total = subtotal + safeShippingCost;
+    const finalTotal = total + safeShippingCost;
 
     // Creamos o buscamos cliente
     const customerId = db.customers.findOrCreate({
@@ -95,7 +109,7 @@ const createMercadoPagoPreference = async (req: Request, res: Response) => {
       customerPhone: shippingInfo.phone,
       customerDocNumber: shippingInfo.docNumber || null,
       items: validatedItems, // Guardamos los items con el precio real
-      total: total,
+      total: finalTotal,
       status: "pending",
       shippingStreetName: shippingInfo.streetName || null,
       shippingStreetNumber: shippingInfo.streetNumber || null,
@@ -124,28 +138,16 @@ const createMercadoPagoPreference = async (req: Request, res: Response) => {
 
     // --- Send Meta Conversion API InitiateCheckout Event ---
     try {
-        const hashedEmail = shippingInfo.email ? hashSha256(shippingInfo.email) : undefined;
-        const clientIpAddress = req.ip;
-        const clientUserAgent = req.headers['user-agent'];
-
-        const initiateCheckoutEvent = {
-            event_name: 'InitiateCheckout',
-            event_time: Math.floor(Date.now() / 1000),
-            action_source: 'website',
-            event_id: eventId, // Include event_id for deduplication
-            user_data: {
-                em: hashedEmail ? [hashedEmail] : undefined,
-                client_ip_address: clientIpAddress,
-                client_user_agent: clientUserAgent,
-            },
-            custom_data: {
-                currency: 'ARS', // Assuming ARS, adjust as needed
-                value: total,
-                content_ids: validatedItems.map((item: any) => item.product.id),
-                num_items: validatedItems.reduce((sum: number, item: any) => sum + item.quantity, 0),
-            },
+        const userData = {
+            email: shippingInfo.email,
+            ip: req.ip,
+            userAgent: req.get('user-agent'),
+            city: shippingInfo.city,
+            zip: shippingInfo.postalCode,
+            country: 'AR' // Assuming Argentina
         };
-        await sendMetaConversionEvent(initiateCheckoutEvent);
+        const eventSourceUrl = `${req.protocol}://${req.get('host')}${req.originalUrl}`;
+        trackInitiateCheckout(userData, validatedItems, eventSourceUrl);
     } catch (metaError) {
         console.error('Error sending Meta Conversion API InitiateCheckout event:', metaError);
     }
@@ -251,28 +253,13 @@ const processPayment = async (req: Request, res: Response) => {
 
         // --- Send Meta Conversion API Purchase Event ---
         try {
-            const hashedEmail = order.customerEmail ? hashSha256(order.customerEmail) : undefined;
-            // client_ip_address and client_user_agent are not directly available here as it's a webhook
-            // For webhooks, Meta recommends sending only the PII data, and optionally fbc/fbp if available from the original checkout flow.
-            // If the original request IP/User-Agent were stored with the order, they could be used here.
-            // For simplicity, we omit them for now as they are not readily available in the webhook context.
-            const purchaseEvent = {
-                event_name: 'Purchase',
-                event_time: Math.floor(Date.now() / 1000), // Unix timestamp
-                action_source: 'website', // Assuming the purchase originated from the website
-                event_id: order.eventId, // Include event_id for deduplication
-                user_data: {
-                    em: hashedEmail ? [hashedEmail] : undefined,
-                },
-                custom_data: {
-                    currency: 'ARS', // Assuming ARS, adjust as needed
-                    value: paymentResult.transaction_amount || order.total,
-                    content_ids: order.items.map((item: any) => item.product.id),
-                    num_items: order.items.reduce((sum: number, item: any) => sum + item.quantity, 0),
-                    order_id: orderId,
-                },
+            const userData = {
+                email: order.customerEmail,
+                phone: order.customerPhone,
+                // We don't have IP and UserAgent in the webhook
             };
-            await sendMetaConversionEvent(purchaseEvent);
+            const eventSourceUrl = `${process.env.VITE_CLIENT_URL}`; // Can't get the original URL from webhook
+            trackPurchase(userData, order, eventSourceUrl);
         } catch (metaError) {
             console.error('Error sending Meta Conversion API Purchase event from webhook:', metaError);
         }
@@ -302,11 +289,12 @@ const createTransferOrder = async (req: Request, res: Response) => {
         return res.status(400).json({ message: e.message });
     }
 
-    const { validatedItems, subtotal } = validationResult;
+    const { validatedItems, subtotal, discount, total } = validationResult;
     const shippingCost = Number(shipping?.cost) || 0;
     
     // Aplicamos el descuento sobre el subtotal REAL validado
-    const finalTotal = (subtotal + shippingCost) * 0.9; 
+    const finalTotalWithShipping = total + shippingCost;
+    const finalTotal = finalTotalWithShipping * 0.9; 
 
     const customerId = db.customers.findOrCreate({
       email: shippingInfo.email,
@@ -350,28 +338,16 @@ const createTransferOrder = async (req: Request, res: Response) => {
 
     // --- Send Meta Conversion API InitiateCheckout Event ---
     try {
-        const hashedEmail = shippingInfo.email ? hashSha256(shippingInfo.email) : undefined;
-        const clientIpAddress = req.ip;
-        const clientUserAgent = req.headers['user-agent'];
-
-        const initiateCheckoutEvent = {
-            event_name: 'InitiateCheckout',
-            event_time: Math.floor(Date.now() / 1000),
-            action_source: 'website',
-            event_id: eventId, // Include event_id for deduplication
-            user_data: {
-                em: hashedEmail ? [hashedEmail] : undefined,
-                client_ip_address: clientIpAddress,
-                client_user_agent: clientUserAgent,
-            },
-            custom_data: {
-                currency: 'ARS', // Assuming ARS, adjust as needed
-                value: finalTotal,
-                content_ids: validatedItems.map((item: any) => item.product.id),
-                num_items: validatedItems.reduce((sum: number, item: any) => sum + item.quantity, 0),
-            },
+        const userData = {
+            email: shippingInfo.email,
+            ip: req.ip,
+            userAgent: req.get('user-agent'),
+            city: shippingInfo.city,
+            zip: shippingInfo.postalCode,
+            country: 'AR' // Assuming Argentina
         };
-        await sendMetaConversionEvent(initiateCheckoutEvent);
+        const eventSourceUrl = `${req.protocol}://${req.get('host')}${req.originalUrl}`;
+        trackInitiateCheckout(userData, validatedItems, eventSourceUrl);
     } catch (metaError) {
         console.error('Error sending Meta Conversion API InitiateCheckout event (Transfer):', metaError);
     }

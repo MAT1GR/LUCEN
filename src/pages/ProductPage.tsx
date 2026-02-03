@@ -34,7 +34,6 @@ const ProductPage: React.FC = () => {
   const [product, setProduct] = useState<Product | null>(null);
   const [relatedProducts, setRelatedProducts] = useState<Product[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [selectedSize, setSelectedSize] = useState<string>("");
   const [quantity, setQuantity] = useState(1);
   const [showSuccess, setShowSuccess] = useState(false);
   const [isDescriptionExpanded, setIsDescriptionExpanded] = useState(true);
@@ -54,11 +53,6 @@ const ProductPage: React.FC = () => {
         if (productRes.ok) {
           const productData = await productRes.json();
           setProduct(productData);
-
-          const availableSizes = Object.keys(productData.sizes).filter(
-            (size) => productData.sizes[size].available && productData.sizes[size].stock > 0
-          );
-          if (availableSizes.length > 0) setSelectedSize(availableSizes[0]);
 
           const allProductsRes = await fetch("/api/products/all");
           if (allProductsRes.ok) {
@@ -93,8 +87,8 @@ const ProductPage: React.FC = () => {
   }, [id]);
 
   const handleAddToCart = () => {
-    if (!product || !selectedSize) return;
-    addToCart(product, selectedSize, quantity);
+    if (!product) return;
+    addToCart(product, "default", quantity);
     setShowSuccess(true);
     setTimeout(() => setShowSuccess(false), 2000);
   };
@@ -109,10 +103,7 @@ const ProductPage: React.FC = () => {
   if (isLoading) return <div className="min-h-screen flex items-center justify-center font-sans"><Loader2 className="animate-spin" /></div>;
   if (!product) return <div className="min-h-screen flex items-center justify-center font-sans">Producto no encontrado.</div>;
 
-  const selectedVariantInfo = selectedSize ? product.sizes[selectedSize] : null;
-  const isInStock = selectedVariantInfo?.available && selectedVariantInfo?.stock > 0;
-  const availableVariants = Object.keys(product.sizes).filter(k => product.sizes[k].available && product.sizes[k].stock > 0);
-  const allVariantNames = Object.keys(product.sizes);
+  const isInStock = product.stock > 0;
 
   // Pricing Logic (Simulada para igualar referencia)
   const originalPrice = product.price * 2; // 50% OFF real
@@ -194,43 +185,11 @@ const ProductPage: React.FC = () => {
                    10% de descuento pagando con Transferencia o depósito
                 </p>
 
-                <a href="#details" className="text-[12px] text-gray-500 underline mb-4 block hover:text-black">
-                    Ver más detalles
-                </a>
+
                 
                 <div className="flex items-center gap-2 text-[#0055FF] font-medium text-[14px]">
                    <Truck size={18} strokeWidth={2} /> <span>Envío gratis</span>
                 </div>
-              </div>
-
-              {/* VARIANT SELECTOR */}
-              <div className="mb-6">
-                 <label className="block text-[13px] text-[#333] mb-2">
-                   Color: <span className="font-bold text-black">{selectedSize}</span>
-                 </label>
-                 <div className="flex flex-wrap gap-2">
-                   {availableVariants.map(variant => {
-                     const imageIndex = allVariantNames.indexOf(variant);
-                     // Fallback to the first image if the corresponding one isn't available
-                     const imageUrl = product.images[imageIndex] || product.images[0];
-
-                     return (
-                       <button
-                         key={variant}
-                         onClick={() => setSelectedSize(variant)}
-                         className={`w-[50px] h-[50px] rounded-[4px] border box-border p-0.5 transition-all ${
-                           selectedSize === variant 
-                             ? "border-black ring-1 ring-black" 
-                             : "border-gray-300 hover:border-gray-400"
-                         }`}
-                       >
-                          <div className="w-full h-full rounded-[2px] overflow-hidden">
-                              <img src={imageUrl} alt={variant} className="w-full h-full object-cover" />
-                          </div>
-                       </button>
-                     )
-                   })}
-                 </div>
               </div>
 
               {/* QUANTITY & ADD TO CART */}
@@ -247,6 +206,7 @@ const ProductPage: React.FC = () => {
                     <button 
                         onClick={() => setQuantity(q => q + 1)} 
                         className="text-gray-500 hover:text-black p-1"
+                        disabled={!product || quantity >= product.stock}
                     >
                         <Plus size={14} />
                     </button>

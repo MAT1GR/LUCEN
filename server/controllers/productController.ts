@@ -1,6 +1,7 @@
 import { Request, Response } from 'express';
 import { db } from '../lib/database.js';
 import NodeCache from 'node-cache';
+import { trackViewContent } from '../lib/metaConversionService.js';
 
 // Cache for 60 seconds
 const productsCache = new NodeCache({ stdTTL: 60 });
@@ -69,6 +70,12 @@ export const getProductById = async (req: Request, res: Response) => {
   try {
     const product = await db.products.getById(req.params.id);
     if (product) {
+      const userData = {
+        ip: req.ip,
+        userAgent: req.get('user-agent'),
+      };
+      const eventSourceUrl = `${req.protocol}://${req.get('host')}${req.originalUrl}`;
+      trackViewContent(userData, product, eventSourceUrl);
       res.json(product);
     } else {
       res.status(404).json({ message: 'Producto no encontrado' });

@@ -11,6 +11,12 @@
   --color-background: #FFFFFF; /* Blanco puro */
   --color-surface: #F9FAFB; /* Gris muy claro para fondos alternativos */
   --color-border: #E5E7EB; /* Gris suave para bordes */
+  
+  /* Custom colors */
+  --color-blanco-hueso: #ffffff;
+  --color-arena: #D3CFC3;
+  --color-caramelo: #B5651D;
+  --color-gris-oscuro: #41403E;
 }
 
 /* Base styles personalizados */

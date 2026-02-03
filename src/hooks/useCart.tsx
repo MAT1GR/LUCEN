@@ -9,7 +9,7 @@ interface CartContextType {
   removeFromCart: (productId: string, size: string) => void;
   updateQuantity: (productId: string, size: string, quantity: number) => void;
   clearCart: () => void;
-  getTotalPrice: () => number;
+  getCartSummary: () => { subtotal: number; discount: number; total: number; };
   getTotalItems: () => number;
 }
 
@@ -47,14 +47,19 @@ export const CartProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     setCartItems(prev => {
       const existingItem = prev.find(item => item.product.id === product.id && item.size === size);
       
-      // If item is already in cart for a unique product, do nothing.
       if (existingItem) {
-        return prev;
+        const newQuantity = Math.min(existingItem.quantity + quantity, product.stock);
+        return prev.map(item =>
+          item.product.id === product.id && item.size === size
+            ? { ...item, quantity: newQuantity }
+            : item
+        );
       }
 
-      return [...prev, { product, size, quantity }];
+      const newQuantity = Math.min(quantity, product.stock);
+      return [...prev, { product, size, quantity: newQuantity }];
     });
-    setTimeout(() => setIsAdding(false), 500); // Keep for visual feedback, but state is updated instantly
+    setTimeout(() => setIsAdding(false), 500);
   };
 
   const removeFromCart = (productId: string, size: string) => {
@@ -67,11 +72,13 @@ export const CartProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       return;
     }
     setCartItems(prev =>
-      prev.map(item =>
-        item.product.id === productId && item.size === size
-          ? { ...item, quantity }
-          : item
-      )
+      prev.map(item => {
+        if (item.product.id === productId && item.size === size) {
+          const newQuantity = Math.min(quantity, item.product.stock);
+          return { ...item, quantity: newQuantity };
+        }
+        return item;
+      })
     );
   };
 
@@ -79,8 +86,24 @@ export const CartProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     setCartItems([]);
   };
 
-  const getTotalPrice = () => {
-    return cartItems.reduce((total, item) => total + (item.product.price * item.quantity), 0);
+  const getCartSummary = () => {
+    const subtotal = cartItems.reduce((total, item) => total + (item.product.price * item.quantity), 0);
+    const totalItems = cartItems.reduce((total, item) => total + item.quantity, 0);
+
+    let discount = 0;
+    if (totalItems >= 3) {
+      // Create a flat list of all items in the cart to sort them by price
+      const allItems = cartItems.flatMap(item => Array(item.quantity).fill(item.product));
+      allItems.sort((a, b) => a.price - b.price);
+      
+      const numberOfDiscounts = Math.floor(totalItems / 3);
+      for (let i = 0; i < numberOfDiscounts; i++) {
+        discount += allItems[i].price;
+      }
+    }
+
+    const total = subtotal - discount;
+    return { subtotal, discount, total };
   };
 
   const getTotalItems = () => {
@@ -94,7 +117,7 @@ export const CartProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     removeFromCart,
     updateQuantity,
     clearCart,
-    getTotalPrice,
+    getCartSummary,
     getTotalItems
   };
 
