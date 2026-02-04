@@ -70,6 +70,8 @@ const parseProduct = (row: any): Product => {
     colors: colors,
     sizes: sizes,
     isActive: Boolean(row.is_active),
+    review_average: row.review_average,
+    review_count: row.review_count,
   };
 };
 
@@ -231,7 +233,15 @@ export const productService = {
     // This logic might need to be re-evaluated as is_best_seller is removed.
     // For now, returning newest products as a placeholder.
     const db = getDB();
-    const rows = toObjects(db.exec('SELECT * FROM products WHERE is_active = 1 ORDER BY created_at DESC'));
+    const query = `
+      SELECT p.*, AVG(r.rating) as review_average, COUNT(r.id) as review_count
+      FROM products p
+      LEFT JOIN reviews r ON p.id = r.product_id AND r.is_approved = 1
+      WHERE p.is_active = 1
+      GROUP BY p.id
+      ORDER BY p.created_at DESC
+    `;
+    const rows = toObjects(db.exec(query));
     return rows.map(parseProduct);
   },
 

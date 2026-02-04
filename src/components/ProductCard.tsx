@@ -55,20 +55,29 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
             <p className="text-xs text-gray-500 mb-2">{product.colors.length} colores</p>
           )}
 
-          <div className="bg-blue-600 text-white text-xs font-bold uppercase tracking-wider py-1 px-2 mb-2 self-start rounded">
+          <div className="bg-[#3E6F8F] text-white text-xs font-bold uppercase tracking-wider py-1 px-2 mb-2 self-start rounded">
             LLEVÁ 3 Y PAGÁ 2
           </div>
           
-          <h3 className="text-sm font-semibold text-gray-800 leading-snug mb-2 flex-grow">
+          <h3 className="text-base font-bold text-gray-800 leading-snug mb-2 flex-grow">
             {product.name}
           </h3>
 
-          <div className="flex items-center mb-2">
-            <div className="flex text-yellow-400">
-              {[...Array(5)].map((_, i) => <Star key={i} size={16} fill="currentColor" />)}
+          {product.review_count && product.review_count > 0 && (
+            <div className="flex items-center mb-2">
+              <div className="flex text-yellow-400">
+                {[...Array(5)].map((_, i) => (
+                  <Star
+                    key={i}
+                    size={16}
+                    fill={i < Math.round(product.review_average || 0) ? 'currentColor' : 'none'}
+                    className={i < Math.round(product.review_average || 0) ? 'text-yellow-400' : 'text-gray-300'}
+                  />
+                ))}
+              </div>
+              <span className="text-xs text-gray-500 ml-2">({product.review_count})</span>
             </div>
-            <span className="text-xs text-gray-500 ml-2">(57)</span>
-          </div>
+          )}
 
           <div className="mb-3">
             {product.compare_at_price && (
@@ -77,27 +86,26 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
               </p>
             )}
             <div className="flex items-baseline gap-2">
-              <p className="text-2xl font-bold text-gray-900">
+              <p className="text-3xl font-bold text-gray-900">
                 ${product.price.toLocaleString('es-AR')}
               </p>
               {discountPercentage > 0 && (
-                <p className="text-sm font-bold text-green-600">{discountPercentage}% OFF</p>
+                <p className="text-base font-extrabold text-[#3E6F8F]">{discountPercentage}% OFF</p>
               )}
             </div>
             {product.transfer_price && (
-               <p className="text-sm font-bold text-blue-600 mt-1">
+               <p className="text-sm font-bold text-[#3E6F8F] mt-1">
                 ${product.transfer_price.toLocaleString('es-AR')} por Transferencia
               </p>
             )}
           </div>
 
           <div className="text-sm text-gray-700 mb-4">
-            3 cuotas de <span className="font-bold">${installmentPrice}</span> sin interés
-             <p className="text-xs text-gray-500">con <span className="font-bold">pagonube</span></p>
+            <span className="font-bold">3</span> cuotas de <span className="font-bold">${installmentPrice}</span> <span className="font-bold">sin interés</span>
           </div>
 
           <div className="mt-auto">
-             <button className="w-full bg-blue-600 text-white font-bold py-3 px-4 rounded-lg hover:bg-blue-700 transition-colors text-sm uppercase tracking-wider">
+             <button className="w-full bg-[#3E6F8F] text-white font-bold py-3 px-4 rounded-lg hover:bg-[#2B526A] transition-colors text-sm uppercase tracking-wider">
                Comprar
              </button>
           </div>

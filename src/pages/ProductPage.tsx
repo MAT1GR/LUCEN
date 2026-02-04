@@ -21,6 +21,7 @@ import ProductCard from "../components/ProductCard";
 import { Helmet } from 'react-helmet-async';
 import { track } from '../lib/meta';
 import ReviewsSection from "../components/ReviewsSection";
+import BlueLightFilter from '../components/BlueLightFilter';
 
 // Hardcoded images for the description area
 import img1 from '../assets/1.webp';
@@ -174,7 +175,7 @@ const ProductPage: React.FC = () => {
                 </p>
 
                 <p className="text-[14px] text-[#333] mb-0.5">
-                   <span className="font-bold">3</span> cuotas de <span className="font-bold text-black">${installmentPrice.toLocaleString('es-AR', { minimumFractionDigits: 2 })}</span> sin interés
+                   <span className="font-bold">3</span> cuotas de <span className="font-bold text-black">${installmentPrice.toLocaleString('es-AR', { maximumFractionDigits: 0 })}</span> sin interés
                 </p>
 
                 <p className="text-[10px] text-[#999] mb-3">
@@ -254,8 +255,8 @@ const ProductPage: React.FC = () => {
                   onClick={() => setIsDescriptionExpanded(!isDescriptionExpanded)}
                   className="w-full py-4 flex justify-between items-center text-left font-bold text-[14px] uppercase text-black"
                 >
-                  Descripción
-                  {isDescriptionExpanded ? <ChevronUp size={18} className="text-gray-500" /> : <ChevronDown size={18} className="text-gray-500" />}
+
+
                 </button>
                 {isDescriptionExpanded && (
                   <div className="pb-8 space-y-4 animate-fade-in-up">
@@ -263,6 +264,7 @@ const ProductPage: React.FC = () => {
                     <img src={img4} alt="2" className="w-full rounded shadow-sm" />
                     <img src={imgHome} alt="3" className="w-full rounded shadow-sm" />
                     <img src={imgIA} alt="4" className="w-full rounded shadow-sm" />
+                    <BlueLightFilter />
                   </div>
                 )}
               </div>

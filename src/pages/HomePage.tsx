@@ -84,9 +84,6 @@ const HomePage: React.FC = () => {
             )}
             
             <div className="mt-10 text-center md:hidden">
-               <Link to="/tienda" className="inline-block border border-black px-8 py-3 text-xs font-bold uppercase tracking-widest hover:bg-black hover:text-white transition-colors">
-                  Ver todo los modelos
-               </Link>
             </div>
           </div>
         </section>
@@ -174,9 +171,6 @@ const HomePage: React.FC = () => {
             )}
             
             <div className="mt-10 text-center md:hidden">
-               <Link to="/tienda" className="inline-block border border-black px-8 py-3 text-xs font-bold uppercase tracking-widest hover:bg-black hover:text-white transition-colors">
-                  Ver todo los modelos
-               </Link>
             </div>
           </div>
         </section>

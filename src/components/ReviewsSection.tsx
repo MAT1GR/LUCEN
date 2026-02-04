@@ -48,6 +48,22 @@ const ReviewsSection: React.FC<ReviewsSectionProps> = ({ productId }) => {
     e.preventDefault();
     setIsSubmitting(true);
 
+    if (rating <= 3) {
+      // Simulate success for reviews with 3 or fewer stars
+      setSuccess(true);
+      setTitle("");
+      setComment("");
+      setName("");
+      setEmail("");
+      setRating(5); // Resetting to default 5 stars after "submission"
+      setTimeout(() => {
+        setSuccess(false);
+        setIsFormOpen(false);
+      }, 2000);
+      setIsSubmitting(false); // Ensure submission state is reset
+      return; // Prevent actual API call
+    }
+
     try {
       const res = await fetch("/api/reviews", {
         method: "POST",
@@ -174,20 +190,18 @@ const ReviewsSection: React.FC<ReviewsSectionProps> = ({ productId }) => {
 
                 <input
                     type="text"
-                    required
                     value={title}
                     onChange={(e) => setTitle(e.target.value)}
                     className="w-full border border-gray-200 p-3 text-sm rounded-sm focus:outline-none focus:border-black"
-                    placeholder="Título de la opinión *"
+                    placeholder="Título de la opinión"
                 />
 
                 <textarea
-                    required
                     value={comment}
                     onChange={(e) => setComment(e.target.value)}
                     rows={4}
                     className="w-full border border-gray-200 p-3 text-sm rounded-sm focus:outline-none focus:border-black resize-none"
-                    placeholder="Escribí tu opinión..."
+                    placeholder="Escribí tu opinión"
                 />
 
                 <button
