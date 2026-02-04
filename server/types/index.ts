@@ -16,6 +16,8 @@ export interface Product {
     hex: string;
   }[];
   isActive: boolean;
+  review_average?: number;
+  review_count?: number;
 }
 
 export interface CartItem {

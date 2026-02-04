@@ -16,9 +16,9 @@ interface ShippingOption {
 
 const CheckoutPage: React.FC = () => {
   const navigate = useNavigate();
-  const { cartItems, getTotalPrice } = useCart();
+  const { cartItems, getCartSummary } = useCart();
   const { loading: settingsLoading } = useSettings();
-  const subtotal = getTotalPrice();
+  const { subtotal, discount, total: cartTotal } = getCartSummary();
 
   const [formData, setFormData] = useState({
     email: "",
@@ -30,7 +30,7 @@ const CheckoutPage: React.FC = () => {
     streetNumber: "",
     apartment: "",
     neighborhood: "",
-    city: "Rosario",
+    city: "",
     province: "Santa Fe",
     docNumber: "",
     description: "",
@@ -38,14 +38,13 @@ const CheckoutPage: React.FC = () => {
 
   const [shippingOptions, setShippingOptions] = useState<ShippingOption[]>([]);
   const [selectedShipping, setSelectedShipping] = useState<ShippingOption | null>(null);
-  const [selectedCadeteDay, setSelectedCadeteDay] = useState<{ value: string, label: string } | null>(null);
   const [paymentMethod, setPaymentMethod] = useState("mercado-pago");
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isRosario, setIsRosario] = useState(false);
 
   // Precio Total (Siempre es igual al subtotal porque envío es 0)
-  const total = subtotal + (selectedShipping?.cost || 0);
+  const total = cartTotal + (selectedShipping?.cost || 0);
   const totalWithDiscount = total * 0.9;
 
   useEffect(() => {
@@ -150,7 +149,7 @@ const CheckoutPage: React.FC = () => {
       shipping: selectedShipping
         ? { id: selectedShipping.id, name: selectedShipping.name, cost: 0 }
         : { id: 'correo', name: 'Envío Gratis', cost: 0 }, // Fallback
-      shippingDetails: selectedShipping?.id === 'cadete' ? selectedCadeteDay?.label : selectedShipping?.name || 'Envío Estándar',
+      shippingDetails: selectedShipping?.id === 'cadete' ? 'Envío Gratis en Rosario' : selectedShipping?.name || 'Envío Estándar',
       total: finalTotal,
       eventId, // Include the event_id for deduplication
     };
@@ -225,10 +224,7 @@ const CheckoutPage: React.FC = () => {
                 {/* Si hay opciones (ej: Rosario), las mostramos simplificadas */}
                 {isRosario ? (
                   <div className="space-y-2">
-                    <CadeteDaySelector
-                      selectedDay={selectedCadeteDay}
-                      onDaySelect={setSelectedCadeteDay}
-                    />
+                    <p className="text-sm text-gris-oscuro">Envío gratuito dentro de Rosario. Nos contactaremos para coordinar la entrega.</p>
                   </div>
                 ) : (
                   shippingOptions.length > 0 && (
@@ -274,6 +270,13 @@ const CheckoutPage: React.FC = () => {
                   <span>Envío</span>
                   <span>GRATIS</span>
                 </div>
+                
+                {discount > 0 && (
+                  <div className="flex justify-between items-center text-green-600 text-sm">
+                    <span>Descuento 3x2</span>
+                    <span>-${discount.toLocaleString("es-AR", { minimumFractionDigits: 0, maximumFractionDigits: 0 })}</span>
+                  </div>
+                )}
                 
                 {paymentMethod === "transferencia" && (
                   <div className="flex justify-between items-center text-green-600 text-sm">

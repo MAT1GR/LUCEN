@@ -147,32 +147,40 @@ export const productService = {
     const db = getDB();
     const { category, minPrice, maxPrice, sortBy, page = 1, limit = 9 } = filters;
     
-    const whereClauses = ["is_active = 1"];
+    const whereClauses = ["p.is_active = 1"];
     const params: (string | number)[] = [];
     if (category) {
       // This part might need adjustment if category is removed from DB
-      // whereClauses.push("category = ?");
+      // whereClauses.push("p.category = ?");
       // params.push(category);
     }
     if (minPrice) {
-      whereClauses.push("price >= ?");
+      whereClauses.push("p.price >= ?");
       params.push(minPrice);
     }
     if (maxPrice) {
-      whereClauses.push("price <= ?");
+      whereClauses.push("p.price <= ?");
       params.push(maxPrice);
     }
 
     const where = `WHERE ${whereClauses.join(" AND ")}`;
-    let orderBy = "ORDER BY id DESC";
-    if (sortBy === "price-asc") orderBy = "ORDER BY price ASC";
-    if (sortBy === "price-desc") orderBy = "ORDER BY price DESC";
+    let orderBy = "ORDER BY p.id DESC";
+    if (sortBy === "price-asc") orderBy = "ORDER BY p.price ASC";
+    if (sortBy === "price-desc") orderBy = "ORDER BY p.price DESC";
     
-    const countQuery = `SELECT COUNT(*) as total FROM products ${where}`;
+    const countQuery = `SELECT COUNT(*) as total FROM products p ${where}`;
     const totalResult = toObjects(db.exec(countQuery, params))[0] as { total: number };
     
     const offset = (page - 1) * limit;
-    const paginatedQuery = `SELECT * FROM products ${where} ${orderBy} LIMIT ? OFFSET ?`;
+    const paginatedQuery = `
+      SELECT p.*, AVG(r.rating) as review_average, COUNT(r.id) as review_count
+      FROM products p
+      LEFT JOIN reviews r ON p.id = r.product_id AND r.is_approved = 1
+      ${where}
+      GROUP BY p.id
+      ${orderBy}
+      LIMIT ? OFFSET ?
+    `;
     const paginatedProducts = toObjects(db.exec(paginatedQuery, [...params, limit, offset])).map(parseProduct);
     
     return {
@@ -206,8 +214,16 @@ export const productService = {
 
   getNewest(limit: number): Product[] {
     const db = getDB();
-    // Fetch active products with stock, ordered by creation date
-    const rows = toObjects(db.exec('SELECT * FROM products WHERE is_active = 1 AND stock > 0 ORDER BY created_at DESC LIMIT ?', [limit]));
+    const query = `
+      SELECT p.*, AVG(r.rating) as review_average, COUNT(r.id) as review_count
+      FROM products p
+      LEFT JOIN reviews r ON p.id = r.product_id AND r.is_approved = 1
+      WHERE p.is_active = 1 AND p.stock > 0
+      GROUP BY p.id
+      ORDER BY p.created_at DESC
+      LIMIT ?
+    `;
+    const rows = toObjects(db.exec(query, [limit]));
     return rows.map(parseProduct);
   },
 

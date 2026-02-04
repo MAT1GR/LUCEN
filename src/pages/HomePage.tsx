@@ -72,13 +72,13 @@ const HomePage: React.FC = () => {
             </div>
 
             {loading ? (
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
                  {[...Array(4)].map((_, i) => <SkeletonCard key={i} />)}
               </div>
             ) : error ? (
               <p className="text-center text-red-500">{error}</p>
             ) : (
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
                 {bestSellers.map(p => <ProductCard product={p} key={p.id} theme="light" />)}
               </div>
             )}
@@ -162,13 +162,13 @@ const HomePage: React.FC = () => {
             </div>
 
             {loading ? (
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
                  {[...Array(4)].map((_, i) => <SkeletonCard key={i} />)}
               </div>
             ) : error ? (
               <p className="text-center text-red-500">{error}</p>
             ) : (
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
                 {newProducts.map(p => <ProductCard product={p} key={p.id} theme="light" />)}
               </div>
             )}

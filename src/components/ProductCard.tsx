@@ -1,10 +1,10 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { Product } from '../../server/types';
+import { Star } from 'lucide-react';
 
 interface ProductCardProps {
   product: Product;
-  theme?: 'light' | 'dark';
 }
 
 const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
@@ -18,81 +18,92 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
     ? getCorrectImageUrl(product.images[0])
     : 'https://via.placeholder.com/400x500?text=Vision+Product';
 
-  const secondImageUrl = (product.images && product.images.length > 1)
-    ? getCorrectImageUrl(product.images[1])
-    : '';
+  const isSoldOut = (product.stock || 0) === 0;
 
-  // Stock logic (reused)
-  const totalStock = product.stock || 0;
-  const isSoldOut = totalStock === 0;
+  const installmentPrice = (product.price / 3).toLocaleString('es-AR', {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  });
 
-  // Pricing
-  const installmentPrice = (product.price / 3).toLocaleString('es-AR', { maximumFractionDigits: 0 });
+  const discountPercentage = product.compare_at_price
+    ? Math.round(((product.compare_at_price - product.price) / product.compare_at_price) * 100)
+    : 0;
 
   return (
-    <Link to={`/producto/${product.id}`} className="group block h-full">
-      
-      {/* CARD CONTAINER: Clean, minimal, no heavy borders */}
-      <div className="flex flex-col h-full bg-white overflow-hidden transition-all duration-300">
-        
+    <div className="group flex flex-col h-full bg-white border border-transparent hover:shadow-lg transition-shadow duration-300 rounded-lg overflow-hidden">
+      <Link to={`/producto/${product.id}`} className="flex flex-col h-full">
         {/* 1. IMAGE CONTAINER */}
-        <div className="relative aspect-[3/4] w-full bg-gray-100 overflow-hidden">
+        <div className="relative aspect-[4/3] w-full bg-gray-100 overflow-hidden">
           <img
             src={imageUrl}
             alt={`${product.name} - Vision`}
-            className={`w-full h-full object-cover transition-transform duration-700 ease-in-out group-hover:scale-105 ${isSoldOut ? 'grayscale opacity-60' : ''} ${secondImageUrl ? 'group-hover:opacity-0' : ''}`}
+            className={`w-full h-full object-cover transition-transform duration-500 ease-in-out group-hover:scale-105 ${isSoldOut ? 'grayscale' : ''}`}
             loading="lazy"
           />
-          {secondImageUrl && !isSoldOut && (
-            <img
-              src={secondImageUrl}
-              alt={`${product.name} alternate view`}
-              className="absolute inset-0 w-full h-full object-cover opacity-0 group-hover:opacity-100 transition-opacity duration-500"
-              loading="lazy"
-            />
-          )}
           {isSoldOut && (
-             <div className="absolute inset-0 flex items-center justify-center bg-white/80 backdrop-blur-[2px]">
-                <span className="text-black text-xs font-bold px-4 py-2 uppercase tracking-widest border border-black">
+             <div className="absolute inset-0 flex items-center justify-center bg-white/70">
+                <span className="text-black text-xs font-bold px-3 py-1 uppercase tracking-wider border border-black">
                     AGOTADO
                 </span>
              </div>
           )}
-          {/* Badge: New / Sale (Optional) */}
-          {product.isNew && !isSoldOut && (
-            <div className="absolute top-2 left-2 bg-black text-white text-[10px] font-bold px-2 py-1 uppercase tracking-wider">
-              Nuevo
-            </div>
-          )}
         </div>
 
         {/* 2. INFO CONTAINER */}
-        <div className="pt-4 pb-2 flex flex-col flex-1 text-center md:text-left">
+        <div className="p-4 flex flex-col flex-1">
+          {product.colors && product.colors.length > 0 && (
+            <p className="text-xs text-gray-500 mb-2">{product.colors.length} colores</p>
+          )}
+
+          <div className="bg-blue-600 text-white text-xs font-bold uppercase tracking-wider py-1 px-2 mb-2 self-start rounded">
+            LLEVÁ 3 Y PAGÁ 2
+          </div>
           
-          <h3 className="text-sm font-medium text-gray-900 tracking-tight leading-snug mb-1 group-hover:text-blue-600 transition-colors">
+          <h3 className="text-sm font-semibold text-gray-800 leading-snug mb-2 flex-grow">
             {product.name}
           </h3>
-          
-          <div className="flex flex-col md:flex-row md:items-center gap-1 md:gap-3 mb-1">
-            <p className="text-sm font-bold text-gray-900">
-              ${product.price.toLocaleString('es-AR')}
-            </p>
-            {!isSoldOut && (
-              <span className="text-[10px] text-green-600 font-bold uppercase tracking-wide">
-                Envío Gratis
-              </span>
+
+          <div className="flex items-center mb-2">
+            <div className="flex text-yellow-400">
+              {[...Array(5)].map((_, i) => <Star key={i} size={16} fill="currentColor" />)}
+            </div>
+            <span className="text-xs text-gray-500 ml-2">(57)</span>
+          </div>
+
+          <div className="mb-3">
+            {product.compare_at_price && (
+              <p className="text-sm text-gray-400 line-through">
+                ${product.compare_at_price.toLocaleString('es-AR')}
+              </p>
+            )}
+            <div className="flex items-baseline gap-2">
+              <p className="text-2xl font-bold text-gray-900">
+                ${product.price.toLocaleString('es-AR')}
+              </p>
+              {discountPercentage > 0 && (
+                <p className="text-sm font-bold text-green-600">{discountPercentage}% OFF</p>
+              )}
+            </div>
+            {product.transfer_price && (
+               <p className="text-sm font-bold text-blue-600 mt-1">
+                ${product.transfer_price.toLocaleString('es-AR')} por Transferencia
+              </p>
             )}
           </div>
 
-          <div className="mt-1">
-            <p className="text-xs text-gray-500">
-                3 cuotas sin interés de <span className="font-semibold text-gray-900">${installmentPrice}</span>
-            </p>
+          <div className="text-sm text-gray-700 mb-4">
+            3 cuotas de <span className="font-bold">${installmentPrice}</span> sin interés
+             <p className="text-xs text-gray-500">con <span className="font-bold">pagonube</span></p>
+          </div>
+
+          <div className="mt-auto">
+             <button className="w-full bg-blue-600 text-white font-bold py-3 px-4 rounded-lg hover:bg-blue-700 transition-colors text-sm uppercase tracking-wider">
+               Comprar
+             </button>
           </div>
         </div>
-
-      </div>
-    </Link>
+      </Link>
+    </div>
   );
 };
 
