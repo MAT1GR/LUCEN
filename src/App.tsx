@@ -75,7 +75,7 @@ const MainLayout: React.FC = () => {
         isOpen={isCartOpen}
         onClose={() => setIsCartOpen(false)}
       />
-      {isHomePage && !isCartOpen && <WhatsAppButton message="¡Hola! ¿Podrían ayudarme con una consulta?" />}
+      <WhatsAppButton />
     </div>
   );
 };

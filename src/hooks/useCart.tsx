@@ -102,7 +102,27 @@ export const CartProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       }
     }
 
-    const total = subtotal - discount;
+    let total = subtotal - discount;
+    
+    // Psychological rounding for the total price (e.g., 139940 -> 139990)
+    // This rounds up to the nearest hundred, then subtracts 10 to get a .90 ending.
+    // If we want a .99 ending, we could use -1.
+    // Given the example, we'll aim for X.X90 or X.X99. Let's aim for 99.
+    const lastTwoDigits = total % 100;
+    if (lastTwoDigits !== 99 && lastTwoDigits !== 90 && total > 0) { // Only round if not already ending in 90 or 99
+        total = Math.ceil(total / 100) * 100 - 1; // Rounds up to nearest hundred, then subtracts 1 for X99
+        // Example: 139940 -> 140000 - 1 = 139999
+        // Example: 139900 -> 139900 (not affected by ceil unless there are decimals)
+        // Ensure it doesn't go too low if already close to 99
+        if (total % 100 < 90) { // If rounding results in something like X00-1 = X99
+            total = Math.ceil(total / 100) * 100 - 1;
+        }
+    }
+    // Final check to ensure it ends in 99 if not 90
+    if (total % 100 !== 90 && total % 100 !== 99 && total > 0) {
+        total = Math.floor(total / 100) * 100 + 99; // Force to X99
+    }
+
     return { subtotal, discount, total };
   };
 

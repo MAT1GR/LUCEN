@@ -1,25 +1,19 @@
 import React from 'react';
-import WhatsAppLogo from '../assets/whatsapp-logo.webp';
-import { useSettings } from '../hooks/useSettings';
+import whatsappLogo from '../assets/whatsapp-logo.webp';
 
-const WhatsAppButton: React.FC<{ message?: string }> = ({ message: propMessage }) => {
-  const { settings } = useSettings();
-  const phoneNumber = settings.contact_whatsapp || '543413981584'; // New number as fallback
-  const finalMessage = propMessage || '';
-
-  const whatsappUrl = finalMessage
-    ? `https://wa.me/${phoneNumber}?text=${encodeURIComponent(finalMessage)}`
-    : `https://wa.me/${phoneNumber}`;
+const WhatsAppButton: React.FC = () => {
+  const phoneNumber = '+543413981584';
+  const whatsappLink = `https://wa.me/${phoneNumber.replace('+', '')}`;
 
   return (
     <a
-      href={whatsappUrl}
+      href={whatsappLink}
       target="_blank"
       rel="noopener noreferrer"
-      className="fixed bottom-6 right-6 bg-[#25D366] text-white w-12 h-12 rounded-full shadow-lg hover:bg-green-600 transition-transform hover:scale-110 z-50 flex items-center justify-center"
+      className="fixed bottom-4 right-4 bg-[#25D366] p-2 rounded-full shadow-lg hover:shadow-xl transition-all duration-300 z-50 transform hover:scale-110"
       aria-label="Contactar por WhatsApp"
     >
-      <img src={WhatsAppLogo} alt="WhatsApp Logo" className="w-7 h-7" />
+      <img src={whatsappLogo} alt="WhatsApp" className="w-8 h-8" />
     </a>
   );
 };

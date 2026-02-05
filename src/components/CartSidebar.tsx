@@ -9,9 +9,10 @@ interface CartSidebarProps {
 }
 
 const CartSidebar: React.FC<CartSidebarProps> = ({ isOpen, onClose }) => {
-  const { cartItems, removeFromCart, updateQuantity, getCartSummary } =
+  const { cartItems, removeFromCart, updateQuantity, getCartSummary, getTotalItems } =
     useCart();
   const summary = getCartSummary();
+  const totalItems = getTotalItems();
 
   const getCorrectImageUrl = (path: string) => {
     if (!path) return '';
@@ -52,7 +53,7 @@ const CartSidebar: React.FC<CartSidebarProps> = ({ isOpen, onClose }) => {
             <Link
               to="/tienda"
               onClick={onClose}
-              className="inline-flex items-center gap-2 bg-gris-oscuro hover:opacity-90 text-blanco-hueso px-8 py-3 rounded-sm font-bold uppercase tracking-wider transition-all group"
+              className="inline-flex items-center gap-2 bg-[#3E6F8F] hover:opacity-90 text-blanco-hueso px-8 py-3 rounded-sm font-bold uppercase tracking-wider transition-all group"
             >
               Ver productos
               <ArrowRight className="w-5 h-5 transition-transform group-hover:translate-x-1" />
@@ -134,13 +135,18 @@ const CartSidebar: React.FC<CartSidebarProps> = ({ isOpen, onClose }) => {
                   </span>
                 </div>
               )}
-              <div className="flex justify-between items-center text-lg">
-                <span className="font-bold uppercase tracking-tight">Total</span>
-                <span className="font-bold">
+              <div className="flex justify-between items-center text-xl">
+                <span className="font-black uppercase tracking-tight">Total</span>
+                <span className="font-black">
                   ${summary.total.toLocaleString("es-AR")}
                 </span>
               </div>
-              <p className="text-right text-xs opacity-60 mt-1 mb-6">
+              {summary.discount > 0 && totalItems >= 3 && (
+                <p className="text-right text-xs opacity-80 mt-2">
+                  Llevás 3, pagás 2 (${(summary.total / totalItems).toLocaleString('es-AR', { minimumFractionDigits: 2 })} c/u)
+                </p>
+              )}
+              <p className="text-right text-xs opacity-60 mt-1">
                 O 3 cuotas sin interés de ${" "}
                 {(summary.total / 3).toLocaleString("es-AR", {
                   maximumFractionDigits: 0,
@@ -149,7 +155,7 @@ const CartSidebar: React.FC<CartSidebarProps> = ({ isOpen, onClose }) => {
 
               {/* Aviso de Envío Gratis en el Footer del Carrito */}
               {summary.total > 0 && (
-                <div className="text-center text-[10px] mb-6 bg-gris-oscuro text-blanco-hueso p-2 rounded-sm font-black uppercase tracking-widest">
+                <div className="text-center text-[10px] bg-green-500 text-blanco-hueso p-2 rounded-sm font-black uppercase tracking-widest">
                   <p className="flex items-center justify-center gap-2">
                     <Truck size={14} /> ENVÍO GRATIS INCLUIDO.
                   </p>
@@ -159,11 +165,11 @@ const CartSidebar: React.FC<CartSidebarProps> = ({ isOpen, onClose }) => {
               <Link
                 to="/checkout"
                 onClick={onClose}
-                className="w-full block text-center bg-gris-oscuro hover:opacity-90 text-blanco-hueso py-4 rounded-sm text-sm font-bold uppercase tracking-widest transition-all"
+                className="w-full block text-center bg-[#3E6F8F] hover:opacity-90 text-blanco-hueso py-4 rounded-sm text-sm font-bold uppercase tracking-widest transition-all"
               >
                 Iniciar Compra
               </Link>
-              <div className="text-center mt-4">
+              <div className="text-center">
                 <Link
                   to="/tienda"
                   onClick={onClose}

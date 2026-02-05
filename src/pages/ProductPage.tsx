@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useParams, Link, useNavigate } from "react-router-dom";
 import {
   CheckCircle,
@@ -37,6 +37,10 @@ const ProductPage: React.FC = () => {
   const [showSuccess, setShowSuccess] = useState(false);
   const [isDescriptionExpanded, setIsDescriptionExpanded] = useState(true);
   const [selectedBundle, setSelectedBundle] = useState(1); // New state for bundle selection
+
+  const addToCartButtonRef = useRef<HTMLButtonElement>(null);
+  const initialButtonTop = useRef<number | null>(null); // Reintroduced
+  const [isAddToCartSticky, setIsAddToCartSticky] = useState(false);
 
   const navigate = useNavigate();
 
@@ -92,6 +96,29 @@ const ProductPage: React.FC = () => {
     };
     fetchProductData();
   }, [id]);
+
+  useEffect(() => {
+    // Calculate initialButtonTop once after render
+    if (addToCartButtonRef.current && initialButtonTop.current === null) {
+      initialButtonTop.current = addToCartButtonRef.current.getBoundingClientRect().top + window.scrollY;
+    }
+
+    const handleScroll = () => {
+      if (initialButtonTop.current !== null) {
+        // Button becomes sticky when the user scrolls past its original top position.
+        const threshold = initialButtonTop.current - 100; // Make it sticky earlier for testing
+
+        if (window.scrollY > threshold) {
+          setIsAddToCartSticky(true);
+        } else {
+          setIsAddToCartSticky(false);
+        }
+      }
+    };
+
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []); // Empty dependency array, runs once on mount
 
   const handleAddToCart = () => {
     if (!product) return;
@@ -173,7 +200,7 @@ const ProductPage: React.FC = () => {
             </div>
 
             {/* COLUMN 2: INFO */}
-            <div className="lg:w-[40%] lg:sticky lg:top-24 h-fit">
+            <div className="lg:w-[40%] h-fit">
               
               <h1 className="text-2xl md:text-3xl font-bold tracking-tight mb-2 text-gray-800 leading-tight">
                 {product.name}
@@ -307,13 +334,17 @@ const ProductPage: React.FC = () => {
 
                                <div className="mb-2">
                                   <button
+                                     ref={addToCartButtonRef}
                                      onClick={handleAddToCart}
                                      disabled={!isInStock || isAdding || showSuccess}
-                                     className={`w-full rounded-[4px] font-bold text-[18px] py-3 transition-all flex items-center justify-center gap-2 shadow-sm ${
-                                        isInStock
-                                          ? showSuccess ? "bg-green-600 text-white" : "bg-[#0055FF] hover:bg-blue-600 text-white"
-                                          : "bg-gray-200 text-gray-400 cursor-not-allowed"
-                                     }`}
+                                     className={`w-full font-bold text-[18px] py-3 transition-all flex items-center justify-center gap-2 shadow-sm
+                                        ${
+                                          isInStock
+                                            ? showSuccess ? "bg-green-600 text-white" : "bg-[#0055FF] hover:bg-blue-600 text-white"
+                                            : "bg-gray-200 text-gray-400 cursor-not-allowed"
+                                        }
+                                        ${isAddToCartSticky ? "fixed bottom-0 left-0 right-0 z-50 rounded-none" : "rounded-[4px]"}`
+                                     }
                                   >
                                      {isAdding ? <Loader2 className="animate-spin" size={20} /> :
                                       showSuccess ? "AGREGADO" : "AGREGAR AL CARRITO"}
