@@ -86,7 +86,7 @@ const Header: React.FC<HeaderProps> = ({ onCartClick }) => {
               >
                 <ShoppingBag size={18} strokeWidth={1.5} />
                 {totalItems > 0 && (
-                  <span className="absolute top-1 right-1 h-3.5 w-3.5 bg-black text-white text-[9px] flex items-center justify-center rounded-full font-bold">
+                  <span className="absolute top-1 right-1 h-3.5 w-3.5 bg-[#3E6F8F] text-white text-[9px] flex items-center justify-center rounded-full font-bold">
                     {totalItems}
                   </span>
                 )}
