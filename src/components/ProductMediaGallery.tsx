@@ -24,22 +24,13 @@ const ProductMediaGallery: React.FC<ProductMediaGalleryProps> = ({ images, video
   }, [mediaItems]);
 
   // Scroll to the current media item when currentMediaIndex changes
-  useEffect(() => {
-    if (mainGalleryRef.current && mediaRefs.current[currentMediaIndex]) {
-      mediaRefs.current[currentMediaIndex]?.scrollIntoView({
-        behavior: 'smooth',
-        block: 'nearest',
-        inline: 'center',
-      });
-      
+    useEffect(() => {
       // Pause video if currentMediaIndex changes to a non-video item
       if (videoRef.current && mediaItems[currentMediaIndex] !== video) {
         videoRef.current.pause();
         setIsPlaying(false);
       }
-    }
-  }, [currentMediaIndex, mediaItems, video]);
-
+    }, [currentMediaIndex, mediaItems, video]);
   const getMediaUrl = (mediaPath: string) => {
     if (!mediaPath) return '';
     const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || '';
@@ -129,17 +120,22 @@ const ProductMediaGallery: React.FC<ProductMediaGalleryProps> = ({ images, video
         ))}
       </div>
 
-      {/* Main Media Gallery (Scrollable) */}
+      {/* Main Media Gallery */}
                       <div
-                          ref={mainGalleryRef}
-                          className="flex-1 w-full overflow-x-auto scroll-smooth overscroll-x-contain rounded-lg bg-gray-50 relative flex items-center min-h-[400px]"
+                          ref={mainGalleryRef} // This will now be the outer container with overflow-hidden
+                          className="flex-1 w-full overflow-hidden bg-gray-50 relative flex items-center min-h-[400px]" // Removed scroll-smooth overscroll-x-contain, added overflow-hidden
                           onTouchStart={handleTouchStart}
                           onTouchEnd={handleTouchEnd}
-                      >        {mediaItems.map((media, index) => (
+                      >
+                          <div
+                              className="flex h-full w-full transition-transform duration-300 ease-in-out" // Inner container for sliding
+                              style={{ transform: `translateX(-${currentMediaIndex * 100}%)` }}
+                          >
+        {mediaItems.map((media, index) => (
           <div
             key={index}
             ref={el => mediaRefs.current[index] = el}
-            className="flex-shrink-0 w-full snap-center flex items-center justify-center h-full"
+            className="flex-shrink-0 w-full flex items-center justify-center h-full"
           >
             {isVideo(media) ? (
               <>
@@ -169,6 +165,7 @@ const ProductMediaGallery: React.FC<ProductMediaGalleryProps> = ({ images, video
             )}
           </div>
         ))}
+                           </div> {/* Closing the inner flex div */}
 
         {/* Navigation Arrows (Absolute positioning within the scrollable container) */}
         {mediaItems.length > 1 && (

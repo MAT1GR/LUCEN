@@ -163,7 +163,7 @@ const ProductPage: React.FC = () => {
       </Helmet>
 
       <div className="bg-white text-[#1a1a1a] font-sans min-h-screen pb-20">
-        <div className="max-w-7xl mx-auto px-4 md:px-8 py-8">
+        <div className="max-w-7xl mx-auto px-4 md:px-8 pt-0 pb-8">
           
           <div className="flex flex-col lg:flex-row gap-12">
             
@@ -386,7 +386,7 @@ const ProductPage: React.FC = () => {
 
                 </button>
                 {isDescriptionExpanded && (
-                  <div className="pb-8 space-y-4 animate-fade-in-up">
+                  <div className="pb-0 space-y-4 animate-fade-in-up">
                     <img src={img1} alt="1" className="w-full rounded shadow-sm" />
                     <img src={img4} alt="2" className="w-full rounded shadow-sm" />
                     <img src={imgHome} alt="3" className="w-full rounded shadow-sm" />

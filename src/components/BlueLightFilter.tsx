@@ -29,21 +29,21 @@ const BlueLightFilter: React.FC = () => {
   const [showWithoutGlasses, setShowWithoutGlasses] = useState(false);
 
   return (
-    <div className="bg-white text-gray-800 font-sans py-12 px-4 md:px-8">
+    <div className="bg-white text-gray-800 font-sans py-4 px-4 md:px-8">
       <div className="max-w-3xl mx-auto text-center">
         <div className="flex justify-center items-center gap-4 mb-8">
           <button
             onClick={() => setShowWithoutGlasses(true)}
-            className={`rounded-md px-5 py-2.5 font-bold text-xs uppercase tracking-wider ${
-              showWithoutGlasses ? 'bg-gray-800 text-white' : 'bg-transparent text-gray-800'
+            className={`rounded-md px-5 py-2.5 font-extrabold text-xs uppercase tracking-wider ${
+              showWithoutGlasses ? 'bg-[#3E6F8F] text-white' : 'border border-[#3E6F8F] text-[#3E6F8F]'
             }`}
           >
             Sin Lentes
           </button>
           <button
             onClick={() => setShowWithoutGlasses(false)}
-            className={`rounded-md px-5 py-2.5 font-bold text-xs uppercase tracking-wider ${
-              !showWithoutGlasses ? 'bg-gray-800 text-white' : 'bg-transparent text-gray-800'
+            className={`rounded-md px-5 py-2.5 font-extrabold text-xs uppercase tracking-wider ${
+              !showWithoutGlasses ? 'bg-[#3E6F8F] text-white' : 'border border-[#3E6F8F] text-[#3E6F8F]'
             }`}
           >
             Con Lentes
@@ -59,12 +59,12 @@ const BlueLightFilter: React.FC = () => {
           >
             <defs>
               <linearGradient id="chartGradient" x1="0" y1="0" x2="1" y2="0">
-                <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.9} />
-                <stop offset="30%" stopColor="#2dd4bf" stopOpacity={0.8} />
-                <stop offset="55%" stopColor="#a3e635" stopOpacity={0.8} />
-                <stop offset="70%" stopColor="#facc15" stopOpacity={0.8} />
-                <stop offset="85%" stopColor="#fb923c" stopOpacity={0.8} />
-                <stop offset="95%" stopColor="#f87171" stopOpacity={0.8} />
+                <stop offset="5%" stopColor="#3b82f6" stopOpacity={1.0} />
+                <stop offset="30%" stopColor="#2dd4bf" stopOpacity={1.0} />
+                <stop offset="55%" stopColor="#a3e635" stopOpacity={1.0} />
+                <stop offset="70%" stopColor="#facc15" stopOpacity={1.0} />
+                <stop offset="85%" stopColor="#fb923c" stopOpacity={1.0} />
+                <stop offset="95%" stopColor="#f87171" stopOpacity={1.0} />
               </linearGradient>
             </defs>
             <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />

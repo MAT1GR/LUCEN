@@ -101,7 +101,7 @@ const ReviewsSection: React.FC<ReviewsSectionProps> = ({ productId }) => {
   };
 
   return (
-    <div id="reviews-section" className="py-8 mt-8 border-t border-gray-100">
+    <div id="reviews-section" className="py-0 mt-0">
       
       {/* 1. Header Resumen (Estilo ejemplo.png) */}
       <div className="flex flex-col md:flex-row items-center justify-between mb-8 pb-8 border-b border-gray-100 gap-4">
