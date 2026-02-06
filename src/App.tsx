@@ -62,12 +62,12 @@ const MainLayout: React.FC = () => {
   const location = useLocation();
   const isHomePage = location.pathname === "/";
   // Header (80px) + Announcement (40px) = 120px
-  const paddingTop = 'pt-[120px]'; 
+  const paddingTop = location.pathname === "/checkout" ? 'pt-[80px]' : 'pt-[120px]'; 
   const [isCartOpen, setIsCartOpen] = useState(false); 
 
   return (
     <div className="min-h-screen flex flex-col">
-      <AnnouncementBar />
+      {location.pathname !== "/checkout" && <AnnouncementBar />}
       <Header onCartClick={() => setIsCartOpen(true)} />
       <AnimatedRoutes isHomePage={isHomePage} paddingTop={paddingTop} />
       <Footer />

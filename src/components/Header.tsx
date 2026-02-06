@@ -32,14 +32,20 @@ const Header: React.FC<HeaderProps> = ({ onCartClick }) => {
     { href: "/blue-light-info", label: "¿Qué es?" }, 
   ];
 
-  return (
-    <>
-      <header 
-        className={`fixed top-10 left-0 right-0 z-40 transition-all duration-300 border-b ${
-          isScrolled ? "bg-white/95 backdrop-blur-md shadow-sm border-gray-100" : "bg-white border-transparent"
-        }`}
-      >
-        <div className="w-full px-6 max-w-7xl mx-auto">
+    return (
+      <>
+        {location.pathname === "/checkout" && (
+                                                  <div id="secure-checkout-bar" className="bg-[#AAC67C] py-2 text-center text-sm font-semibold text-white flex items-center justify-center fixed top-0 left-0 right-0 z-50 h-8">
+                                                    <p className="m-none text-uppercase text-semi-bold mr-2">Compra Segura</p>
+                                                    <img alt="Compra Segura" src="https://checkout-front.tiendanube.com/production/2.3.659/_next/server/static/img/safe-shopping.svg" className="h-4 inline-block mx-2" />
+                                                    <p className="m-none text-uppercase ml-2">100% Protegido</p>
+                                                  </div>
+                                                )}
+                                                <header
+                                                  className={`fixed left-0 right-0 z-40 transition-all duration-300 border-b ${location.pathname === "/checkout" ? "top-8" : "top-10"} ${
+                                                    isScrolled ? "bg-white/95 backdrop-blur-md shadow-sm border-gray-100" : "bg-white border-transparent"
+                                                  }`}
+                                                >        <div className="w-full px-6 max-w-7xl mx-auto">
           <div className="flex items-center justify-between h-20">
             
             {/* 1. LEFT: Navigation (Desktop) / Menu Icon (Mobile) */}
