@@ -246,7 +246,7 @@ const ProductPage: React.FC = () => {
                 </p>
 
                 <p className="text-[14px] text-[#333] mb-0.5">
-                   <span className="font-bold">3</span> cuotas de <span className="font-bold text-black">${installmentPrice.toLocaleString('es-AR', { minimumFractionDigits: 2 })}</span> sin interés
+                   <span className="font-bold">3</span> cuotas de <span className="font-bold text-black">${installmentPrice.toLocaleString('es-AR', { maximumFractionDigits: 0 })}</span> sin interés
                 </p>
 
                 <p className="text-[10px] text-[#999] mb-3">
@@ -340,7 +340,7 @@ const ProductPage: React.FC = () => {
                                      className={`w-full font-bold text-[18px] py-3 transition-all flex items-center justify-center gap-2 shadow-sm
                                         ${
                                           isInStock
-                                            ? showSuccess ? "bg-green-600 text-white" : "bg-[#0055FF] hover:bg-blue-600 text-white"
+                                            ? showSuccess ? "bg-green-600 text-white" : "bg-[#3F6E8E] hover:bg-blue-600 text-white"
                                             : "bg-gray-200 text-gray-400 cursor-not-allowed"
                                         }
                                         ${isAddToCartSticky ? "fixed bottom-0 left-0 right-0 z-50 rounded-none" : "rounded-[4px]"}`
@@ -355,7 +355,7 @@ const ProductPage: React.FC = () => {
                  <button
                     onClick={handleBuyNow} // Call handleBuyNow
                     disabled={!isInStock || isAdding}
-                    className={`w-full rounded-[4px] font-bold text-[18px] py-3 border-2 border-[#0055FF] text-[#0055FF] bg-white hover:bg-[#F0F7FF] transition-colors flex items-center justify-center gap-2 shadow-sm ${
+                    className={`w-full rounded-[4px] font-bold text-[18px] py-3 border-2 border-[#3F6E8E] text-[#3F6E8E] bg-white hover:bg-[#F0F7FF] transition-colors flex items-center justify-center gap-2 shadow-sm ${
                        !isInStock || isAdding ? "opacity-50 cursor-not-allowed" : ""
                     }`}
                  >
