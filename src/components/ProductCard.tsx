@@ -21,8 +21,8 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
   const isSoldOut = (product.stock || 0) === 0;
 
   const installmentPrice = (product.price / 3).toLocaleString('es-AR', {
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 0,
   });
 
   const discountPercentage = product.compare_at_price
@@ -37,7 +37,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
           <img
             src={imageUrl}
             alt={`${product.name} - Vision`}
-            className={`w-full h-full object-cover transition-transform duration-500 ease-in-out group-hover:scale-105 ${isSoldOut ? 'grayscale' : ''}`}
+            className={`w-full h-full object-contain transition-transform duration-500 ease-in-out group-hover:scale-105 ${isSoldOut ? 'grayscale' : ''}`}
             loading="lazy"
           />
           {isSoldOut && (

@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { PlayCircle, ChevronLeft, ChevronRight } from 'lucide-react';
+import { PlayCircle } from 'lucide-react';
 
 interface ProductMediaGalleryProps {
   images: string[];
@@ -70,10 +70,12 @@ const ProductMediaGallery: React.FC<ProductMediaGalleryProps> = ({ images, video
 
   // Swipe handlers for the main gallery container
   const handleTouchStart = (e: React.TouchEvent<HTMLDivElement>) => {
+    e.preventDefault();
     touchStartX.current = e.touches[0].clientX;
   };
 
   const handleTouchEnd = (e: React.TouchEvent<HTMLDivElement>) => {
+    e.preventDefault();
     const touchEndX = e.changedTouches[0].clientX;
     const swipeDistance = touchEndX - touchStartX.current;
     const swipeThreshold = 50; // pixels
@@ -123,10 +125,15 @@ const ProductMediaGallery: React.FC<ProductMediaGalleryProps> = ({ images, video
       {/* Main Media Gallery */}
                       <div
                           ref={mainGalleryRef} // This will now be the outer container with overflow-hidden
-                          className="flex-1 w-full overflow-hidden bg-gray-50 relative flex items-center min-h-[400px]" // Removed scroll-smooth overscroll-x-contain, added overflow-hidden
+                          className="flex-1 w-full overflow-hidden bg-gray-50 relative flex items-center min-h-[400px] touch-pan-y" // Removed scroll-smooth overscroll-x-contain, added overflow-hidden
                           onTouchStart={handleTouchStart}
                           onTouchEnd={handleTouchEnd}
                       >
+                           {mediaItems.length > 0 && (
+                                <div className="absolute top-4 right-4 bg-black/50 text-white text-sm px-2 py-1 rounded-full z-10">
+                                    {currentMediaIndex + 1}/{mediaItems.length}
+                                </div>
+                            )}
                           <div
                               className="flex h-full w-full transition-transform duration-300 ease-in-out" // Inner container for sliding
                               style={{ transform: `translateX(-${currentMediaIndex * 100}%)` }}
@@ -142,7 +149,7 @@ const ProductMediaGallery: React.FC<ProductMediaGalleryProps> = ({ images, video
                 <video
                   ref={videoRef}
                   src={getMediaUrl(media)}
-                  className="max-h-full max-w-full object-contain"
+                  className="max-h-full max-w-full object-cover"
                   onClick={togglePlay}
                   onPlay={() => setIsPlaying(true)}
                   onPause={() => setIsPlaying(false)}
@@ -160,29 +167,29 @@ const ProductMediaGallery: React.FC<ProductMediaGalleryProps> = ({ images, video
               <img
                 src={getMediaUrl(media)}
                 alt={`Imagen principal del producto ${index + 1}`}
-                className="max-h-full max-w-full object-contain"
+                className="max-h-full max-w-full object-cover"
               />
             )}
           </div>
         ))}
                            </div> {/* Closing the inner flex div */}
 
-        {/* Navigation Arrows (Absolute positioning within the scrollable container) */}
+        {/* Navigation Arrows (Bottom Center) */}
         {mediaItems.length > 1 && (
-          <>
+          <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-4 z-10">
             <button
-                className="absolute left-2 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white p-2 rounded-full z-10"
+                className="text-black"
                 onClick={handlePrev}
             >
-                <ChevronLeft size={24} />
+                <span className="text-2xl">&larr;</span>
             </button>
             <button
-                className="absolute right-2 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white p-2 rounded-full z-10"
+                className="text-black"
                 onClick={handleNext}
             >
-                <ChevronRight size={24} />
+                <span className="text-2xl">&rarr;</span>
             </button>
-          </>
+          </div>
         )}
       </div>
     </div>

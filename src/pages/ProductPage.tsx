@@ -26,7 +26,6 @@ import BlueLightFilter from '../components/BlueLightFilter';
 import img1 from '../assets/1.webp';
 import img4 from '../assets/4.webp';
 import imgHome from '../assets/home.webp';
-import imgIA from '../assets/ia.webp';
 
 const ProductPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -190,7 +189,7 @@ const ProductPage: React.FC = () => {
       </Helmet>
 
       <div className="bg-white text-[#1a1a1a] font-sans min-h-screen pb-20">
-        <div className="max-w-7xl mx-auto px-4 md:px-8 pt-0 pb-8">
+        <div className="max-w-7xl mx-auto pt-0 pb-8">
           
           <div className="flex flex-col lg:flex-row gap-12">
             
@@ -200,7 +199,7 @@ const ProductPage: React.FC = () => {
             </div>
 
             {/* COLUMN 2: INFO */}
-            <div className="lg:w-[40%] h-fit">
+            <div className="lg:w-[40%] h-fit px-4 md:px-8">
               
               <h1 className="text-2xl md:text-3xl font-bold tracking-tight mb-2 text-gray-800 leading-tight">
                 {product.name}
@@ -418,10 +417,9 @@ const ProductPage: React.FC = () => {
                 </button>
                 {isDescriptionExpanded && (
                   <div className="pb-0 space-y-4 animate-fade-in-up">
-                    <img src={img1} alt="1" className="w-full rounded shadow-sm" />
-                    <img src={img4} alt="2" className="w-full rounded shadow-sm" />
-                    <img src={imgHome} alt="3" className="w-full rounded shadow-sm" />
-                    <img src={imgIA} alt="4" className="w-full rounded shadow-sm" />
+                    <img src={img1} alt="1" className="w-full rounded" />
+                    <img src={img4} alt="2" className="w-full rounded" />
+                    <img src={imgHome} alt="3" className="w-full rounded" />
                     <BlueLightFilter />
                   </div>
                 )}
