@@ -65,6 +65,8 @@ const MainLayout: React.FC = () => {
   const paddingTop = location.pathname === "/checkout" ? 'pt-[80px]' : 'pt-[120px]'; 
   const [isCartOpen, setIsCartOpen] = useState(false); 
 
+  usePageFocus("Tienda online de LUCEN", "¡Volvé!", "No te lo pierdas..");
+
   return (
     <div className="min-h-screen flex flex-col">
       {location.pathname !== "/checkout" && <AnnouncementBar />}
