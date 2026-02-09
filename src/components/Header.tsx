@@ -28,8 +28,12 @@ const Header: React.FC<HeaderProps> = ({ onCartClick }) => {
   }, [location.pathname]);
 
   const navLinks = [
-    { href: "/tienda", label: "Colección" },
-    { href: "/blue-light-info", label: "¿Qué es?" }, 
+    { href: "/productos", label: "PRODUCTOS" },
+    { href: "/quienes-somos", label: "QUIENES SOMOS" },
+    { href: "/preguntas-frecuentes", label: "PREGUNTAS FRECUENTES" },
+    { href: "/contacto", label: "CONTACTO" },
+
+
   ];
 
     return (
@@ -46,11 +50,9 @@ const Header: React.FC<HeaderProps> = ({ onCartClick }) => {
                                                     isScrolled ? "bg-white/95 backdrop-blur-md shadow-sm border-gray-100" : "bg-white border-transparent"
                                                   }`}
                                                 >        <div className="w-full px-6 max-w-7xl mx-auto">
-          <div className="flex items-center justify-between h-20">
-            
+                      <div className="flex items-center justify-between h-20">            
             {/* 1. LEFT: Navigation (Desktop) / Menu Icon (Mobile) */}
-            <div className="flex-1 flex items-center">
-              <nav className="hidden md:flex items-center space-x-6">
+                          <div className="flex-1 flex items-center">              <nav className="hidden md:flex items-center space-x-6">
                 {navLinks.map((link) => (
                   <Link
                     key={link.href}
@@ -81,7 +83,7 @@ const Header: React.FC<HeaderProps> = ({ onCartClick }) => {
             </div>
 
             {/* 3. RIGHT: Icons */}
-            <div className="flex-1 flex justify-end items-center space-x-2 md:space-x-4">
+            <div className="flex-1 flex justify-end items-center space-x-2 md:space-x-4 ml-auto">
               <button className="hidden sm:block p-2 text-gray-600 hover:text-black transition-colors">
                 <Search size={18} strokeWidth={1.5} />
               </button>

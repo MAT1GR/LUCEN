@@ -297,8 +297,9 @@ const CheckoutPage: React.FC = () => {
             <div className="border-t border-arena pt-4">
               <h3 className="text-lg font-bold mb-3 text-gris-oscuro">4. Método de Pago</h3>
               <div className="space-y-4">
+                                    <PaymentOption id="mercado-pago" title="Mercado Pago" description="Tarjetas de crédito, débito y dinero en cuenta. Hasta 3 cuotas sin interés." icon={<img src="https://logowik.com/content/uploads/images/mercado-pago1721074123.logowik.com.webp" alt="MP" className="h-6" />} selected={paymentMethod} onSelect={setPaymentMethod} />
                                     <PaymentOption id="tarjeta-credito-debito" title="Tarjeta de crédito o débito" description="Paga con tu tarjeta de crédito o débito directamente. Hasta 3 cuotas sin interés." icon={<Banknote />} selected={paymentMethod} onSelect={setPaymentMethod} />
-                    <PaymentOption id="mercado-pago" title="Mercado Pago" description="Tarjetas de crédito, débito y dinero en cuenta. Hasta 3 cuotas sin interés." icon={<img src="https://logowik.com/content/uploads/images/mercado-pago1721074123.logowik.com.webp" alt="MP" className="h-6" />} selected={paymentMethod} onSelect={setPaymentMethod} />                <PaymentOption id="transferencia" title="Transferencia Bancaria" description="Tenés 15 minutos para enviar el comprobante." icon={<Banknote />} selected={paymentMethod} onSelect={setPaymentMethod} discount="-5% OFF" />
+                    <PaymentOption id="transferencia" title="Transferencia Bancaria" description="Tenés 15 minutos para enviar el comprobante." icon={<Banknote />} selected={paymentMethod} onSelect={setPaymentMethod} discount="-5% OFF" />
               </div>
             </div>
 
