@@ -247,6 +247,9 @@ export const productService = {
 
   create(product: Partial<Product> & { category?: string }): number {
     const db = getDB();
+    if (!product.name || !product.price) {
+        throw new Error("Product name and price are required");
+    }
     const stmt = db.prepare(
       'INSERT INTO products (name, description, material, rise, price, category, compare_at_price, transfer_price, images, video, stock, colors, sizes, is_active, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP)'
     );
@@ -286,7 +289,7 @@ export const productService = {
         product.compare_at_price ?? null,
         product.transfer_price ?? null,
         product.images ? JSON.stringify(product.images) : null,
-        product.video, // Use direct value, allowing setting it to null
+        product.video ?? null, // Use direct value, allowing setting it to null
         product.stock ?? null,
         product.colors ? JSON.stringify(product.colors) : null,
         product.sizes ? JSON.stringify(product.sizes) : null,
@@ -310,6 +313,46 @@ export const productService = {
     const changes = db.getRowsModified();
     saveDatabase();
     return changes > 0;
+  },
+
+  updateProductStock(items: CartItem[]): void {
+    const db = getDB();
+    const stmt = db.prepare('UPDATE products SET stock = stock - ? WHERE id = ?');
+    try {
+      db.exec('BEGIN TRANSACTION');
+      for (const item of items) {
+        // Assuming size is now on CartItem and stock is per-product for now.
+        // If stock is per-size, this needs to be more complex.
+        stmt.run([item.quantity, item.product.id]);
+      }
+      db.exec('COMMIT');
+    } catch (error) {
+      db.exec('ROLLBACK');
+      console.error('Failed to update product stock:', error);
+      throw error; // Re-throw to be handled by the caller
+    } finally {
+      stmt.free();
+      saveDatabase();
+    }
+  },
+
+  restoreProductStock(items: CartItem[]): void {
+    const db = getDB();
+    const stmt = db.prepare('UPDATE products SET stock = stock + ? WHERE id = ?');
+     try {
+      db.exec('BEGIN TRANSACTION');
+      for (const item of items) {
+        stmt.run([item.quantity, item.product.id]);
+      }
+      db.exec('COMMIT');
+    } catch (error) {
+      db.exec('ROLLBACK');
+      console.error('Failed to restore product stock:', error);
+      throw error;
+    } finally {
+      stmt.free();
+      saveDatabase();
+    }
   },
 };
 

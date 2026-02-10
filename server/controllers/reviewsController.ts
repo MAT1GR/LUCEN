@@ -1,5 +1,5 @@
 import { Request, Response } from 'express';
-import { getDB } from '../lib/db/connection';
+import { getDB } from '../lib/db/connection.js';
 
 export const createReview = async (req: Request, res: Response) => {
   try {
@@ -87,10 +87,10 @@ export const deleteReview = async (req: Request, res: Response) => {
     const { id } = req.params;
     const db = getDB();
     const stmt = db.prepare('DELETE FROM reviews WHERE id = ?');
-    const result = stmt.run([id]);
+    stmt.run([id]);
     stmt.free();
 
-    if (result.changes === 0) {
+    if (db.getRowsModified() === 0) {
       return res.status(404).json({ message: 'Review not found' });
     }
 

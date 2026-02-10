@@ -1,6 +1,6 @@
 import { Request, Response } from 'express';
 import { db } from '../lib/database.js';
-import { sendEvent } from '../lib/metaConversionService.js';
+import { sendMetaConversionEvent } from '../lib/metaConversionService.js';
 
 export const logEvent = async (req: Request, res: Response) => {
   try {
@@ -29,12 +29,12 @@ export const logEvent = async (req: Request, res: Response) => {
                 content_name: event_data?.content_name,
             };
 
-            sendEvent(
+            sendMetaConversionEvent(
                 event_name,
                 userData,
                 customData,
                 eventSourceUrl || `${req.protocol}://${req.get('host')}${req.originalUrl}`
-            ).catch(err => 
+            ).catch((err: any) => 
                 console.error(`Error enviando ${event_name} a Meta:`, err)
             );
             

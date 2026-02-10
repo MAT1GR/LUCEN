@@ -1,5 +1,6 @@
-import axios from 'axios';
+import axios, { isAxiosError } from 'axios';
 import crypto from 'crypto';
+import { CartItem, Order } from '../types/index.js';
 
 const API_VERSION = 'v19.0';
 const PIXEL_ID = process.env.META_PIXEL_ID;
@@ -9,7 +10,7 @@ const hashData = (data: string) => {
   return crypto.createHash('sha256').update(data).digest('hex');
 };
 
-export const sendEvent = async (eventName: string, userData: any, customData: any, eventSourceUrl: string, actionSource: string = 'website') => {
+export const sendMetaConversionEvent = async (eventName: string, userData: any, customData: any, eventSourceUrl: string, actionSource: string = 'website') => {
   if (!PIXEL_ID || !ACCESS_TOKEN) {
     console.error('Meta Pixel ID or Access Token is not configured.');
     return;
@@ -42,9 +43,14 @@ export const sendEvent = async (eventName: string, userData: any, customData: an
     await axios.post(url, payload);
     console.log(`Successfully sent ${eventName} event to Meta.`);
   } catch (error) {
-    console.error(`Error sending ${eventName} event to Meta:`, error.response?.data || error.message);
+    if (isAxiosError(error)) {
+        console.error(`Error sending ${eventName} event to Meta:`, error.response?.data || error.message);
+    } else {
+        console.error(`Error sending ${eventName} event to Meta:`, error);
+    }
   }
 };
+
 
 export const trackViewContent = (userData: any, product: any, eventSourceUrl: string) => {
   const customData = {
@@ -54,10 +60,10 @@ export const trackViewContent = (userData: any, product: any, eventSourceUrl: st
     value: product.price,
     currency: 'ARS',
   };
-  sendEvent('ViewContent', userData, customData, eventSourceUrl);
+  sendMetaConversionEvent('ViewContent', userData, customData, eventSourceUrl);
 };
 
-export const trackAddToCart = (userData: any, product: any, quantity: number, eventSourceUrl: string) => {
+export const trackAddToCart = (userData: any, product: any, quantity: number, eventSourceUrl:string) => {
   const customData = {
     content_name: product.name,
     content_ids: [product.id],
@@ -65,28 +71,28 @@ export const trackAddToCart = (userData: any, product: any, quantity: number, ev
     value: product.price * quantity,
     currency: 'ARS',
   };
-  sendEvent('AddToCart', userData, customData, eventSourceUrl);
+  sendMetaConversionEvent('AddToCart', userData, customData, eventSourceUrl);
 };
 
-export const trackInitiateCheckout = (userData: any, cart: any[], eventSourceUrl: string) => {
+export const trackInitiateCheckout = (userData: any, cart: CartItem[], eventSourceUrl: string) => {
   const customData = {
-    content_ids: cart.map(item => item.product.id),
+    content_ids: cart.map((item: CartItem) => item.product.id),
     content_type: 'product',
-    value: cart.reduce((total, item) => total + item.product.price * item.quantity, 0),
+    value: cart.reduce((total: number, item: CartItem) => total + item.product.price * item.quantity, 0),
     currency: 'ARS',
-    num_items: cart.reduce((total, item) => total + item.quantity, 0),
+    num_items: cart.reduce((total: number, item: CartItem) => total + item.quantity, 0),
   };
-  sendEvent('InitiateCheckout', userData, customData, eventSourceUrl);
+  sendMetaConversionEvent('InitiateCheckout', userData, customData, eventSourceUrl);
 };
 
-export const trackPurchase = (userData: any, order: any, eventSourceUrl: string) => {
+export const trackPurchase = (userData: any, order: Order, eventSourceUrl: string) => {
   const customData = {
-    content_ids: order.items.map(item => item.product_id),
+    content_ids: order.items.map((item: CartItem) => item.product.id),
     content_type: 'product',
     value: order.total,
     currency: 'ARS',
-    num_items: order.items.reduce((total, item) => total + item.quantity, 0),
+    num_items: order.items.reduce((total: number, item: CartItem) => total + item.quantity, 0),
     order_id: order.id,
   };
-  sendEvent('Purchase', userData, customData, eventSourceUrl);
+  sendMetaConversionEvent('Purchase', userData, customData, eventSourceUrl);
 };

@@ -18,12 +18,17 @@ export interface Product {
   isActive: boolean;
   review_average?: number;
   review_count?: number;
+  description?: string;
+  material?: string;
+  rise?: string;
+  sizes?: any;
 }
 
 export interface CartItem {
   product: Product;
   color: string;
   quantity: number;
+  size: string;
 }
 
 export interface Customer {
