@@ -1,5 +1,5 @@
 import { Request, Response } from 'express';
-import { db } from '../lib/database.js';
+import prisma from '../lib/prisma.js';
 import { getAbandonedCartEmail } from '../lib/emailTemplates.js';
 import { sendEmail } from '../emailService.js';
 import { trackAddToCart, trackInitiateCheckout } from '../lib/metaConversionService.js';
@@ -12,7 +12,17 @@ export const captureAbandonedCart = async (req: Request, res: Response) => {
     }
 
     try {
-        const cartId = db.carts.createOrUpdateAbandonedCart(email, cartItems);
+        const cart = await prisma.abandonedCart.upsert({
+            where: { email: email },
+            update: {
+                cart_items: cartItems,
+                status: 'pending', // Reset status if user comes back
+            },
+            create: {
+                email: email,
+                cart_items: cartItems,
+            },
+        });
 
         const userData = {
             email: email,
@@ -27,7 +37,7 @@ export const captureAbandonedCart = async (req: Request, res: Response) => {
             trackAddToCart(userData, item.product, item.quantity, eventSourceUrl);
         }
         
-        res.status(200).json({ message: 'Cart captured', cartId });
+        res.status(200).json({ message: 'Cart captured', cartId: cart.id });
     } catch (error) {
         console.error('Error capturing abandoned cart:', error);
         res.status(500).json({ message: 'Error capturing cart' });
@@ -37,11 +47,25 @@ export const captureAbandonedCart = async (req: Request, res: Response) => {
 export const processAbandonedCarts = async () => {
     console.log('[Scheduler] Running abandoned cart job...');
     try {
-        const carts = db.carts.getPendingAbandonedCarts();
-        console.log(`[Scheduler] Found ${carts.length} pending carts to process.`);
+        const oneHourAgo = new Date(Date.now() - 60 * 60 * 1000);
+        const twoHoursAgo = new Date(Date.now() - 2 * 60 * 60 * 1000);
 
+        const carts = await prisma.abandonedCart.findMany({
+            where: {
+                status: 'pending',
+                updated_at: {
+                    lt: oneHourAgo,
+                    gt: twoHoursAgo,
+                }
+            }
+        });
+
+        console.log(`[Scheduler] Found ${carts.length} pending carts to process.`);
+        if (carts.length === 0) return;
+
+        const sentCartIds: number[] = [];
         for (const cart of carts) {
-            const cartUrl = `${process.env.VITE_CLIENT_URL}/carrito`; // A generic cart URL
+            const cartUrl = `${process.env.VITE_CLIENT_URL}/carrito`; 
             const emailHtml = getAbandonedCartEmail(cart.email, cartUrl);
             
             await sendEmail(
@@ -49,10 +73,20 @@ export const processAbandonedCarts = async () => {
                 '¿Olvidaste algo en tu bolsa?',
                 emailHtml
             );
-
-            db.carts.updateAbandonedCartStatus(cart.id, 'sent');
+            sentCartIds.push(cart.id);
             console.log(`[Scheduler] Sent abandoned cart email to ${cart.email}`);
         }
+
+        // Update all sent carts in one go
+        await prisma.abandonedCart.updateMany({
+            where: {
+                id: { in: sentCartIds }
+            },
+            data: {
+                status: 'sent'
+            }
+        });
+
     } catch (error) {
         console.error('[Scheduler] Error processing abandoned carts:', error);
     }

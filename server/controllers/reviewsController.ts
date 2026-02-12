@@ -1,5 +1,6 @@
 import { Request, Response } from 'express';
-import { getDB } from '../lib/db/connection.js';
+import prisma from '../lib/prisma.js';
+import { Prisma } from '@prisma/client';
 
 export const createReview = async (req: Request, res: Response) => {
   try {
@@ -9,14 +10,17 @@ export const createReview = async (req: Request, res: Response) => {
       return res.status(400).json({ error: 'Missing required fields' });
     }
 
-    const db = getDB();
-    const stmt = db.prepare(`
-      INSERT INTO reviews (product_id, title, rating, comment, user_name, user_email, is_approved)
-      VALUES (?, ?, ?, ?, ?, ?, 1) -- Auto-approve for now
-    `);
-    
-    stmt.run([product_id, title || '', rating, comment || '', user_name, user_email]);
-    stmt.free();
+    await prisma.review.create({
+      data: {
+        product_id: parseInt(product_id),
+        title: title || '',
+        rating: parseInt(rating),
+        comment: comment || '',
+        user_name,
+        user_email,
+        is_approved: true, // Auto-approve for now
+      },
+    });
 
     res.status(201).json({ message: 'Review submitted successfully' });
   } catch (error) {
@@ -28,20 +32,16 @@ export const createReview = async (req: Request, res: Response) => {
 export const getProductReviews = async (req: Request, res: Response) => {
   try {
     const { productId } = req.params;
-    const db = getDB();
     
-    const stmt = db.prepare(`
-      SELECT * FROM reviews 
-      WHERE product_id = ? AND is_approved = 1 
-      ORDER BY created_at DESC
-    `);
-    
-    stmt.bind([productId]);
-    const reviews = [];
-    while (stmt.step()) {
-      reviews.push(stmt.getAsObject());
-    }
-    stmt.free();
+    const reviews = await prisma.review.findMany({
+      where: {
+        product_id: parseInt(productId),
+        is_approved: true,
+      },
+      orderBy: {
+        created_at: 'desc',
+      },
+    });
 
     res.json(reviews);
   } catch (error) {
@@ -52,30 +52,27 @@ export const getProductReviews = async (req: Request, res: Response) => {
 
 export const getAllReviews = async (req: Request, res: Response) => {
   try {
-    const db = getDB();
-    const stmt = db.prepare(`
-      SELECT 
-        r.id, 
-        r.title, 
-        r.rating, 
-        r.comment, 
-        r.user_name, 
-        r.user_email, 
-        r.created_at,
-        r.is_approved,
-        p.name as product_name 
-      FROM reviews r
-      JOIN products p ON r.product_id = p.id
-      ORDER BY r.created_at DESC
-    `);
-    
-    const reviews = [];
-    while (stmt.step()) {
-      reviews.push(stmt.getAsObject());
-    }
-    stmt.free();
+    const reviews = await prisma.review.findMany({
+      include: {
+        product: {
+          select: {
+            name: true,
+          },
+        },
+      },
+      orderBy: {
+        created_at: 'desc',
+      },
+    });
 
-    res.json(reviews);
+    // Remap to match original structure with product_name
+    const formattedReviews = reviews.map(r => ({
+      ...r,
+      product_name: r.product.name,
+      product: undefined, // remove the nested product object
+    }));
+
+    res.json(formattedReviews);
   } catch (error) {
     console.error('Error fetching all reviews:', error);
     res.status(500).json({ error: 'Failed to fetch reviews' });
@@ -85,18 +82,40 @@ export const getAllReviews = async (req: Request, res: Response) => {
 export const deleteReview = async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
-    const db = getDB();
-    const stmt = db.prepare('DELETE FROM reviews WHERE id = ?');
-    stmt.run([id]);
-    stmt.free();
-
-    if (db.getRowsModified() === 0) {
-      return res.status(404).json({ message: 'Review not found' });
-    }
+    await prisma.review.delete({
+      where: { id: parseInt(id) },
+    });
 
     res.status(200).json({ message: 'Review deleted successfully' });
   } catch (error) {
+    if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2025') {
+      return res.status(404).json({ message: 'Review not found' });
+    }
     console.error('Error deleting review:', error);
     res.status(500).json({ error: 'Failed to delete review' });
   }
+};
+
+export const toggleReviewApproval = async (req: Request, res: Response) => {
+    try {
+        const { id } = req.params;
+        const { is_approved } = req.body;
+
+        if (typeof is_approved !== 'boolean') {
+            return res.status(400).json({ message: 'is_approved must be a boolean' });
+        }
+
+        const updatedReview = await prisma.review.update({
+            where: { id: parseInt(id) },
+            data: { is_approved: is_approved },
+        });
+
+        res.json(updatedReview);
+    } catch (error) {
+        if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2025') {
+            return res.status(404).json({ message: 'Review not found' });
+        }
+        console.error('Error updating review approval:', error);
+        res.status(500).json({ error: 'Failed to update review' });
+    }
 };

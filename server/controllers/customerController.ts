@@ -1,18 +1,35 @@
 import { Request, Response } from "express";
-import { db } from '../lib/database.js';
-
+import prisma from '../lib/prisma.js';
+import { Prisma } from '@prisma/client';
 
 export const getAllCustomers = async (req: Request, res: Response) => {
   try {
-    const { searchTerm, page } = req.query;
+    const { searchTerm, page = 1, limit = 15 } = req.query;
+    const pageNum = Number(page);
+    const limitNum = Number(limit);
 
-    const filters = {
-        searchTerm: searchTerm as string | undefined,
-        page: page ? parseInt(page as string, 10) : 1,
-    };
+    const where: Prisma.CustomerWhereInput = {};
+    if (searchTerm && typeof searchTerm === 'string') {
+        where.OR = [
+            { name: { contains: searchTerm, mode: 'insensitive' } },
+            { email: { contains: searchTerm, mode: 'insensitive' } },
+        ];
+    }
+    
+    const totalCustomers = await prisma.customer.count({ where });
+    const customers = await prisma.customer.findMany({
+        where,
+        orderBy: { created_at: 'desc' },
+        skip: (pageNum - 1) * limitNum,
+        take: limitNum,
+    });
 
-    const result = await db.customers.getAll(filters);
-    res.json(result);
+    res.json({
+        customers,
+        totalPages: Math.ceil(totalCustomers / limitNum),
+        currentPage: pageNum,
+        totalCustomers,
+    });
   } catch (error) {
     console.error("Error fetching customers:", error);
     res.status(500).json({ message: 'Error al obtener los clientes' });
@@ -21,7 +38,9 @@ export const getAllCustomers = async (req: Request, res: Response) => {
 
 export const getCustomerById = async (req: Request, res: Response) => {
   try {
-    const customer = await db.customers.getById(req.params.id);
+    const customer = await prisma.customer.findUnique({
+        where: { id: req.params.id }
+    });
     if (customer) {
       res.json(customer);
     } else {
@@ -34,20 +53,25 @@ export const getCustomerById = async (req: Request, res: Response) => {
 };
 
 export const subscribeToDrop = async (req: Request, res: Response) => {
-  const { email } = req.body;
+  const { email, name = "Drop Subscriber" } = req.body;
 
   if (!email) {
     return res.status(400).json({ message: "El email es requerido." });
   }
 
   try {
-    const success = await db.notifications.subscribe("Drop Subscriber", email);
-    if (success) {
-      res.status(201).json({ message: '¡Gracias por suscribirte! Te avisaremos.' });
-    } else {
-      res.status(200).json({ message: 'Ya estás suscripto.' });
-    }
+    await prisma.dropNotification.create({
+        data: {
+            email,
+            name,
+        }
+    });
+    res.status(201).json({ message: '¡Gracias por suscribirte! Te avisaremos.' });
   } catch (error: any) {
+    // Check for unique constraint violation
+    if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2002') {
+        return res.status(200).json({ message: 'Ya estás suscripto.' });
+    }
     console.error("Error subscribing to drop:", error);
     res.status(500).json({ message: "Error al procesar la suscripción." });
   }
